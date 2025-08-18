@@ -14,6 +14,13 @@ namespace Catalog.Domain.Entities
         {
         }
 
+        public Guid ComponentTypeId { get; private set; }
+        public ComponentType ComponentType { get; private set; } = null!;
+
+        public IReadOnlyCollection<TextParameter> TextParameters => _textParameters.AsReadOnly();
+        public IReadOnlyCollection<NumericParameter> NumericParameters => _numericParameters.AsReadOnly();
+        public IReadOnlyCollection<Module> Modules => _modules.AsReadOnly();
+
         public static Operation<Component, string> Create(string title, string code, ComponentType componentType) 
         {
             if(componentType is null )
@@ -43,21 +50,6 @@ namespace Catalog.Domain.Entities
                 //.SetModule(module);
         }
 
-        public IReadOnlyCollection<TextParameter> TextParameters => _textParameters.AsReadOnly();
-        public IReadOnlyCollection<NumericParameter> NumericParameters => _numericParameters.AsReadOnly();
-        public IReadOnlyCollection<Module> Modules => _modules.AsReadOnly();
-
-        public Guid ComponentTypeId { get; private set; }
-        public ComponentType ComponentType { get; private set; } = null!;
-        /*public Guid ModuleId { get; private set; }
-        public Module Module { get; private set; } = null!;
-
-        public Component SetModule(Module module)
-        {
-            Module = module;
-            return this;
-        }
-        */
         public Component SetComponentType(ComponentType componentType)
         {
             ComponentType = componentType;

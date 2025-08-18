@@ -5,7 +5,7 @@ namespace Catalog.Domain.ValueObjects
 {
     public class CodeValue : ValueObject
     {
-        public const int MaxTitleLength = 36;
+        public const int MaxCodeLength = 36;
 
         private CodeValue(string value)
         {
@@ -21,7 +21,7 @@ namespace Catalog.Domain.ValueObjects
                 return Operation.Error("Value is null or empty.");
             }
 
-            if (code.Length > MaxTitleLength)
+            if (code.Length > MaxCodeLength)
             {
                 return Operation.Error("Value length is greater than Max value.");
             }

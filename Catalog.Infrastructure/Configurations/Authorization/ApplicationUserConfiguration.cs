@@ -1,4 +1,5 @@
 ﻿using Catalog.Domain.Entities.Autorization;
+using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,7 +25,8 @@ namespace Catalog.Infrastructure.Configurations.Auth
             builder
                 .Property(x => x.Password)
                 .IsRequired()
-                .HasMaxLength(128);
+                .HasMaxLength(PasswordValue.MaxPasswordLength)
+                .HasConversion(x => x.Value, x => PasswordValue.Create(x).Result);
 
             builder
                 .Property(x => x.Email)

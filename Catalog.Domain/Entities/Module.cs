@@ -7,6 +7,7 @@ namespace Catalog.Domain.Entities
     public class Module : SimpleEntity
     {
         private readonly List<Component> _components = [];
+        private readonly List<OrderItem> _orderItems = [];
 
         protected Module(TitleValue title, CodeValue code, Guid id) : base(title, code, id)
         {
@@ -41,6 +42,8 @@ namespace Catalog.Domain.Entities
         }
 
         public IReadOnlyCollection<Component> Components => _components.AsReadOnly();
+        public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
+
         public Guid ModuleTypeId { get; private set; }
         public ModuleType ModuleType { get; private set; } = null!;
 
@@ -49,7 +52,6 @@ namespace Catalog.Domain.Entities
             ModuleType = moduleType;
             return this;
         }
-
 
         public void AddComponent(Component component)
         {

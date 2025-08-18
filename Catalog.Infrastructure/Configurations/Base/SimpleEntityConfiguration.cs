@@ -27,7 +27,7 @@ namespace Catalog.Infrastructure.Configurations.Base
             builder
                 .Property(x => x.Code)
                 .IsRequired()
-                .HasMaxLength(CodeValue.MaxTitleLength)
+                .HasMaxLength(CodeValue.MaxCodeLength)
                 .HasConversion(x => x.Value, x => CodeValue.Create(x).Result);
 
             builder.HasIndex(x => x.Title);

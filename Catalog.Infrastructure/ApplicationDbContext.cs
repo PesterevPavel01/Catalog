@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using Catalog.Domain.Entities.Autorization;
 using Interceptors;
 using Microsoft.EntityFrameworkCore;
@@ -27,19 +25,23 @@ namespace Catalog.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            string AdministratorPassword = _configuration.GetSection("Authorization").GetSection("AdministratorPassword").Value;
+            string AdministratorPassword = _configuration.GetSection("Authorization").GetSection("AdministratorPassword").Value ?? "DefaultPassword";
 
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            var administrator = ApplicationUser
+            var administratorResult = ApplicationUser
                 .Create(
                     id: Guid.NewGuid(),
                     userName: "Administrator",
                     password: AdministratorPassword
                 );
 
+            if (!administratorResult.Ok)
+                throw new DbUpdateException(administratorResult.Error);
+
+            var administrator = administratorResult.Result;
             administrator.CreatedAt = DateTime.Now;
             administrator.UpdatedAt = default;
 

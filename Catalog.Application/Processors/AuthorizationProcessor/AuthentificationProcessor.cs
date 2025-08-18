@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Calabonga.UnitOfWork;
-using Catalog.Domain.Dto;
+using Catalog.Domain.Dto.Authorization;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Autorization;
 using Microsoft.Extensions.Options;
@@ -14,12 +14,12 @@ namespace Catalog.Application.Processors.AuthorizationProcessor
     public sealed class AuthentificationProcessor
     {
         private readonly IUnitOfWork _unitOfWork = null!;
-        private readonly AuthorizationSetts _authorizationSetts;
+        private readonly AuthorizationSettings _authorizationSettings;
 
-        public AuthentificationProcessor(IUnitOfWork unitOfWork, IOptions<AuthorizationSetts> authorizationSetts)
+        public AuthentificationProcessor(IUnitOfWork unitOfWork, IOptions<AuthorizationSettings> authorizationSetts)
         {
             _unitOfWork = unitOfWork;
-            _authorizationSetts = authorizationSetts.Value;
+            _authorizationSettings = authorizationSetts.Value;
         }
 
         public async Task<String> ProcessAsync(LoginDto model, CancellationToken cancellationToken)
@@ -69,13 +69,13 @@ namespace Catalog.Application.Processors.AuthorizationProcessor
                 new Claim(ClaimTypes.Role, "Administrator") // Добавляем claim с ролью
             };
 
-            byte[] secretBytes = Encoding.UTF8.GetBytes(_authorizationSetts.SecretKey);
+            byte[] secretBytes = Encoding.UTF8.GetBytes(_authorizationSettings.SecretKey);
             var key = new SymmetricSecurityKey(secretBytes);
             var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                _authorizationSetts.Issuer,
-                _authorizationSetts.Audience,
+                _authorizationSettings.Issuer,
+                _authorizationSettings.Audience,
                 claims,
                 notBefore: DateTime.UtcNow,
                 expires: DateTime.Now.AddMinutes(60),
