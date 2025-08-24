@@ -35,6 +35,7 @@ namespace Catalog.Infrastructure.Configurations.Auth
             builder
                 .HasOne(x => x.UserToken)
                 .WithOne(x => x.User);
+              
         }
     }
 }

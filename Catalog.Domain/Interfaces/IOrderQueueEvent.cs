@@ -2,4 +2,6 @@
 {
     public interface IOrderQueueEvent {}
     public interface IExchangeQueueEvent { }
+    public interface IApprovalQueueEvent { }
+    public interface INotificationQueueEvent { }
 }

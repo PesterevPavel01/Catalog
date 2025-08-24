@@ -1,6 +1,6 @@
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Domain.Entities.Authorization;
-using Catalog.Exchange.Definitions.Configurations;
+using Catalog.Contracts.Entities.Configurations;
+using Catalog.ExchangeService.Definitions.Configurations;
 using Serilog;
 using Serilog.Events;
 using TelegramService.DependencyInjection;
@@ -18,14 +18,9 @@ try
     // created builder
     var builder = WebApplication.CreateBuilder(args);
 
-    if (builder.Environment.IsDevelopment())
-    {
-        builder.AddSharedConfiguration();
-    }
+    builder.AddSharedConfiguration();
 
     builder.Services.AddTelegramService();
-
-    builder.Services.Configure<AuthorizationSettings>(builder.Configuration.GetSection("Authorization"));
 
     builder.Host.UseSerilog((context, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));

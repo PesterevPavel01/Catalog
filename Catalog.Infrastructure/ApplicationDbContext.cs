@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Autorization;
 using Interceptors;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +45,10 @@ namespace Catalog.Infrastructure
             var administrator = administratorResult.Result;
             administrator.CreatedAt = DateTime.Now;
             administrator.UpdatedAt = default;
+
+            var moduleType = ModuleType.Create("Фасад", "00000000FSD",Guid.NewGuid());
+
+            modelBuilder.Entity<ModuleType>().HasData(moduleType.Result);
 
             modelBuilder.Entity<ApplicationUser>().HasData(administrator);
         }

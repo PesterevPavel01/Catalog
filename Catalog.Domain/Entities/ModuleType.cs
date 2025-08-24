@@ -7,11 +7,11 @@ namespace Catalog.Domain.Entities
     public class ModuleType : SimpleEntity
     {
         private readonly List<Module> _modules = [];
-        protected ModuleType(TitleValue title, CodeValue code, Guid id) : base(title, code, id)
+        protected ModuleType(TitleValue title, string code, Guid id) : base(title, code, id)
         {
         }
 
-        public static Operation<ModuleType, string> Create(string title, string code)
+        public static Operation<ModuleType, string> Create(string title, string code, Guid? Id = null)
         {
             if (string.IsNullOrWhiteSpace(title))
             {
@@ -28,12 +28,7 @@ namespace Catalog.Domain.Entities
             if (!titleValue.Ok)
                 return Operation.Error(titleValue.Error);
 
-            var codeValue = CodeValue.Create(code);
-
-            if (!codeValue.Ok)
-                return Operation.Error(codeValue.Error);
-
-            return new ModuleType(titleValue.Result, codeValue.Result, Guid.Empty);
+            return new ModuleType(titleValue.Result, code,id: Id ?? Guid.Empty);
         }
 
         public IReadOnlyCollection<Module> Modules => _modules.AsReadOnly();

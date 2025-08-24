@@ -1,15 +1,15 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Application.Processors;
 using Catalog.Application.Processors.AuthorizationProcessor;
+using Catalog.ExchangeService.Application.Processors;
 
-namespace Catalog.Exchange.Definitions.Services
+namespace Catalog.ExchangeService.Definitions.Services
 {
     public class ServicesDefinition : AppDefinition
     {
         public override void ConfigureServices(WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<AuthentificationProcessor>();
-            builder.Services.AddScoped<ModuleCreatorProcessor>();
+            builder.Services.AddScoped<ComponentCreatorProcessor>();
         }
     }
 }

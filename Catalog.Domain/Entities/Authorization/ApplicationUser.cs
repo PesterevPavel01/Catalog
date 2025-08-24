@@ -9,6 +9,7 @@ namespace Catalog.Domain.Entities.Autorization
 {
     public class ApplicationUser : Entity
     {
+        private readonly List<Order> _orders = [];
         private ApplicationUser(Guid id, string userName, PasswordValue password, string? email) : base(id)
         {
             UserName = userName;
@@ -18,10 +19,10 @@ namespace Catalog.Domain.Entities.Autorization
 
         public string UserName { get; private set; }
         public PasswordValue Password { get; private set; }
-
         public string? Email { get; private set; }
-
         public UserToken UserToken { get; set; } = null!;
+
+        public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
         public static Operation<ApplicationUser, string> Create(Guid id, string userName, string password, string? email = null)
         {

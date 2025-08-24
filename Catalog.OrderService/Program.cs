@@ -1,5 +1,6 @@
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Domain.Entities.Authorization;
+using Catalog.ComponentCompatibilityValidator.Extension;
+using Catalog.ModuleCompositionValidator.Extension;
 using Catalog.Web.Definitions.Configurations;
 using Serilog;
 using Serilog.Events;
@@ -17,15 +18,14 @@ try
 
     // created builder
     var builder = WebApplication.CreateBuilder(args);
-    
+
+    builder.AddApplicationConfiguration();
+
+    builder.Services.AddComponentCompabilityValidator();
+
+    builder.Services.AddModuleCompositionValidator();
+
     builder.Services.AddTelegramService();
-
-    if (builder.Environment.IsDevelopment())
-    {
-        builder.AddSharedConfiguration();
-    }
-
-    builder.Services.Configure<AuthorizationSettings>(builder.Configuration.GetSection("Authorization"));
 
     builder.Host.UseSerilog((context, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));

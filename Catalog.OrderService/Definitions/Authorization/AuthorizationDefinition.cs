@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Domain.Entities.Authorization;
+using Catalog.Contracts.Entities.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 

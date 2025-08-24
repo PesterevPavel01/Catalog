@@ -8,7 +8,7 @@ namespace Catalog.Domain.Entities.Autorization
         {
         }
 
-        public string RefreshToken { get; set; }
+        public string RefreshToken { get; set; } = null!;
         public DateTime RefreshTokenExpiryTime { get; set; }
         public ApplicationUser User { get; set; } = null!;
         public Guid UserId { get; set; }

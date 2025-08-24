@@ -4,13 +4,13 @@ namespace Catalog.Domain.Entities.Base
 {
     public class SimpleEntity : Entity
     {
-        protected SimpleEntity(TitleValue title, CodeValue code, Guid id) : base(id)
+        protected SimpleEntity(TitleValue title, string code, Guid id) : base(id)
         {
             Title = title;
             Code = code;
         }
         public TitleValue Title { get; private set; }
 
-        public CodeValue Code { get; private set; }
+        public string Code { get; private set; }
     }
 }

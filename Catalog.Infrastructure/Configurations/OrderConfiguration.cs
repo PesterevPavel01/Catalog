@@ -14,6 +14,13 @@ namespace Catalog.Infrastructure.Configurations
                 .WithOne()
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne(x => x.ApplicationUser)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => x.ApplicationUserId)
+                .HasPrincipalKey(x => x.Id)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         protected override string TableName()

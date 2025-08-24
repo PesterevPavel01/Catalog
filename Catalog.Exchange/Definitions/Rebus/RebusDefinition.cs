@@ -4,12 +4,11 @@ using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities;
-using Catalog.ExchangeService.Definitions;
 using Rebus.Config;
 using Rebus.Serialization.Json;
 using Serilog;
 
-namespace Catalog.Exchange.Definitions.Rebus
+namespace Catalog.ExchangeService.Definitions.Rebus
 {
     public class RebusDefinition : AppDefinition
     {
@@ -31,9 +30,9 @@ namespace Catalog.Exchange.Definitions.Rebus
 
                 return config;
             }, onCreated: async bus =>
-            {
-                await bus.Subscribe<OrderCreatedEvent>();
-            }
+                {
+                    await bus.Subscribe<OrderCreatedEvent>();
+                }
             );
 
             builder.Services.AutoRegisterHandlersFromAssemblyOf<ExchangeAssemblyReference>();

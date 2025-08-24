@@ -17,12 +17,12 @@ namespace Catalog.ExchangeService.Application.QueueHandlers
 
         public Task Handle(OrderCreatedEvent message)
         {
-            _logger.LogInformation("[{ServiceName}] Event {EventType} recived successfully. OrderCode {OrderCode}",
+            _logger.LogInformation("[{ServiceName}] Event {EventType} received successfully. OrderCode {OrderCode}",
                 "ExchangeService".ToUpper(),
                 message.GetType().Name,
                 message.OrderCode);
 
-            _telegramService.SendMessageAsync($"{"ExchangeService".ToUpper()} Event {message.GetType().Name} recived successfully. OrderCode {message.OrderCode}").GetAwaiter().GetResult();
+            _telegramService.SendMessageAsync($"{"ExchangeService".ToUpper()} Event {message.GetType().Name} received successfully. OrderCode {message.OrderCode}").GetAwaiter().GetResult();
 
             return Task.CompletedTask;
         }

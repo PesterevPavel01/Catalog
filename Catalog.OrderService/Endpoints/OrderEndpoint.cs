@@ -1,9 +1,11 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Application.Processors;
+using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Events;
-using Catalog.Domain.Dto;
+using Catalog.OrderService.Application.Configurations;
+using Catalog.OrderService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Rebus.Bus;
 
 namespace Catalog.Web.Endpoints
@@ -27,7 +29,8 @@ namespace Catalog.Web.Endpoints
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0));
 
-            group.MapPost("Create", async (
+        group.MapPost("Create", async (
+                [FromServices] IOptions <ApplicationConfiguration> applicationConfiguration,
                 [FromBody] OrderDto model,
                 [FromServices] IBus bus,
                 OrderCreatorProcessor orderProcessor,
@@ -38,15 +41,23 @@ namespace Catalog.Web.Endpoints
                 if(result.Ok)
                     await bus.Publish(new OrderCreatedEvent(result.Result.OrderCode));*/
 
-                await bus.Publish(new OrderCreatedEvent(Guid.NewGuid().ToString()));
+                //await bus.Publish(new OrderCreatedEvent(Guid.NewGuid().ToString()));
 
-                return Results.Ok();
+                return Results.Ok(applicationConfiguration.Value);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)
             .WithName("GetCreateEndpoint")
-            .WithOpenApi();
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Создание нового заказа.",
+                Description = @"
+                {
+                  ""moduleCode"": ""35a56634-cc84-4aef-94a2-5e9da07a16d0"",
+                  ""componentCode"": ""00080196471""
+                }"
+            });
 
             group.MapGet("Test", async (
                 [FromServices] IBus bus,

@@ -1,4 +1,4 @@
-﻿using Catalog.Domain.Entities;
+﻿using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Enum;
 using Catalog.Infrastructure.Configurations.Base;
 using Microsoft.EntityFrameworkCore;
@@ -19,13 +19,19 @@ namespace Catalog.Infrastructure.Configurations
                         v => (ParameterValueType)Enum.Parse(typeof(ParameterValueType), v));
 
             builder
-                .HasMany(x => x.TextParameters)
+                .HasMany(x => x.ComponentTextParameters)
                 .WithOne(x => x.ParameterType)
                 .HasForeignKey(x => x.ParameterTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder
-                .HasMany(x => x.NumericParameters)
+                .HasMany(x => x.ModuleTextParameters)
+                .WithOne(x => x.ParameterType)
+                .HasForeignKey(x => x.ParameterTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasMany(x => x.ComponentNumericParameters)
                 .WithOne(x => x.ParameterType)
                 .HasForeignKey(x => x.ParameterTypeId)
                 .OnDelete(DeleteBehavior.Restrict);

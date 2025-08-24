@@ -3,7 +3,7 @@ using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Microsoft.OpenApi.Models;
 
-namespace Catalog.Exchange.Definitions.Swagger
+namespace Catalog.ExchangeService.Definitions.Swagger
 {
     public class SwaggerDefinition : AppDefinition
     {

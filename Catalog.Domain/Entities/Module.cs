@@ -1,4 +1,8 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.Dto;
+using Catalog.Contracts.Dto.Module;
+using Catalog.Contracts.Entities.Parameters;
+using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 
@@ -9,40 +13,65 @@ namespace Catalog.Domain.Entities
         private readonly List<Component> _components = [];
         private readonly List<OrderItem> _orderItems = [];
 
-        protected Module(TitleValue title, CodeValue code, Guid id) : base(title, code, id)
+        private readonly List<ModuleTextParameter> _moduleTextParameters = [];
+        private readonly List<ModuleNumericParameter> _moduleNumericParameters = [];
+
+        protected Module(TitleValue title, string code, Guid id) : base(title, code, id){}
+
+        public static Operation<Module, string> Create(
+            string title,
+            string code,
+            ModuleType moduleType,
+            List<ModuleRequaredParameter> requaredParameters,
+            List<ModuleTextParameter>? textParameters = null,
+            List<ModuleNumericParameter>? numericParameters = null)
         {
-        }
-
-        public static Operation<Module, string> Create(string title, string code, ModuleType moduleType)
-        {
-            if (moduleType is null)
-                return Operation.Error("ComponentTupe not found");
-
-            if (string.IsNullOrWhiteSpace(title))
-            {
-                return Operation.Error("Value is empty or null");
-            }
-
             if (string.IsNullOrWhiteSpace(code))
-            {
                 return Operation.Error("Code is empty or null");
-            }
 
             var titleValue = TitleValue.Create(title);
 
             if (!titleValue.Ok)
                 return Operation.Error(titleValue.Error);
 
-            var codeValue = CodeValue.Create(code);
+            if (moduleType is null)
+                return Operation.Error("ModuleTupe not found");
 
-            if (!codeValue.Ok)
-                return Operation.Error(codeValue.Error);
+            if (requaredParameters is null)
+                return Operation.Error("RequaredParameters not found");
 
-            return new Module(titleValue.Result, codeValue.Result, Guid.Empty).SetModuleType(moduleType);
+            var module = new Module(titleValue.Result, code, Guid.Empty)
+                .SetModuleType(moduleType);
+
+            if (!module.Ok)
+                return Operation.Error(module.Error);
+
+            var moduleRequaredParameters = requaredParameters.FirstOrDefault(x => x.ModuleType == moduleType.Title.Value);
+
+            if (moduleRequaredParameters == null)
+                return Operation.Error("ModuleRequaredParameters not found");
+
+            module.Result.ModuleRequaredParameters = moduleRequaredParameters;
+
+            textParameters?.ForEach(x => module.Result.AddTextParameter(x));
+
+            numericParameters?.ForEach(x => module.Result.AddNumericParameter(x));
+
+            var checkRequaredParametersResult = module.Result.CheckRequaredParameters();
+
+            if (!checkRequaredParametersResult.Ok)
+                return Operation.Error(checkRequaredParametersResult.Error);
+
+            return module.Result;
         }
 
         public IReadOnlyCollection<Component> Components => _components.AsReadOnly();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
+
+        public IReadOnlyCollection<ModuleTextParameter> ModuleTextParameters => _moduleTextParameters.AsReadOnly();
+        public IReadOnlyCollection<ModuleNumericParameter> ModuleNumericParameters => _moduleNumericParameters.AsReadOnly();
+
+        public ModuleRequaredParameter ModuleRequaredParameters = null!;
 
         public Guid ModuleTypeId { get; private set; }
         public ModuleType ModuleType { get; private set; } = null!;
@@ -53,22 +82,155 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        public void AddComponent(Component component)
+        public Operation<ModuleDto,string> AddComponent(Component component)
         {
             var exists = _components.Find(x => x.Id == component.Id);
             if (exists is not null)
-                return;
+                return ConvertToDto();
+
+            var checkRequaredParametersResult = CheckRequaredParameters(component);
+
+            if (!checkRequaredParametersResult.Ok)
+                return Operation.Error(checkRequaredParametersResult.Error);
 
             _components.Add(component);
+
+            return ConvertToDto();
         }
 
-        public void RemoveComponent(Component component)
+        public Operation<ModuleDto, string> RemoveComponent(Component component)
         {
             var exists = _components.Find(x => x.Id == component.Id);
             if (exists is null)
-                return;
+                return ConvertToDto(); ;
 
             _components.Remove(component);
+
+            return ConvertToDto();
         }
+
+        public void AddTextParameter(ModuleTextParameter textParameter)
+        {
+            if (textParameter.Id != Guid.Empty)
+            {
+                var exists = _moduleTextParameters.Find(x => x.Id == textParameter.Id);
+                if (exists is not null)
+                    return;
+            }
+
+            _moduleTextParameters.Add(textParameter);
+        }
+
+        public void AddNumericParameter(ModuleNumericParameter numericParameter)
+        {
+            if (numericParameter.Id != Guid.Empty)
+            {
+                var exists = _moduleNumericParameters.Find(x => x.Id == numericParameter.Id);
+                if (exists is not null)
+                    return;
+            }
+            _moduleNumericParameters.Add(numericParameter);
+        }
+
+        public void RemoveTextParameter(ModuleTextParameter textParameter)
+        {
+            var exists = _moduleTextParameters.Find(x => x.Id == textParameter.Id);
+            if (exists is null)
+                return;
+
+            _moduleTextParameters.Remove(textParameter);
+        }
+
+        public void RemoveNumericParameter(ModuleNumericParameter numericParameter)
+        {
+            var exists = _moduleNumericParameters.Find(x => x.Id == numericParameter.Id);
+            if (exists is null)
+                return;
+
+            _moduleNumericParameters.Remove(numericParameter);
+        }
+
+        private Operation<bool, string> CheckRequaredParameters(Component? component = null)
+        {
+            //проверяем наличие параметров, которые должны быть при создании
+            var requaredParameters = ModuleRequaredParameters.Parameters.Where(x => x.Dependencies is null).ToList();
+
+            if (requaredParameters.Count == 0)
+                return Operation.Error("Default ModuleRequaredParameters not found");
+
+            if (requaredParameters
+                .Select(x => x.Parameter)
+                .FirstOrDefault(x =>
+                (
+                    ModuleNumericParameters is null || !ModuleNumericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
+                    && (ModuleTextParameters is null || !ModuleTextParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
+                ) is not null)
+                return Operation.Error("Required parameters are missing from the module");
+
+            if (component is null)
+                return true;
+
+            //проверяем параметры, которые необходимы для компонента
+            requaredParameters = [..ModuleRequaredParameters.Parameters
+                .Where(x => x.Dependencies is not null).ToList()];
+
+            requaredParameters = [..requaredParameters
+                .Where(x => x.Dependencies
+                    .Select(x => x.ComponentsTypeTitle).Contains(component.ComponentType.Title.Value))];
+
+            if (requaredParameters.Count == 0)
+                return true;
+
+            requaredParameters = [.. requaredParameters
+                .Where(x => x.Dependencies
+                    .Select(x => x.ComponentsTitle).Contains(component.Title.Value))];
+
+            if (requaredParameters.Count == 0)
+                return true;
+
+            if (requaredParameters
+                .Select(x => x.Parameter)
+                .FirstOrDefault(x =>
+                (
+                    ModuleNumericParameters is null || !ModuleNumericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
+                    && (ModuleTextParameters is null || !ModuleTextParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
+                ) is not null)
+                return Operation.Error("Required parameters are missing from the module");
+
+            return true;
+        }
+
+        public ModuleDto ConvertToDto()
+            => new()
+            {
+                ModuleCode = Code,
+                ModuleType = ModuleType.Title.Value,
+                ModuleTypeCode = ModuleType.Code,
+                Components = [.. Components
+                    .Select(x => 
+                        new ComponentDto() 
+                        {
+                            ComponentCode = x.Code,
+                            ComponentTitle = x.Title.Value,
+                            ComponentTypeTitle = x.ComponentType?.Title.Value,
+                            ComponentTypeCode = x.ComponentType?.Code
+                        })],
+                ModuleNumericParameters = [.. ModuleNumericParameters
+                    .Select(x => 
+                    new NumericParameterDto()
+                    { 
+                        Type = x.ParameterType.Title.Value,
+                        TypeCode = x.ParameterType.Code,
+                        Value = x.Value
+                    })],
+                ModuleTextParameters = [.. ModuleTextParameters
+                    .Select(x => 
+                    new TextParameterDto()
+                    {
+                        Type = x.ParameterType.Title.Value,
+                        TypeCode = x.ParameterType.Code,
+                        Value = x.Value.Value
+                    })]
+            };
     }
 }

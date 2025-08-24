@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Calabonga.AspNetCore.AppDefinitions" Version="3.0.0" />
     <PackageReference Include="Calabonga.UnitOfWork" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
   </ItemGroup>

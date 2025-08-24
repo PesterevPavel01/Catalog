@@ -10,13 +10,13 @@ namespace Catalog.Infrastructure.Configurations
         protected override void AddBuilder(EntityTypeBuilder<Component> builder)
         {
             builder
-                .HasMany(x => x.TextParameters)
+                .HasMany(x => x.ComponentTextParameters)
                 .WithOne()
                 .HasForeignKey(x => x.ComponentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder
-                .HasMany(x => x.NumericParameters)
+                .HasMany(x => x.ComponentNumericParameters)
                 .WithOne()
                 .HasForeignKey(x => x.ComponentId)
                 .OnDelete(DeleteBehavior.Restrict);

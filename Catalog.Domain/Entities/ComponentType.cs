@@ -7,7 +7,7 @@ namespace Catalog.Domain.Entities
     public class ComponentType : SimpleEntity
     {
         private readonly List<Component> _components = [];
-        private ComponentType(TitleValue title, CodeValue code, Guid id) : base(title, code, id)
+        private ComponentType(TitleValue title, string code, Guid id) : base(title, code, id)
         {
         }
 
@@ -28,12 +28,7 @@ namespace Catalog.Domain.Entities
             if (!titleValue.Ok)
                 return Operation.Error(titleValue.Error);
 
-            var codeValue = CodeValue.Create(code);
-
-            if (!codeValue.Ok)
-                return Operation.Error(codeValue.Error);
-
-            return new ComponentType(titleValue.Result, codeValue.Result, Guid.Empty);
+            return new ComponentType(titleValue.Result, code, Guid.Empty);
         }
 
         public IReadOnlyCollection<Component> Components => _components.AsReadOnly();
