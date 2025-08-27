@@ -32,6 +32,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                 {
                     await bus.Subscribe<OrderCreatedEvent>();
                     await bus.Subscribe<ComponentCreatedEvent>();
+                    await bus.Subscribe<ApprovalCompletedEvent>();
                 }
             );
 

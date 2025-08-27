@@ -1,10 +1,11 @@
 ﻿using Calabonga.OperationResults;
-using Catalog.Contracts.Dto;
 using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Catalog.Domain.Entities
 {
@@ -65,6 +66,8 @@ namespace Catalog.Domain.Entities
             return module.Result;
         }
 
+        public bool IsCostom => CheckCostomComponent();
+
         public IReadOnlyCollection<Component> Components => _components.AsReadOnly();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
 
@@ -109,45 +112,60 @@ namespace Catalog.Domain.Entities
             return ConvertToDto();
         }
 
-        public void AddTextParameter(ModuleTextParameter textParameter)
+        public Operation<Module, string> AddTextParameter(ModuleTextParameter textParameter)
         {
-            if (textParameter.Id != Guid.Empty)
-            {
-                var exists = _moduleTextParameters.Find(x => x.Id == textParameter.Id);
-                if (exists is not null)
-                    return;
-            }
+            var exists = _moduleTextParameters.FirstOrDefault(x => x.Id == textParameter.Id);
+
+            if (exists is not null && textParameter.Id != Guid.Empty)
+                return Operation.Error("the module already has this parameter");
+
+           exists = _moduleTextParameters.FirstOrDefault(x => x.ParameterType == textParameter.ParameterType && x.Value == textParameter.Value);
+
+            if (exists is not null)
+                return Operation.Error("the module already has this parameter");
 
             _moduleTextParameters.Add(textParameter);
+
+            return this;
         }
 
-        public void AddNumericParameter(ModuleNumericParameter numericParameter)
+        public Operation<Module, string> AddNumericParameter(ModuleNumericParameter numericParameter)
         {
-            if (numericParameter.Id != Guid.Empty)
-            {
-                var exists = _moduleNumericParameters.Find(x => x.Id == numericParameter.Id);
-                if (exists is not null)
-                    return;
-            }
+            var exists = _moduleNumericParameters.FirstOrDefault(x => x.Id == numericParameter.Id);
+
+            if (exists is not null && numericParameter.Id != Guid.Empty)
+                return Operation.Error("the module already has this parameter");
+
+            exists = _moduleNumericParameters.FirstOrDefault(x => x.ParameterType == numericParameter.ParameterType && x.Value == numericParameter.Value);
+
+            if (exists is not null)
+                return Operation.Error("the module already has this parameter");
+
             _moduleNumericParameters.Add(numericParameter);
+
+            return this;
         }
 
-        public void RemoveTextParameter(ModuleTextParameter textParameter)
+        public Operation<Module, string> RemoveTextParameter(ModuleTextParameter textParameter)
         {
             var exists = _moduleTextParameters.Find(x => x.Id == textParameter.Id);
             if (exists is null)
-                return;
+                return Operation.Error("parameter not found!");
 
             _moduleTextParameters.Remove(textParameter);
+
+            return this;
         }
 
-        public void RemoveNumericParameter(ModuleNumericParameter numericParameter)
+        public Operation<Module, string> RemoveNumericParameter(ModuleNumericParameter numericParameter)
         {
             var exists = _moduleNumericParameters.Find(x => x.Id == numericParameter.Id);
             if (exists is null)
-                return;
+                return Operation.Error("parameter not found!"); 
 
             _moduleNumericParameters.Remove(numericParameter);
+
+            return this;
         }
 
         private Operation<bool, string> CheckRequaredParameters(Component? component = null)
@@ -207,30 +225,32 @@ namespace Catalog.Domain.Entities
                 ModuleType = ModuleType.Title.Value,
                 ModuleTypeCode = ModuleType.Code,
                 Components = [.. Components
-                    .Select(x => 
-                        new ComponentDto() 
-                        {
-                            ComponentCode = x.Code,
-                            ComponentTitle = x.Title.Value,
-                            ComponentTypeTitle = x.ComponentType?.Title.Value,
-                            ComponentTypeCode = x.ComponentType?.Code
-                        })],
+                    .Select(x => x.ConvertToDto())],
                 ModuleNumericParameters = [.. ModuleNumericParameters
-                    .Select(x => 
-                    new NumericParameterDto()
-                    { 
-                        Type = x.ParameterType.Title.Value,
-                        TypeCode = x.ParameterType.Code,
-                        Value = x.Value
-                    })],
+                    .Select(x => x.ConvertToDto())],
                 ModuleTextParameters = [.. ModuleTextParameters
-                    .Select(x => 
-                    new TextParameterDto()
-                    {
-                        Type = x.ParameterType.Title.Value,
-                        TypeCode = x.ParameterType.Code,
-                        Value = x.Value.Value
-                    })]
+                    .Select(x => x.ConvertToDto())]
             };
+
+        public static Func<IQueryable<Module>, IIncludableQueryable<Module, object>> IncludeRequaredField()
+            =>
+            query => query
+                .Include(x => x.Components)
+                    .ThenInclude(x => x.ComponentType)
+                .Include(x => x.ModuleType)
+                .Include(x => x.ModuleNumericParameters)
+                    .ThenInclude(x => x.ParameterType)
+                .Include(x => x.ModuleTextParameters)
+                    .ThenInclude(x => x.ParameterType);
+
+        private bool CheckCostomComponent ()
+        {
+            var customComponents = Components.FirstOrDefault(x => x.Title.Value.ToLower() == "нестандартный");
+
+            if (customComponents is not null) 
+                return true;
+
+            return false;
+        }
     }
 }

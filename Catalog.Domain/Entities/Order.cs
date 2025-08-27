@@ -2,6 +2,9 @@
 using Catalog.Domain.Entities.Autorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
+using Catalog.Contracts.Dto.Order;
 
 namespace Catalog.Domain.Entities
 {
@@ -12,6 +15,7 @@ namespace Catalog.Domain.Entities
         protected Order(TitleValue title, string code, Guid id) : base(title, code, id)
         {
         }
+
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         public ApplicationUser ApplicationUser { get; private set; }
         public Guid ApplicationUserId { get; private set; }
@@ -56,5 +60,30 @@ namespace Catalog.Domain.Entities
 
             _orderItems.Remove(orderItem);
         }
+
+        public static Func<IQueryable<Order>, IIncludableQueryable<Order, object>> IncludeRequaredField()
+            => query => query
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.Components)
+                            .ThenInclude(c => c.ComponentNumericParameters)
+                                .ThenInclude(tp => tp.ParameterType)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.Components)
+                            .ThenInclude(c => c.ComponentTextParameters)
+                                .ThenInclude(tp => tp.ParameterType)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.ModuleType)
+                .Include(x => x.ApplicationUser);
+
+        public OrderDto ConvertToDto()
+            => new()
+            {
+                Code = this.Code,
+                Modules = [.. OrderItems.Select(x => x.ConvertToDto())],
+                UserName = ApplicationUser.UserName
+            };
     }
 }

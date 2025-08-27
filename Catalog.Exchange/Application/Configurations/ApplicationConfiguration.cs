@@ -4,6 +4,8 @@ namespace Catalog.ExchangeService.Application.Configurations
 {
     public sealed record ApplicationConfiguration 
     {
-        public List<ComponentRequaredRarameter> ComponentRequaredProperties { get; set; }
+        public List<ComponentRequaredRarameter> ComponentRequaredParameters { get; set; }
+
+        public List<String> ComponentMultipleParameters { get; set; }
     }
 }

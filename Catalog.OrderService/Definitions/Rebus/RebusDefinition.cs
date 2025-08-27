@@ -19,7 +19,7 @@ namespace Catalog.OrderService.Definitions.Rebus
                 config
                 .Logging(x => x.Serilog(Log.Logger))
                 .Serialization(x => x.UseSystemTextJson())
-                .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, "IOrderQueueEvent"))
+                .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IOrderQueueEvent)))
                 .Options(x =>
                 {
                     x.SetNumberOfWorkers(5);//кол-во потоков
@@ -30,7 +30,7 @@ namespace Catalog.OrderService.Definitions.Rebus
             }
             , onCreated: async bus =>
             {
-                await bus.Subscribe<OrderCreatedEvent>();
+                //await bus.Subscribe<OrderCreatedEvent>();
             }
             );
 

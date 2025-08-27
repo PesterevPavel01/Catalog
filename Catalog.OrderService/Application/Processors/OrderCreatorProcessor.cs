@@ -15,14 +15,16 @@ namespace Catalog.OrderService.Application.Processors
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Operation<OrderDto, string>> ProcessAsync(OrderDto model, CancellationToken cancellationToken) 
+        public async Task<Operation<OrderDto, string>> ProcessAsync(CreateOrderDto model, CancellationToken cancellationToken) 
         {
 
             var modelModules = model.OrderItems.Select(model => model.ModuleCode).ToList();
 
-            var modules = (await _unitOfWork.GetRepository<Module>().GetAllAsync(
-                trackingType: TrackingType.Tracking))
-            .Where(entity => modelModules.Contains(entity.Code)).ToList();
+            var modules = await _unitOfWork
+                .GetRepository<Module>().GetAllAsync(
+                    predicate: entity => modelModules.Contains(entity.Code),
+                    trackingType: TrackingType.Tracking,
+                    include: Module.IncludeRequaredField());
 
             List<OrderItem> orderItems = [];
 
@@ -43,7 +45,8 @@ namespace Catalog.OrderService.Application.Processors
             var user = await _unitOfWork
                 .GetRepository<ApplicationUser>()
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.UserName == model.UserName);
+                    predicate: x => x.UserName == model.UserName,
+                    trackingType: TrackingType.Tracking);
 
             if (user is null)
                 return Operation.Error("User not found!");
@@ -58,11 +61,14 @@ namespace Catalog.OrderService.Application.Processors
             var result = await _unitOfWork.SaveChangesAsync();
 
             if (_unitOfWork.Result.Exception is not null)
-                throw new Exception(_unitOfWork.Result.Exception.Message);
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Operation.Error(_unitOfWork.Result.Exception.Message);
+            }
 
             await transaction.CommitAsync(cancellationToken);
 
-            return new OrderDto() {OrderCode = orderResult.Result.Code, OrderTitle = orderResult.Result.Title.Value, UserName = user.UserName };
+            return orderResult.Result.ConvertToDto();
         }
     }
 }

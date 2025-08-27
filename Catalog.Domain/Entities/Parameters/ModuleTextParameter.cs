@@ -1,4 +1,5 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.Dto;
 using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.ValueObjects;
 

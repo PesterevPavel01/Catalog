@@ -2,7 +2,7 @@
 using Calabonga.UnitOfWork;
 using Catalog.Infrastructure;
 
-namespace Catalog.Web.Definitions.UoW
+namespace Catalog.OrderService.Definitions.UoW
 {
     public class UnitOfWorkDefinition : AppDefinition
     {

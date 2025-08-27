@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Catalog.Domain.Dto
+namespace Catalog.Contracts.Dto.Order
 {
-    public sealed class OrderItemDto
+    public sealed class CreateOrderItemDto
     {
         [Required]
         public string ModuleCode { get; set; } = null!;
 
-        public Int16 Quantity { get; set; }
+        public short Quantity { get; set; }
     }
 }

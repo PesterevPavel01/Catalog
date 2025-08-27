@@ -4,7 +4,7 @@ using Catalog.Contracts.Entities.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Catalog.Web.Definitions.Authorization
+namespace Catalog.OrderService.Definitions.Authorization
 {
     public class AuthorizationDefinition : AppDefinition
     {

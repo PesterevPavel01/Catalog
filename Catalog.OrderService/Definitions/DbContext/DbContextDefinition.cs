@@ -3,7 +3,7 @@ using Catalog.Infrastructure;
 using Interceptors;
 using Microsoft.EntityFrameworkCore;
 
-namespace Catalog.Web.Definitions.DbContext
+namespace Catalog.OrderService.Definitions.DbContext
 {
     public class DbContextDefinition : AppDefinition
     {

@@ -1,6 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto;
+using Catalog.Contracts.Dto.Components;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Entities;
@@ -119,9 +120,10 @@ namespace Catalog.ExchangeService.Application.Processors
                         .InsertAsync(componentType, cancellationToken);
             }
 
-            var requaredField = _applicationConfiguration.Value.ComponentRequaredProperties;
+            var requaredParameters = _applicationConfiguration.Value.ComponentRequaredParameters;
+            var multiplyParameters = _applicationConfiguration.Value.ComponentMultipleParameters;
 
-            var componentCreateResult = Component.Create(model.ComponentTitle, model.ComponentCode, componentType, requaredField, textParameters, numericParameters);
+            var componentCreateResult = Component.Create(model.ComponentTitle, model.ComponentCode, componentType, multiplyParameters, requaredParameters, textParameters, numericParameters);
 
             if (!componentCreateResult.Ok)
                 return Operation.Error(componentCreateResult.Error);
@@ -138,34 +140,7 @@ namespace Catalog.ExchangeService.Application.Processors
 
             await transaction.CommitAsync(cancellationToken);
 
-            return new List<ComponentDto>(){ new ComponentDto()
-            {
-                ComponentCode = componentCreateResult.Result.Code,
-
-                ComponentTitle = componentCreateResult.Result.Title.Value,
-
-                ComponentTypeCode = componentCreateResult.Result.ComponentType.Code,
-
-                ComponentTypeTitle = componentCreateResult.Result.ComponentType.Title.Value,
-
-                NumericParameters = [.. componentCreateResult.Result.ComponentNumericParameters
-                    .Select(x => 
-                        new NumericParameterDto
-                        {
-                            Type = x.ParameterType.Title.Value,
-                            TypeCode = x.ParameterType.Code,
-                            Value = x.Value
-                        })],
-
-                TextParameters = [.. componentCreateResult.Result.ComponentTextParameters
-                    .Select(x =>
-                        new TextParameterDto
-                        {
-                            Type =x.ParameterType.Title.Value,
-                            TypeCode = x.ParameterType.Code,
-                            Value = x.Value.Value
-                        })],
-            } };
+            return new List<ComponentDto>(){ componentCreateResult.Result.ConvertToDto() };
         }
     }
 }

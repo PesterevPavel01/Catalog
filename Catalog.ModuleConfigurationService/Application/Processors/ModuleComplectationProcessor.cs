@@ -5,11 +5,10 @@ using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Domain.Entities;
 using Catalog.ModuleCompositionValidator;
-using Catalog.OrderService.Application.Configurations;
-using Microsoft.EntityFrameworkCore;
+using Catalog.ModuleConfigurationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 
-namespace Catalog.OrderService.Application.Processors
+namespace Catalog.ModuleConfigurationService.Application.Processors
 {
     public class ModuleComplectationProcessor
     {
@@ -39,13 +38,7 @@ namespace Catalog.OrderService.Application.Processors
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == model.ModuleCode,
                     trackingType: TrackingType.Tracking,
-                    include: query => query
-                        .Include(x => x.Components)
-                        .Include(x => x.ModuleType)
-                        .Include(x => x.ModuleNumericParameters)
-                        .ThenInclude(x => x.ParameterType)
-                        .Include(x => x.ModuleTextParameters)
-                        .ThenInclude(x => x.ParameterType));
+                    include: Module.IncludeRequaredField());
 
             if (module is null)
                 return Operation.Error("Module not found!"); 
@@ -59,12 +52,7 @@ namespace Catalog.OrderService.Application.Processors
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == model.ComponentCode,
                     trackingType: TrackingType.Tracking,
-                    include: query => query
-                        .Include(x => x.ComponentType)
-                        .Include(x => x.ComponentNumericParameters)
-                        .ThenInclude(x => x.ParameterType)
-                        .Include(x => x.ComponentTextParameters)
-                        .ThenInclude(x => x.ParameterType));
+                    include: Component.IncludeRequaredField());
 
             if (component is null)
                 return Operation.Error("Component not found!");
@@ -105,12 +93,7 @@ namespace Catalog.OrderService.Application.Processors
                 .GetAllAsync(
                     predicate: x => x.Modules.FirstOrDefault(x => x.Id == x.Id) != null,
                     trackingType: TrackingType.Tracking,
-                    include: query => query
-                        .Include(x => x.ComponentType)
-                        .Include(x => x.ComponentNumericParameters)
-                        .ThenInclude(x => x.ParameterType)
-                        .Include(x => x.ComponentTextParameters)
-                        .ThenInclude(x => x.ParameterType));
+                    include: Component.IncludeRequaredField());
 
             foreach (var existingComponent in existingComponents)
             {

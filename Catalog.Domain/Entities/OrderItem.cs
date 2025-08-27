@@ -1,4 +1,5 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities.Base;
 
 namespace Catalog.Domain.Entities
@@ -34,5 +35,12 @@ namespace Catalog.Domain.Entities
             Module = module;
             return this;
         }
+
+        public OrderItemDto ConvertToDto()
+        => new() 
+        { 
+            Module = this.Module.ConvertToDto(),
+            Quantity = this.Quantity,
+        };
     }
 }

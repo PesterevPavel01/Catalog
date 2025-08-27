@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
 
-namespace Catalog.Web.Endpoints
+namespace Catalog.OrderService.Endpoints
 {
     public class OrderEndpoint: AppDefinition
     {
@@ -30,20 +30,21 @@ namespace Catalog.Web.Endpoints
                 .HasApiVersion(new ApiVersion(2, 0));
 
         group.MapPost("Create", async (
-                [FromServices] IOptions <ApplicationConfiguration> applicationConfiguration,
-                [FromBody] OrderDto model,
-                [FromServices] IBus bus,
+                [FromBody] CreateOrderDto model,
+                IOptions <ApplicationConfiguration> applicationConfiguration,
+                IBus bus,
                 OrderCreatorProcessor orderProcessor,
                 CancellationToken cancellationToken) =>
             {
-                /*var result = await orderProcessor.ProcessAsync(model, cancellationToken);
+                var result = await orderProcessor.ProcessAsync(model, cancellationToken);
 
-                if(result.Ok)
-                    await bus.Publish(new OrderCreatedEvent(result.Result.OrderCode));*/
-
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
+               
+                await bus.Publish(new OrderCreatedEvent(result.Result.Code));
                 //await bus.Publish(new OrderCreatedEvent(Guid.NewGuid().ToString()));
 
-                return Results.Ok(applicationConfiguration.Value);
+                return Results.Ok(result.Result);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)
@@ -54,24 +55,42 @@ namespace Catalog.Web.Endpoints
                 Summary = "Создание нового заказа.",
                 Description = @"
                 {
-                  ""moduleCode"": ""35a56634-cc84-4aef-94a2-5e9da07a16d0"",
-                  ""componentCode"": ""00080196471""
+                  ""orderItems"": [
+                    {
+                      ""moduleCode"": ""0aa3d8ce-3e61-4ca7-b10c-b3221f223b7b"",
+                      ""quantity"": 3
+                    }
+                  ],
+                  ""userName"": ""Administrator""
                 }"
             });
 
-            group.MapGet("Test", async (
+            group.MapGet("GetAll", async (
                 [FromServices] IBus bus,
+                OrderLoaderProcessor orderLoaderProcessor,
                 CancellationToken cancellationToken) =>
             {
-                await bus.Publish(new OrderCreatedEvent(Guid.NewGuid().ToString()));
+                var result = await orderLoaderProcessor
+                    .ProcessAsync(
+                        predicate: x => x.Enabled,
+                        cancellationToken);
 
-                return Results.Ok("TestController");
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
+
+                if (result.Ok)
+                    await bus.Publish(new OrderCreatedEvent(result.Result.First().Code));
+
+                return Results.Ok(result.Result);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)
-            .WithName("GetTestEndpoint")
-            .WithOpenApi();
+            .WithName("GetAllOrderEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Просмотр заказов."
+            });
         }
     }
 

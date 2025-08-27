@@ -2,7 +2,8 @@
 {
     public record ComponentRequaredRarameter 
     {
-        public string ComponentType { get; set; }
-        public List<string> Fields { get; set; }
+        public required string ComponentType { get; set; }
+        public string? ComponentTitle { get; set; }
+        public required List<string> Parameters { get; set; }
     }
 }

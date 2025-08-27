@@ -28,9 +28,9 @@ namespace Catalog.ApprovalService.Definitions.Rebus
 
                 return config;
             }, onCreated: async bus =>
-            {
-                await bus.Subscribe<OrderCreatedEvent>();
-            }
+                {
+                    await bus.Subscribe<ModuleCreatedEvent>();
+                }
             );
 
             builder.Services.AutoRegisterHandlersFromAssemblyOf<ApprovalAssemblyReference>();

@@ -3,15 +3,15 @@ using Calabonga.AspNetCore.AppDefinitions;
 
 namespace Catalog.Web.Endpoints
 {
-    public class ApprovalEndpoint: AppDefinition
+    public class NotificationEndpoint: AppDefinition
     {
         public override void ConfigureApplication(WebApplication app)
-            => app.MapApprovalEndpoints();
+            => app.MapNotificationEndpoints();
     }
 
     internal static class OrderEndpointDefinitionExtensions
     {
-        public static async Task MapApprovalEndpoints(this IEndpointRouteBuilder routes)
+        public static async Task MapNotificationEndpoints(this IEndpointRouteBuilder routes)
         {
             var versionSet = routes.NewApiVersionSet()
                 .HasApiVersion(new ApiVersion(2, 0))
@@ -25,12 +25,12 @@ namespace Catalog.Web.Endpoints
             group.MapGet("Test", async (
                 CancellationToken cancellationToken) =>
                 {
-                    return Results.Ok("GetApprovalTestEndpoint");
+                    return Results.Ok("GetNotificationTestEndpoint");
                 })
-            //.RequireAuthorization("Administrator")
+            .RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)
-            .WithName("GetApprovalTestEndpoint")
+            .WithName("GetNotificationTestEndpoint")
             .WithOpenApi();
         }
     }

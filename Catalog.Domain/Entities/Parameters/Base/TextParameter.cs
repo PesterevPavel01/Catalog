@@ -1,4 +1,5 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.Dto;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.Enum;
 using Catalog.Domain.ValueObjects;
@@ -29,5 +30,13 @@ namespace Catalog.Contracts.Entities.Parameters.Base
 
             return true;
         }
+
+        public TextParameterDto ConvertToDto()
+            => new TextParameterDto()
+            {
+                Type = ParameterType.Title.Value,
+                TypeCode = ParameterType.Code,
+                Value = Value.Value
+            };
     }
 }

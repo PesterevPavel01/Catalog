@@ -2,7 +2,7 @@
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.OrderService.Application.Configurations;
 
-namespace Catalog.Web.Definitions.Configurations
+namespace Catalog.OrderService.Definitions.Configurations
 {
     public static class ConfigurationDefinition
     {

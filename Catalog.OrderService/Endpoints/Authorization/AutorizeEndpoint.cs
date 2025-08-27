@@ -4,7 +4,7 @@ using Catalog.Application.Processors.AuthorizationProcessor;
 using Catalog.Domain.Dto.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Catalog.Web.Endpoints.Authorization
+namespace Catalog.OrderService.Endpoints.Authorization
 {
     public class AutorizeEndpoint : AppDefinition
     {

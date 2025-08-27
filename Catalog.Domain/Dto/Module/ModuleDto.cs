@@ -1,4 +1,6 @@
-﻿namespace Catalog.Contracts.Dto.Module
+﻿using Catalog.Contracts.Dto.Components;
+
+namespace Catalog.Contracts.Dto.Module
 {
     public sealed class ModuleDto
     {

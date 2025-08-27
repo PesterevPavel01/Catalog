@@ -36,9 +36,13 @@ namespace Catalog.ComponentCompatibilityValidator
                     return result;
             }
 
-            foreach (var textParameter in targetComponent.ComponentTextParameters)
+            var textParameterTypes = targetComponent.ComponentTextParameters.Select(x => x.ParameterType);
+
+            foreach (var textParameterType in textParameterTypes)
             {
-                var result = CheckTextParameter(textParameter, targetComponent, existingComponent);
+                var targetParameters = targetComponent.ComponentTextParameters.Where(x => x.ParameterType.Code == textParameterType.Code).ToList();
+
+                var result = CheckTextParameter(targetParameters, targetComponent, existingComponent);
 
                 if (!result.Ok)
                     return result;
@@ -47,9 +51,9 @@ namespace Catalog.ComponentCompatibilityValidator
             return true;
         }
 
-        private Operation<bool, string> CheckTextParameter(ComponentTextParameter targetParameter, Component targetComponent, Component componentToValidate) 
+        private Operation<bool, string> CheckTextParameter(List<ComponentTextParameter> targetParameters, Component targetComponent, Component componentToValidate) 
         {
-            var parameterRules = _componentCompabilityRules.FirstOrDefault(x => x.ComponentParameter == targetParameter.ParameterType.Title.Value);
+            var parameterRules = _componentCompabilityRules.FirstOrDefault(x => x.ComponentParameter == targetParameters.First().ParameterType.Title.Value);
 
             if (parameterRules is null)
                 return true;
@@ -67,11 +71,11 @@ namespace Catalog.ComponentCompatibilityValidator
                 switch (parameterRule.ComparisonRule)
                 {
                     case "Contains":
-                        if (!validationParameters.Select(x => x.Value).Contains(targetParameter.Value))
-                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value} компонента {targetComponent.ComponentType.Title.Value} (код: {targetComponent.Code})! Значение {targetParameter.Value.Value} его свойства {targetParameter.ParameterType.Title.Value} не найдено в списке разрешенных значений({validationParameters.Select(x => x.Value)}) у компонента {componentToValidate.ComponentType.Title} (код: {componentToValidate.Code}), ");
+                        if (!validationParameters.Select(x => x.Value.Value).Intersect(targetParameters.Select(x => x.Value.Value)).Any())
+                            return Operation.Error($"Не выполняется условие для свойства {targetParameters.First().ParameterType.Title.Value} компонента {targetComponent.ComponentType.Title.Value} (код: {targetComponent.Code})! Ни одно значение {targetParameters.Select(x => x.Value.Value)} его свойства {targetParameters.First().ParameterType.Title.Value} не найдено в списке разрешенных значений({validationParameters.Select(x => x.Value.Value)}) у компонента {componentToValidate.ComponentType.Title} (код: {componentToValidate.Code}), ");
                         break;
                     default:
-                        return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: {targetParameter.ParameterType.Title.Value}. Type parameter: {targetParameter.GetType().Name})");
+                        return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: {targetParameters.First().ParameterType.Title.Value}. Type parameter: {targetParameters.First().GetType().Name})");
                 }
             }
             return true;

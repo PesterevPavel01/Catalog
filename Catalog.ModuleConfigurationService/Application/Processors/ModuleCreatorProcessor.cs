@@ -1,16 +1,14 @@
-﻿using System.Data.Common;
-using System.Reflection.Metadata;
-using Calabonga.OperationResults;
+﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enum;
-using Catalog.OrderService.Application.Configurations;
+using Catalog.ModuleConfigurationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 
-namespace Catalog.OrderService.Application.Processors
+namespace Catalog.ModuleConfigurationService.Application.Processors
 {
     public class ModuleCreatorProcessor
     {
@@ -25,20 +23,28 @@ namespace Catalog.OrderService.Application.Processors
 
         public async Task<Operation<ModuleDto, string>> ProcessAsync(CreateModuleDto model, CancellationToken cancellationToken = default)
         {
-            var moduleType = await _unitOfWork
-                .GetRepository<ModuleType>()
-                    .GetFirstOrDefaultAsync(
-                        predicate: x => x.Code == model.ModuleTypeCode,
-                        trackingType: TrackingType.Tracking);
+            var moduleType = await _unitOfWork.GetRepository<ModuleType>()
+                .GetFirstOrDefaultAsync(
+                    predicate: x => x.Code == model.ModuleTypeCode, 
+                    trackingType: TrackingType.Tracking);
 
             if (moduleType is null)
-                return Operation.Error("ModuleType not found!");
+            {
+                var moduleTypeResult = ModuleType.Create(model.ModuleType, model.ModuleTypeCode);
+
+                if (!moduleTypeResult.Ok)
+                    return Operation.Error(moduleTypeResult.Error);
+
+                await _unitOfWork.GetRepository<ModuleType>().InsertAsync(moduleTypeResult.Result, cancellationToken);
+
+                moduleType = moduleTypeResult.Result;
+            }
 
             var parameterTypes = await _unitOfWork
                 .GetRepository<ParameterType>()
                 .GetAllAsync(
-                    predicate: x=>(model.textParameters != null && model.textParameters.Select(p => p.TypeCode).Contains(x.Code))
-                    || (model.numericParameters != null && model.numericParameters.Select(p => p.TypeCode).Contains(x.Code)),
+                    predicate: x=>model.textParameters != null && model.textParameters.Select(p => p.TypeCode).Contains(x.Code)
+                    || model.numericParameters != null && model.numericParameters.Select(p => p.TypeCode).Contains(x.Code),
                     trackingType: TrackingType.Tracking);
 
             //создаю параметры

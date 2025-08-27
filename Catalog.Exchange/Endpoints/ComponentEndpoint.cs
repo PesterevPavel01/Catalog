@@ -1,7 +1,7 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Dto;
-using Catalog.Contracts.Events;
+using Catalog.Contracts.Dto.Components;
+using Catalog.ExchangeService.Application.Description;
 using Catalog.ExchangeService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
@@ -28,7 +28,7 @@ namespace Catalog.Web.Endpoints
 
             group.MapPost("Create", async (
                 [FromBody] ComponentDto model,
-                [FromServices] IBus bus,
+                IBus bus,
                 ComponentCreatorProcessor componentCreatorProcessor,
                 CancellationToken cancellationToken) =>
             {
@@ -37,69 +37,108 @@ namespace Catalog.Web.Endpoints
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
-                if (result.Ok)
-                    await bus.Publish(new ComponentCreatedEvent([.. result.Result.Select( x => x.ComponentCode)]));
+                //if (result.Ok)
+                //    await bus.Publish(new ComponentCreatedEvent([.. result.Result.Select( x => x.ComponentCode)]));
+
+                return Results.Ok(result.Result);
+            })
+            //.RequireAuthorization("Administrator")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("ComponentCreateEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Создание компонента",
+                Description = ComponentCreateEndpointDescription.Description
+            });
+
+            group.MapPost("AddNumericParameter", async (
+                [FromBody] ComponentAddNumericParameterDto model,
+                IBus bus,
+                ComponentAddNumericParameterProcessor componentAddNumericParameterProcessor,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await componentAddNumericParameterProcessor.ProcessAsync(model, cancellationToken);
+
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
 
                 return Results.Ok(result);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)
-            .WithName("ModuleCreateEndpoint")
+            .WithName("AddNumericParameterEndpoint")
             .WithOpenApi(operation => new(operation)
             {
-                Summary = "Создание компонента",
-                Description = @"Пример запроса:<br>
-                {
-                  ""componentCode"": ""00080184744"",
-                  ""componentTitle"": ""Нестандартная"",
-                  ""componentTypeCode"": ""0000000FRZK"",
-                  ""componentTypeTitle"": ""Фрезеровка"",
+                Summary = "Добавить числовой параметр",
+                Description = @"{
+                  ""componentCode"": ""00080185745"",
                   ""numericParameters"": [
                     {
-                      ""type"": ""Минимальная ширина"",
-                      ""typeCode"": ""00000MWDHT"",
-                      ""value"": 150
-                    },
-                    {
-                      ""type"": ""Тип фрезеровки"",
-                      ""typeCode"": ""00000TPFRZ"",
-                      ""value"": 1
-                    }
-                  ]
-                }<br><br>
-                {
-                  ""componentCode"": ""00080196471"",
-                  ""componentTitle"": ""Пленка матовая Венге рифленый 30209-22"",
-                  ""componentTypeCode"": ""00080195637"",
-                  ""componentTypeTitle"": ""ПЛЕНКА ПВХ"",
-                  ""textParameters"": [
-                    {
-                      ""type"": ""Тон"",
-                      ""typeCode"": ""00000000TN"",
-                      ""value"": ""Матовая""
-                    }
-                  ],
-                  ""numericParameters"": [
-                    {
-                      ""type"": ""Тип фрезеровки"",
-                      ""typeCode"": ""00000TPFRZ"",
-                      ""value"": 1
+                      ""type"": ""Максимальная ширина"",
+                      ""typeCode"": ""0000MXWDHT"",
+                      ""value"": 1200
                     }
                   ]
                 }"
             });
 
-            group.MapGet("Test", async (
+
+            group.MapPost("AddTextParameter", async (
+                [FromBody] ComponentAddTextParameterDto model,
+                IBus bus,
+                ComponentAddTextParameterProcessor componentAddTextParameterProcessor,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await componentAddTextParameterProcessor.ProcessAsync(model, cancellationToken);
+
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
+
+                return Results.Ok(result);
+            })
+            //.RequireAuthorization("Administrator")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("AddTextParameterEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Добавить текстовый параметр",
+                Description = @"{
+                  ""componentCode"": ""00080185745"",
+                  ""textParameters"": [
+                    {
+                      ""type"": ""Тон"",
+                      ""typeCode"": ""00000000TN"",
+                      ""value"": ""Матовый""
+                    }
+                  ]
+                }"
+            });
+
+            group.MapGet("All", async (
+                ComponentLoaderProcessor componentLoaderProcessor,
                 CancellationToken cancellationToken) =>
                 {
-                    return Results.Ok("GetModuleTestEndpoint");
+                    var result = await componentLoaderProcessor
+                        .ProcessAsync(
+                            cancellationToken: cancellationToken, 
+                            predicate: x => x.Enabled == true);
+
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
+
+                    return Results.Ok(result.Result);
                 })
             //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)
-            .WithName("GetModuleTestEndpoint")
-            .WithOpenApi();
+            .WithName("GetAllModuleEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Просмотр компонентов"
+            });
         }
     }
 

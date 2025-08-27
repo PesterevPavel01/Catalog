@@ -10,6 +10,9 @@ namespace Catalog.ExchangeService.Definitions.Services
         {
             builder.Services.AddScoped<AuthentificationProcessor>();
             builder.Services.AddScoped<ComponentCreatorProcessor>();
+            builder.Services.AddScoped<ComponentLoaderProcessor>();
+            builder.Services.AddScoped<ComponentAddNumericParameterProcessor>();
+            builder.Services.AddScoped<ComponentAddTextParameterProcessor>();
         }
     }
 }

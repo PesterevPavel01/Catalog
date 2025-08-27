@@ -1,7 +1,7 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentCompatibilityValidator.Extension;
 using Catalog.ModuleCompositionValidator.Extension;
-using Catalog.Web.Definitions.Configurations;
+using Catalog.OrderService.Definitions.Configurations;
 using Serilog;
 using Serilog.Events;
 using TelegramService.DependencyInjection;

@@ -22,7 +22,7 @@ namespace Catalog.OrderService.Application.QueueHandlers
                 message.GetType().Name,
                 message.OrderCode);
 
-            _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name} recived successfully. OrderCode {message.OrderCode}").GetAwaiter().GetResult();
+            //_telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name} recived successfully. OrderCode {message.OrderCode}").GetAwaiter().GetResult();
 
             return Task.CompletedTask;
         }
