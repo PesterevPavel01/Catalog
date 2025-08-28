@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
+using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Autorization;
+using Catalog.Domain.Enum;
 using Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -49,6 +51,16 @@ namespace Catalog.Infrastructure
             var moduleType = ModuleType.Create("Фасад", "00000000FSD",Guid.NewGuid());
 
             modelBuilder.Entity<ModuleType>().HasData(moduleType.Result);
+
+            var parameterType = ParameterType.Create(
+                        title: "CUSTOM COMPONENT",
+                        code: "0000000CSTM",
+                        ParameterValueType.Text,
+                        Guid.NewGuid());
+
+            modelBuilder
+                .Entity<ParameterType>()
+                .HasData(parameterType.Result);
 
             modelBuilder.Entity<ApplicationUser>().HasData(administrator);
         }

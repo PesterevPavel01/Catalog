@@ -18,7 +18,16 @@ namespace Catalog.Contracts.Dto.Module
         public required string ModuleTypeCode { get; set; }
         public string? ModuleCode { get; set; }
         public string? ModuleTitle { get; set; }
-        public List<NumericParameterDto>? numericParameters { get; set; }
-        public List<TextParameterDto>? textParameters { get; set; }
+        public List<NumericParameterDto>? numericParameters { get; set; } = [];
+        public List<TextParameterDto>? textParameters { get; set; } = [];
+    }
+
+    public sealed class UpdateModuleDto
+    {
+        public string? ModuleCode { get; set; }
+        public string? ModuleTitle { get; set; }
+        public required List<ComponentDto> Components { get; set; } = [];
+        public List<NumericParameterDto>? numericParameters { get; set; } = [];
+        public List<TextParameterDto>? textParameters { get; set; } = [];
     }
 }

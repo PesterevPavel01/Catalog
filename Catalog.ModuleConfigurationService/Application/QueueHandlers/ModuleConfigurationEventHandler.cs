@@ -17,13 +17,12 @@ namespace Catalog.ModuleConfigurationService.Application.QueueHandlers
 
         public async Task Handle(ModuleCreatedEvent message)
         {
-            _logger.LogInformation("[{ServiceName}] Event {EventType} recived successfully. Order ID: {OrderId}, Module ID: {ModuleId}",
+            _logger.LogInformation("[{ServiceName}] Event {EventType} recived successfully. Module ID: {ModuleId}",
                 "ModuleConfigurationService".ToUpper(),
                 message.GetType().Name,
-                message.OrderId,
-            message.ModuleId);
+                message.ModuleId);
 
-            await _telegramService.SendMessageAsync($"{"ModuleConfigurationService".ToUpper()} Event {message.GetType().Name} recived successfully. Order ID: {message.OrderId}, Module ID: {message.ModuleId}");
+            await _telegramService.SendMessageAsync($"{"ModuleConfigurationService".ToUpper()} Event {message.GetType().Name} recived successfully. Module ID: {message.ModuleId}");
         }
     }
 }

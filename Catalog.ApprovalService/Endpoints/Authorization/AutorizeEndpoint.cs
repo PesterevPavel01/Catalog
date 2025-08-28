@@ -21,11 +21,11 @@ namespace Catalog.ApprovalService.Endpoints.Authorization
                 .ReportApiVersions()
                 .Build();
 
-            var group = routes.MapGroup("/api/v{version:apiVersion}/Autorize/")
+            var group = routes.MapGroup("/api/v{version:apiVersion}/autorize/")
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(1, 0));
 
-            group.MapPost("Autenticate", async (
+            group.MapPost("autenticate", async (
             [FromBody] LoginDto model,
                 [FromServices] AuthentificationProcessor authentificationProcessor,
                 CancellationToken cancellationToken) =>

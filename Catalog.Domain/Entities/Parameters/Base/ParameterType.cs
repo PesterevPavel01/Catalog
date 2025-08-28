@@ -1,4 +1,5 @@
-﻿using Calabonga.OperationResults;
+﻿using System;
+using Calabonga.OperationResults;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.Enum;
 using Catalog.Domain.ValueObjects;
@@ -17,7 +18,7 @@ namespace Catalog.Contracts.Entities.Parameters.Base
             Type = type;
         }
 
-        public static Operation<ParameterType, string> Create(string title, string code, ParameterValueType type)
+        public static Operation<ParameterType, string> Create(string title, string code, ParameterValueType type, Guid? id = null)
         {
             if (string.IsNullOrWhiteSpace(title))
             {
@@ -34,7 +35,7 @@ namespace Catalog.Contracts.Entities.Parameters.Base
             if (!titleValue.Ok)
                 return Operation.Error(titleValue.Error);
 
-            return new ParameterType(titleValue.Result, code, Guid.Empty, type);
+            return new ParameterType(titleValue.Result, code,id: id ?? Guid.Empty, type);
         }
 
         public ParameterValueType Type {  get; private set; }

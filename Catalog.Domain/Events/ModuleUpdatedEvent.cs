@@ -2,7 +2,8 @@
 
 namespace Catalog.Contracts.Events
 {
-    public sealed record ApprovalCompletedEvent(Guid ModuleId) : IExchangeQueueEvent
+    public sealed record ModuleUpdatedEvent(Guid ModuleId) : IExchangeQueueEvent
     {
+
     }
 }

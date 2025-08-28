@@ -30,6 +30,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
             }, onCreated: async bus =>
                 {
                     await bus.Subscribe<ModuleCreatedEvent>();
+                    await bus.Subscribe<ModuleUpdatedEvent>();
                 }
             );
 

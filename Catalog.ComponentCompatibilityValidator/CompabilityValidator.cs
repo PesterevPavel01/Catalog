@@ -36,7 +36,12 @@ namespace Catalog.ComponentCompatibilityValidator
                     return result;
             }
 
-            var textParameterTypes = targetComponent.ComponentTextParameters.Select(x => x.ParameterType);
+            var textParameterTypes = targetComponent.ComponentTextParameters
+                .GroupBy(x => x.ParameterType.Id)
+                .Select(r => 
+                    new {
+                            r.First().ParameterType.Code
+                    }).ToArray();
 
             foreach (var textParameterType in textParameterTypes)
             {
@@ -71,7 +76,7 @@ namespace Catalog.ComponentCompatibilityValidator
                 switch (parameterRule.ComparisonRule)
                 {
                     case "Contains":
-                        if (!validationParameters.Select(x => x.Value.Value).Intersect(targetParameters.Select(x => x.Value.Value)).Any())
+                        if (!validationParameters.Select(x => x.Value).Intersect(targetParameters.Select(x => x.Value)).Any())
                             return Operation.Error($"Не выполняется условие для свойства {targetParameters.First().ParameterType.Title.Value} компонента {targetComponent.ComponentType.Title.Value} (код: {targetComponent.Code})! Ни одно значение {targetParameters.Select(x => x.Value.Value)} его свойства {targetParameters.First().ParameterType.Title.Value} не найдено в списке разрешенных значений({validationParameters.Select(x => x.Value.Value)}) у компонента {componentToValidate.ComponentType.Title} (код: {componentToValidate.Code}), ");
                         break;
                     default:

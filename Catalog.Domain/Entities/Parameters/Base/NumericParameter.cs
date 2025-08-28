@@ -2,6 +2,7 @@
 using Catalog.Contracts.Dto;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.Enum;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Catalog.Contracts.Entities.Parameters.Base
 {
@@ -31,11 +32,17 @@ namespace Catalog.Contracts.Entities.Parameters.Base
         }
 
         public NumericParameterDto ConvertToDto()
-            => new NumericParameterDto()
+        {
+            var model = new NumericParameterDto()
             {
                 Type = ParameterType.Title.Value,
                 TypeCode = ParameterType.Code,
                 Value = Value
             };
+
+            model.SetId(Id);
+
+            return model;
+        }
     }
 }

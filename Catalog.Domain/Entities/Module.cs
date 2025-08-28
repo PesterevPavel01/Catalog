@@ -1,7 +1,6 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Entities.Parameters;
-using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -54,9 +53,21 @@ namespace Catalog.Domain.Entities
 
             module.Result.ModuleRequaredParameters = moduleRequaredParameters;
 
-            textParameters?.ForEach(x => module.Result.AddTextParameter(x));
+            if (textParameters is not null)
+                foreach (var item in textParameters)
+                {
+                    var operationResult = module.Result.AddTextParameter(item);
+                    if (!operationResult.Ok)
+                        return Operation.Error(operationResult.Error);
+                }
 
-            numericParameters?.ForEach(x => module.Result.AddNumericParameter(x));
+            if (numericParameters is not null)
+                foreach (var item in numericParameters)
+                {
+                    var operationResult = module.Result.AddNumericParameter(item);
+                    if (!operationResult.Ok)
+                        return Operation.Error(operationResult.Error);
+                }
 
             var checkRequaredParametersResult = module.Result.CheckRequaredParameters();
 
@@ -64,6 +75,43 @@ namespace Catalog.Domain.Entities
                 return Operation.Error(checkRequaredParametersResult.Error);
 
             return module.Result;
+        }
+
+        public Operation<Module, string> Update(
+            List<ModuleRequaredParameter> requaredParameters,
+            List<ModuleTextParameter>? textParameters = null,
+            List<ModuleNumericParameter>? numericParameters = null,
+            List<Component>? components = null)
+        {
+            var moduleRequaredParameters = requaredParameters.FirstOrDefault(x => x.ModuleType == ModuleType.Title.Value);
+
+            if (moduleRequaredParameters == null)
+                return Operation.Error("ModuleRequaredParameters not found");
+
+            ModuleRequaredParameters = moduleRequaredParameters;
+
+            if (textParameters is not null)
+                foreach (var item in textParameters)
+                {
+                    var operationResult = AddTextParameter(item);
+                    if (!operationResult.Ok)
+                        return Operation.Error(operationResult.Error);
+                }
+
+            if (numericParameters is not null)
+                foreach (var item in numericParameters)
+                {
+                    var operationResult = AddNumericParameter(item);
+                    if (!operationResult.Ok)
+                        return Operation.Error(operationResult.Error);
+                }
+
+            var checkRequaredParametersResult = CheckRequaredParameters();
+
+            if (!checkRequaredParametersResult.Ok)
+                return Operation.Error(checkRequaredParametersResult.Error);
+
+            return this;
         }
 
         public bool IsCostom => CheckCostomComponent();
@@ -88,6 +136,7 @@ namespace Catalog.Domain.Entities
         public Operation<ModuleDto,string> AddComponent(Component component)
         {
             var exists = _components.Find(x => x.Id == component.Id);
+            
             if (exists is not null)
                 return ConvertToDto();
 
@@ -104,6 +153,7 @@ namespace Catalog.Domain.Entities
         public Operation<ModuleDto, string> RemoveComponent(Component component)
         {
             var exists = _components.Find(x => x.Id == component.Id);
+            
             if (exists is null)
                 return ConvertToDto(); ;
 
@@ -149,6 +199,7 @@ namespace Catalog.Domain.Entities
         public Operation<Module, string> RemoveTextParameter(ModuleTextParameter textParameter)
         {
             var exists = _moduleTextParameters.Find(x => x.Id == textParameter.Id);
+            
             if (exists is null)
                 return Operation.Error("parameter not found!");
 
@@ -237,16 +288,22 @@ namespace Catalog.Domain.Entities
             query => query
                 .Include(x => x.Components)
                     .ThenInclude(x => x.ComponentType)
+                .Include(x => x.Components)
+                    .ThenInclude(x => x.ComponentTextParameters)
+                        .ThenInclude(x => x.ParameterType)
+                .Include(x => x.Components)
+                    .ThenInclude(x => x.ComponentNumericParameters)
+                        .ThenInclude(x => x.ParameterType)
                 .Include(x => x.ModuleType)
                 .Include(x => x.ModuleNumericParameters)
                     .ThenInclude(x => x.ParameterType)
                 .Include(x => x.ModuleTextParameters)
                     .ThenInclude(x => x.ParameterType);
 
-        private bool CheckCostomComponent ()
+        private bool CheckCostomComponent()
         {
-            var customComponents = Components.FirstOrDefault(x => x.Title.Value.ToLower() == "нестандартный");
-
+            var customComponents = Components.FirstOrDefault(x => x.ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == "0000000CSTM") is not null);
+            
             if (customComponents is not null) 
                 return true;
 

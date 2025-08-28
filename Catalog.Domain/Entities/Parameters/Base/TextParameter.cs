@@ -32,11 +32,17 @@ namespace Catalog.Contracts.Entities.Parameters.Base
         }
 
         public TextParameterDto ConvertToDto()
-            => new TextParameterDto()
+        {
+            var model = new TextParameterDto()
             {
                 Type = ParameterType.Title.Value,
                 TypeCode = ParameterType.Code,
                 Value = Value.Value
             };
+
+            model.SetId(Id);
+
+            return model;
+        }
     }
 }

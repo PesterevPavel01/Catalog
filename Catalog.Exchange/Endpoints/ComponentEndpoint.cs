@@ -22,11 +22,11 @@ namespace Catalog.Web.Endpoints
                 .ReportApiVersions()
                 .Build();
 
-            var group = routes.MapGroup("/api/v{version:apiVersion}/Component/")
+            var group = routes.MapGroup("/api/v{version:apiVersion}/component/")
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0));
 
-            group.MapPost("Create", async (
+            group.MapPost("create", async (
                 [FromBody] ComponentDto model,
                 IBus bus,
                 ComponentCreatorProcessor componentCreatorProcessor,
@@ -36,9 +36,6 @@ namespace Catalog.Web.Endpoints
 
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
-
-                //if (result.Ok)
-                //    await bus.Publish(new ComponentCreatedEvent([.. result.Result.Select( x => x.ComponentCode)]));
 
                 return Results.Ok(result.Result);
             })
@@ -52,7 +49,7 @@ namespace Catalog.Web.Endpoints
                 Description = ComponentCreateEndpointDescription.Description
             });
 
-            group.MapPost("AddNumericParameter", async (
+            group.MapPost("add-numeric-parameter", async (
                 [FromBody] ComponentAddNumericParameterDto model,
                 IBus bus,
                 ComponentAddNumericParameterProcessor componentAddNumericParameterProcessor,
@@ -63,7 +60,7 @@ namespace Catalog.Web.Endpoints
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
-                return Results.Ok(result);
+                return Results.Ok(result.Result);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)
@@ -85,7 +82,7 @@ namespace Catalog.Web.Endpoints
             });
 
 
-            group.MapPost("AddTextParameter", async (
+            group.MapPost("add-text-parameter", async (
                 [FromBody] ComponentAddTextParameterDto model,
                 IBus bus,
                 ComponentAddTextParameterProcessor componentAddTextParameterProcessor,
@@ -96,7 +93,7 @@ namespace Catalog.Web.Endpoints
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
-                return Results.Ok(result);
+                return Results.Ok(result.Result);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)
@@ -109,15 +106,15 @@ namespace Catalog.Web.Endpoints
                   ""componentCode"": ""00080185745"",
                   ""textParameters"": [
                     {
-                      ""type"": ""Тон"",
-                      ""typeCode"": ""00000000TN"",
-                      ""value"": ""Матовый""
+                      ""type"": ""CUSTOM COMPONENT"",
+                      ""typeCode"": ""0000000CSTM"",
+                      ""value"": ""CUSTOM COMPONENT""
                     }
                   ]
                 }"
             });
 
-            group.MapGet("All", async (
+            group.MapGet("all", async (
                 ComponentLoaderProcessor componentLoaderProcessor,
                 CancellationToken cancellationToken) =>
                 {

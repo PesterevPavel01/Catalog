@@ -9,8 +9,11 @@ namespace Catalog.ModuleConfigurationService.Definitions.Services
         public override void ConfigureServices(WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<ModuleCreatorProcessor>();
+            builder.Services.AddScoped<ModuleUpdaterProcessor>();
+            builder.Services.AddScoped<ModuleDataPurgeProcessor>();
             builder.Services.AddScoped<ModuleLoaderProcessor>();
-            builder.Services.AddScoped<ModuleComplectationProcessor>(); 
+            builder.Services.AddScoped<ModuleComplectationProcessor>();
+            builder.Services.AddScoped<ModuleRemoveComponentProcessor>();
             builder.Services.AddScoped<AuthentificationProcessor>();
         }
     }

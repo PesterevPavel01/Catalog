@@ -11,5 +11,15 @@ namespace Catalog.Contracts.Dto
         public string TypeCode { get; set; }
 
         public double Value { get; set; }
+
+        private Guid _id { get; set; }
+
+        public Guid GetId()
+            => _id;
+
+        public void SetId(Guid id)
+        {
+            _id = id;
+        }
     }
 }
