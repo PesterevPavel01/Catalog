@@ -1,5 +1,6 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Application.Processors.AuthorizationProcessor;
+using Catalog.ModuleConfigurationService.Application.Managers;
 using Catalog.ModuleConfigurationService.Application.Processors;
 
 namespace Catalog.ModuleConfigurationService.Definitions.Services
@@ -15,6 +16,9 @@ namespace Catalog.ModuleConfigurationService.Definitions.Services
             builder.Services.AddScoped<ModuleComplectationProcessor>();
             builder.Services.AddScoped<ModuleRemoveComponentProcessor>();
             builder.Services.AddScoped<AuthentificationProcessor>();
+
+            builder.Services.AddScoped<ModuleUpdateManager>();
+            
         }
     }
 }

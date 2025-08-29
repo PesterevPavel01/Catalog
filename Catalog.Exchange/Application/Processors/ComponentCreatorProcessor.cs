@@ -1,6 +1,5 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
-using Catalog.Contracts.Dto;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
@@ -14,11 +13,19 @@ namespace Catalog.ExchangeService.Application.Processors
     public class ComponentCreatorProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IOptions<ApplicationConfiguration> _applicationConfiguration;
+        private readonly List<ComponentRequaredRarameter> _componentRequaredParameters;
+        private readonly List<ComponentRequaredRarameter> _customComponentRequaredParameter;
+        private readonly List<String> _componentMultipleParameters;
         public ComponentCreatorProcessor(IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             _unitOfWork = unitOfWork;
-            _applicationConfiguration = applicationConfiguration;
+
+            _componentRequaredParameters = applicationConfiguration.Value.ComponentRequaredParameters;
+
+            _componentMultipleParameters = applicationConfiguration.Value.ComponentMultipleParameters;
+
+            _customComponentRequaredParameter = applicationConfiguration.Value.CustomComponentRequaredParameters;
+
         }
 
         /// <summary>
@@ -120,10 +127,16 @@ namespace Catalog.ExchangeService.Application.Processors
                         .InsertAsync(componentType, cancellationToken);
             }
 
-            var requaredParameters = _applicationConfiguration.Value.ComponentRequaredParameters;
-            var multiplyParameters = _applicationConfiguration.Value.ComponentMultipleParameters;
-
-            var componentCreateResult = Component.Create(model.ComponentTitle, model.ComponentCode, componentType, multiplyParameters, requaredParameters, textParameters, numericParameters);
+            var componentCreateResult = Component
+                .Create(
+                    title: model.ComponentTitle,
+                    code: model.ComponentCode, 
+                    componentType: componentType, 
+                    componentMultiplyParameters: _componentMultipleParameters,
+                    requaredParameters: _componentRequaredParameters,
+                    customComponentRequaredParameters: _customComponentRequaredParameter,
+                    textParameters,
+                    numericParameters);
 
             if (!componentCreateResult.Ok)
                 return Operation.Error(componentCreateResult.Error);

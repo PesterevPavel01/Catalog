@@ -6,6 +6,8 @@ namespace Catalog.ExchangeService.Application.Configurations
     {
         public List<ComponentRequaredRarameter> ComponentRequaredParameters { get; set; }
 
+        public List<ComponentRequaredRarameter> CustomComponentRequaredParameters { get; set; }
+
         public List<String> ComponentMultipleParameters { get; set; }
     }
 }

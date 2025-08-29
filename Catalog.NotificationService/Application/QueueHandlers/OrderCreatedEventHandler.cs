@@ -1,6 +1,8 @@
 ﻿using Calabonga.UnitOfWork;
 using Catalog.Contracts.Events;
 using Catalog.Domain.Entities;
+using Catalog.NotificationService.Application.Configurations;
+using Microsoft.Extensions.Options;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
 
@@ -12,10 +14,12 @@ namespace Catalog.NotificationService.Application.QueueHandlers
         private readonly ITelegramService _telegramService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public OrderCreatedEventHandler(ILogger<ComponentCreatedEventHandler> logger, ITelegramService telegramService, IUnitOfWork unitOfWork)
+        public OrderCreatedEventHandler(ILogger<ComponentCreatedEventHandler> logger, ITelegramService telegramService, IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             _logger = logger;
             _telegramService = telegramService;
+            var approvalBotConfiguration = applicationConfiguration.Value.ApprovalNotificationBot;
+            _telegramService.Initialize(token: approvalBotConfiguration.Token, chatId: approvalBotConfiguration.ChatId);
             _unitOfWork = unitOfWork;
         }
 

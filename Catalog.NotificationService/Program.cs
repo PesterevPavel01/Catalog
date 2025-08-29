@@ -1,4 +1,5 @@
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.NotificationService.Definitions.Configurations;
 using Serilog;
 using Serilog.Events;
 using TelegramService.DependencyInjection;
@@ -15,6 +16,8 @@ try
 
     // created builder
     var builder = WebApplication.CreateBuilder(args);
+
+    builder.AddApplicationConfiguration();
 
     builder.Services.AddTelegramService();
 

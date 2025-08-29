@@ -6,13 +6,19 @@ namespace TelegramService
 {
     public class TelegramService : ITelegramService
     {
-        private static string _token { get; set; } = "7562655253:AAEKJQnd1YXSXpEXtQJ0NvJSo3C1B-GEN8E";
-        private static TelegramBotClient TelegramBotClient = null!;
-        private static readonly string channelId = "-1002463757906";
+        private string _token;
+        private TelegramBotClient _telegramBotClient = null!;
+        private string _chatId;
 
         public TelegramService()
         {
-            TelegramBotClient = new(_token);
+        }
+
+        public void Initialize(string token, string chatId) 
+        {
+            _token = token;
+            _chatId = chatId;
+            _telegramBotClient = new(_token);
         }
 
         public async Task<Operation<string,string>> SendMessageAsync(string message)
@@ -21,7 +27,7 @@ namespace TelegramService
             {
                 try
                 {
-                    await TelegramBotClient.SendTextMessageAsync(channelId, message);
+                    await _telegramBotClient.SendTextMessageAsync(_chatId, message);
                     return "Уведомление отправлено";
                 }
                 catch (Exception ex)
@@ -41,7 +47,7 @@ namespace TelegramService
             {
                 try
                 {
-                    TelegramBotClient.SendTextMessageAsync(channelId, message).GetAwaiter().GetResult();
+                    _telegramBotClient.SendTextMessageAsync(_chatId, message).GetAwaiter().GetResult();
                     return "Уведомление отправлено";
                 }
                 catch (Exception ex)

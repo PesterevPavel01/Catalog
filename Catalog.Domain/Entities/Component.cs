@@ -1,12 +1,10 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.Dto.Components;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
-using Catalog.Contracts.Dto.Components;
-using System.Linq;
-using Catalog.Contracts.Entities.Parameters.Base;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Catalog.Domain.Entities
 {
@@ -33,6 +31,7 @@ namespace Catalog.Domain.Entities
             ComponentType componentType,
             List<String> componentMultiplyParameters,
             List<ComponentRequaredRarameter> requaredParameters,
+            List<ComponentRequaredRarameter> customComponentRequaredParameters,
             List<ComponentTextParameter>? textParameters = null,
             List<ComponentNumericParameter>? numericParameters = null) 
         {
@@ -73,7 +72,23 @@ namespace Catalog.Domain.Entities
                         return Operation.Error(result.Error);
                 }
 
-            var checkResult = CheckRequaredPaeameters(component, requaredParameters, textParameters, numericParameters);
+            var checkResult = CheckRequaredPaeameters(
+                component: component,
+                requaredParameters: requaredParameters,
+                textParameters: textParameters,
+                numericParameters:numericParameters);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            if (!component.IsCostom)
+                return component;
+
+            checkResult = CheckRequaredPaeameters(
+                component: component,
+                requaredParameters: customComponentRequaredParameters,
+                textParameters: textParameters,
+                numericParameters: numericParameters);
 
             if (!checkResult.Ok)
                 return Operation.Error(checkResult.Error);
@@ -82,32 +97,20 @@ namespace Catalog.Domain.Entities
 
         }
 
+        public bool IsCostom => CheckCostomization();
+
         private static Operation<bool, string> CheckRequaredPaeameters(
             Component component,
-            List<ComponentRequaredRarameter> requaredProperties,
+            List<ComponentRequaredRarameter> requaredParameters,
             List<ComponentTextParameter>? textParameters = null,
             List<ComponentNumericParameter>? numericParameters = null)
         {
-            var requaredParameters = requaredProperties.FirstOrDefault(x => x.ComponentType == component.ComponentType.Title.Value && x.ComponentTitle is null);
+            var currentRequaredParameters = requaredParameters.FirstOrDefault(x => x.ComponentType == component.ComponentType.Title.Value && x.ComponentTitle is null);
 
-            if (requaredParameters is not null)
+            if (currentRequaredParameters is not null)
             {
-                if (requaredParameters is null ||
-                    (requaredParameters.Parameters
-                        .FirstOrDefault(x =>
-                            (
-                                numericParameters is null || !numericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                                && (textParameters is null || !textParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                            ) is not null))
-                    return Operation.Error("У модели отсутствуют обязательные поля");
-            }
-
-            requaredParameters = requaredProperties.FirstOrDefault(x => x.ComponentType == component.ComponentType.Title.Value && x.ComponentTitle == component.Title.Value);
-
-            if (requaredParameters is not null)
-            {
-                if (requaredParameters is null ||
-                    (requaredParameters.Parameters
+                if (currentRequaredParameters is null ||
+                    (currentRequaredParameters.Parameters
                         .FirstOrDefault(x =>
                             (
                                 numericParameters is null || !numericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
@@ -215,5 +218,16 @@ namespace Catalog.Domain.Entities
                     .ThenInclude(x => x.ParameterType)
                     .Include(x => x.ComponentTextParameters)
                     .ThenInclude(x => x.ParameterType);
+
+
+        private bool CheckCostomization()
+        {
+            var customComponents = ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == "0000000CSTM");
+
+            if (customComponents is not null)
+                return true;
+
+            return false;
+        }
     }
 }

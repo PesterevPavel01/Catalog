@@ -23,20 +23,20 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0));
 
-            group.MapPost("all", async (
-                ModuleLoaderProcessor moduleLoaderProcessor,
-                CancellationToken cancellationToken) =>
-            {
-                var result = await moduleLoaderProcessor
-                    .ProcessAsync(
-                        predicate: x => x.Enabled == true,
-                        cancellationToken);
+            group.MapPost("all", 
+                async (ModuleLoaderProcessor moduleLoaderProcessor, CancellationToken cancellationToken) 
+                => 
+                {
+                    var result = await moduleLoaderProcessor
+                        .ProcessAsync(
+                            predicate: x => x.Enabled == true,
+                            cancellationToken);
 
-                if (!result.Ok)
-                    return Results.BadRequest(result.Error);
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
 
-                return Results.Ok(result.Result);
-            })
+                    return Results.Ok(result.Result);
+                })
             //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)

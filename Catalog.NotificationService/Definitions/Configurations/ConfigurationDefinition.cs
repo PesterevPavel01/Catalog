@@ -1,12 +1,15 @@
 ﻿using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
+using Catalog.NotificationService.Application.Configurations;
 
 namespace Catalog.NotificationService.Definitions.Configurations
 {
     public static class ConfigurationDefinition
     {
-        public static void AddSharedConfiguration(this WebApplicationBuilder builder)
+        public static void AddApplicationConfiguration(this WebApplicationBuilder builder)
         {
+            ConfigureApplication(builder);
+
             ConfigureAuthorization(builder);
 
             ConfigureRabbit(builder);
@@ -21,6 +24,11 @@ namespace Catalog.NotificationService.Definitions.Configurations
         {
             builder.Services.Configure<RabbitSettings>(
                 builder.Configuration.GetSection("RabbitMq"));
+        }
+        private static void ConfigureApplication(WebApplicationBuilder builder)
+        {
+            builder.Services.Configure<ApplicationConfiguration>(
+                builder.Configuration.GetSection("ApplicationConfiguration"));
         }
     }
 }

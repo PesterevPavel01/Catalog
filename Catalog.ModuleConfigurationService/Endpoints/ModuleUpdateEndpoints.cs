@@ -5,6 +5,7 @@ using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Events;
 using Catalog.Domain.Entities;
 using Catalog.ModuleConfigurationService.Application.Description;
+using Catalog.ModuleConfigurationService.Application.Managers;
 using Catalog.ModuleConfigurationService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
@@ -34,35 +35,10 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                 [FromBody] UpdateModuleDto model,
                 IBus bus,
                 IUnitOfWork unitOfWork,
-                ModuleDataPurgeProcessor dataPurgeProcessor,
-                ModuleUpdaterProcessor moduleUpdaterProcessor,
-                ModuleComplectationProcessor complectationProcessor,
+                ModuleUpdateManager updateManager,
                 CancellationToken cancellationToken) =>
             {
-                var operationResult = await dataPurgeProcessor.ProcessAsync(model.ModuleCode);
-
-                if (!operationResult.Ok)
-                    return Results.BadRequest(operationResult.Error);
-
-                operationResult = await moduleUpdaterProcessor.ProcessAsync(model, cancellationToken);
-
-                if (!operationResult.Ok)
-                    return Results.BadRequest(operationResult.Error);
-
-                foreach (var component in model.Components)
-                {
-                    operationResult = await complectationProcessor
-                    .ProcessAsync(
-                        new()
-                        {
-                            ComponentCode = component.ComponentCode,
-                            ModuleCode = model.ModuleCode,
-                        },
-                    cancellationToken);
-
-                    if (!operationResult.Ok)
-                        return Results.BadRequest(operationResult.Error);
-                }
+                var operationResult = await updateManager.UpdateAsync(model, cancellationToken);
 
                 var module = await unitOfWork
                     .GetRepository<Module>()
@@ -73,7 +49,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
 
                 await bus.Publish(new ModuleUpdatedEvent(module.Id));
 
-                return Results.Ok(module.ConvertToDto());
+                return Results.Ok(operationResult.Result);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)

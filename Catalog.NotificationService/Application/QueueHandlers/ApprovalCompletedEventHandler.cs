@@ -1,4 +1,6 @@
 ﻿using Catalog.Contracts.Events;
+using Catalog.NotificationService.Application.Configurations;
+using Microsoft.Extensions.Options;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
 
@@ -9,10 +11,12 @@ namespace Catalog.NotificationService.Application.QueueHandlers
         private readonly ILogger<ComponentCreatedEventHandler> _logger;
         private readonly ITelegramService _telegramService;
 
-        public ApprovalCompletedEventHandler(ILogger<ComponentCreatedEventHandler> logger, ITelegramService telegramService)
+        public ApprovalCompletedEventHandler(ILogger<ComponentCreatedEventHandler> logger, ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             _logger = logger;
             _telegramService = telegramService;
+            var approvalBotConfiguration = applicationConfiguration.Value.ApprovalNotificationBot;
+            _telegramService.Initialize(token: approvalBotConfiguration.Token, chatId: approvalBotConfiguration.ChatId);
         }
 
         public async Task Handle(ApprovalCompletedEvent message)

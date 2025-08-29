@@ -8,5 +8,6 @@ namespace TelegramService.Interfaces
         /// Асинхронный метод для отправки сообщения в телеграм
         /// </summary>
         public Task<Operation<string, string>> SendMessageAsync(string message);
+        public void Initialize(string token, string chatId);
     }
 }

@@ -114,7 +114,7 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        public bool IsCostom => CheckCostomComponent();
+        public bool IsCostom => CheckCostomization();
 
         public IReadOnlyCollection<Component> Components => _components.AsReadOnly();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
@@ -300,9 +300,9 @@ namespace Catalog.Domain.Entities
                 .Include(x => x.ModuleTextParameters)
                     .ThenInclude(x => x.ParameterType);
 
-        private bool CheckCostomComponent()
+        private bool CheckCostomization()
         {
-            var customComponents = Components.FirstOrDefault(x => x.ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == "0000000CSTM") is not null);
+            var customComponents = Components.FirstOrDefault(x => x.IsCostom);
             
             if (customComponents is not null) 
                 return true;
