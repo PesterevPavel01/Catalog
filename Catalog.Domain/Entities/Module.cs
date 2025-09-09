@@ -114,7 +114,7 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        public bool IsCostom => CheckCostomization();
+        public bool IsCustom => CheckCostomization();
 
         public IReadOnlyCollection<Component> Components => _components.AsReadOnly();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
@@ -140,6 +140,9 @@ namespace Catalog.Domain.Entities
             if (exists is not null)
                 return ConvertToDto();
 
+            if (_components.FirstOrDefault(x => x.ComponentType.Code == component.ComponentType.Code) is not null)
+                return Operation.Error("Module already has a component of this type!");
+
             var checkRequaredParametersResult = CheckRequaredParameters(component);
 
             if (!checkRequaredParametersResult.Ok)
@@ -155,7 +158,7 @@ namespace Catalog.Domain.Entities
             var exists = _components.Find(x => x.Id == component.Id);
             
             if (exists is null)
-                return ConvertToDto(); ;
+                return ConvertToDto();
 
             _components.Remove(component);
 

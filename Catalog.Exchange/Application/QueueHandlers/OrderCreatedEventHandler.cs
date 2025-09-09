@@ -1,4 +1,4 @@
-﻿using Catalog.Contracts.Events;
+﻿using Catalog.Contracts.Events.OrderEvents;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
 

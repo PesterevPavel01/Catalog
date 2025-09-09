@@ -14,7 +14,7 @@ namespace TelegramService.DependencyInjection
         private static void InitServices(this IServiceCollection services)
         {
 
-            services.AddSingleton<ITelegramService, TelegramService>();
+            services.AddScoped<ITelegramService, TelegramService>();
 
         }
     }

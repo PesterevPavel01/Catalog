@@ -61,7 +61,7 @@ namespace Catalog.Domain.Entities
             _orderItems.Remove(orderItem);
         }
 
-        public static Func<IQueryable<Order>, IIncludableQueryable<Order, object>> IncludeRequaredField()
+        public static Func<IQueryable<Order>, IIncludableQueryable<Order, object>> IncludeRequiredField()
             => query => query
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.Module)

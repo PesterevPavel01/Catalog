@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
 
-namespace Catalog.NotificationService.Application.QueueHandlers
+namespace Catalog.NotificationService.Application.QueueHandlers.ComponentEventHandlers
 {
     public sealed class ComponentCreatedEventHandler : IHandleMessages<ComponentCreatedEvent>
     {

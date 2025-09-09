@@ -2,6 +2,7 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Events;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.OrderService.Application.Configurations;
 using Catalog.OrderService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
@@ -25,11 +26,11 @@ namespace Catalog.OrderService.Endpoints
                 .ReportApiVersions()
                 .Build();
 
-            var group = routes.MapGroup("/api/v{version:apiVersion}/Order/")
+            var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0));
 
-        group.MapPost("Create", async (
+        group.MapPost("create", async (
                 [FromBody] CreateOrderDto model,
                 IOptions <ApplicationConfiguration> applicationConfiguration,
                 IBus bus,

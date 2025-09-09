@@ -28,6 +28,10 @@ namespace Catalog.Infrastructure.Configurations
                 .HasForeignKey(x => x.ModuleId)
                 .HasPrincipalKey(x => x.Id)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne(x => x.ApprovalWorkflow)
+                .WithOne(x => x.OrderItem);
         }
     }
 }

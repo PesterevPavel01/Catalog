@@ -1,8 +1,0 @@
-﻿using Catalog.Contracts.Interfaces;
-
-namespace Catalog.Contracts.Events
-{
-    public sealed record ApprovalCompletedEvent(Guid ModuleId) : IExchangeQueueEvent
-    {
-    }
-}

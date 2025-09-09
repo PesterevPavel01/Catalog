@@ -9,7 +9,7 @@ namespace Catalog.Infrastructure.Configurations.Auth
     {
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
-            builder.ToTable("application_user");
+            builder.ToTable("application_users");
 
             builder.HasKey(x => x.Id);
 
@@ -35,7 +35,12 @@ namespace Catalog.Infrastructure.Configurations.Auth
             builder
                 .HasOne(x => x.UserToken)
                 .WithOne(x => x.User);
-              
+
+            builder
+                .HasMany(x => x.Roles)
+                .WithMany(x => x.ApplicationUsers)
+                .UsingEntity(x => x.ToTable("user_role_items"));
+
         }
     }
 }

@@ -47,6 +47,24 @@ namespace Catalog.Infrastructure
             var administrator = administratorResult.Result;
             administrator.CreatedAt = DateTime.Now;
             administrator.UpdatedAt = default;
+            
+            modelBuilder.Entity<ApplicationUser>().HasData(administrator);
+
+            var technicalUserResult = ApplicationUser
+                .Create(
+                    id: Guid.NewGuid(),
+                    userName: "TECHNICAL_USER"
+                );
+
+            if (!technicalUserResult.Ok)
+                throw new DbUpdateException(technicalUserResult.Error);
+
+            var technicalUser = technicalUserResult.Result;
+            technicalUser.CreatedAt = DateTime.Now;
+            technicalUser.UpdatedAt = default;
+
+            modelBuilder.Entity<ApplicationUser>().HasData(technicalUser);
+
 
             var moduleType = ModuleType.Create("Фасад", "00000000FSD",Guid.NewGuid());
 
@@ -62,7 +80,7 @@ namespace Catalog.Infrastructure
                 .Entity<ParameterType>()
                 .HasData(parameterType.Result);
 
-            modelBuilder.Entity<ApplicationUser>().HasData(administrator);
+
         }
     }
 }

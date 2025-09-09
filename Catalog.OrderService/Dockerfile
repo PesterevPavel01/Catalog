@@ -16,7 +16,10 @@ COPY ["Catalog.OrderService/Catalog.OrderService.csproj", "Catalog.OrderService/
 COPY ["Catalog.Application/Catalog.Application.csproj", "Catalog.Application/"]
 COPY ["Catalog.Domain/Catalog.Contracts.csproj", "Catalog.Domain/"]
 COPY ["Interceptors/Interceptors.csproj", "Interceptors/"]
+COPY ["Catalog.ComponentCompatibilityValidator/Catalog.ComponentCompatibilityValidator.csproj", "Catalog.ComponentCompatibilityValidator/"]
 COPY ["Catalog.Infrastructure/Catalog.Infrastructure.csproj", "Catalog.Infrastructure/"]
+COPY ["Catalog.ModuleCompositionValidator/Catalog.ModuleCompositionValidator.csproj", "Catalog.ModuleCompositionValidator/"]
+COPY ["TelegramService/TelegramService.csproj", "TelegramService/"]
 RUN dotnet restore "./Catalog.OrderService/Catalog.OrderService.csproj"
 COPY . .
 WORKDIR "/src/Catalog.OrderService"

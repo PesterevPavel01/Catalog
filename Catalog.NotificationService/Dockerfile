@@ -13,6 +13,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Catalog.NotificationService/Catalog.NotificationService.csproj", "Catalog.NotificationService/"]
+COPY ["Catalog.Application/Catalog.Application.csproj", "Catalog.Application/"]
+COPY ["Catalog.Domain/Catalog.Contracts.csproj", "Catalog.Domain/"]
+COPY ["Interceptors/Interceptors.csproj", "Interceptors/"]
+COPY ["Catalog.Infrastructure/Catalog.Infrastructure.csproj", "Catalog.Infrastructure/"]
+COPY ["TelegramService/TelegramService.csproj", "TelegramService/"]
 RUN dotnet restore "./Catalog.NotificationService/Catalog.NotificationService.csproj"
 COPY . .
 WORKDIR "/src/Catalog.NotificationService"

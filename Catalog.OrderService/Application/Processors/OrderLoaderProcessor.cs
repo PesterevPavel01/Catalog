@@ -25,7 +25,7 @@ namespace Catalog.OrderService.Application.Processors
                 .GetRepository<Order>()
                 .GetAllAsync(
                     predicate: predicate,
-                    include: Order.IncludeRequaredField(),
+                    include: Order.IncludeRequiredField(),
                     trackingType: TrackingType.NoTracking);
 
             return modules.Select(x => x.ConvertToDto()).ToList();

@@ -11,7 +11,7 @@ namespace Catalog.ModuleConfigurationService.Definitions.DbContext
         {
             var connectionString = builder.Configuration.GetConnectionString("AppDbConnectionString");
 
-            builder.Services.AddSingleton<DateInterceptors>();
+            builder.Services.AddScoped<DateInterceptors>();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {

@@ -31,7 +31,7 @@ namespace Catalog.Infrastructure.Configurations
             builder
                 .HasMany(x => x.Modules)
                 .WithMany(x => x.Components)
-                .UsingEntity(x => x.ToTable("ModuleItems"));
+                .UsingEntity(x => x.ToTable("module_items"));
         }
 
         protected override string TableName()

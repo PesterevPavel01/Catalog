@@ -1,6 +1,9 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Entities.Approval;
 using Catalog.Domain.Entities.Base;
+using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Domain.Entities
 {
@@ -19,6 +22,8 @@ namespace Catalog.Domain.Entities
         public Order Order { get; private set; } = null!;
         public Guid OrderId { get; private set; }
 
+        public ApprovalWorkflow ApprovalWorkflow { get; private set; }
+
         public static Operation<OrderItem, string> Create(Int16 quantity, Module? module)
         {
             if (quantity < 1)
@@ -35,6 +40,19 @@ namespace Catalog.Domain.Entities
             Module = module;
             return this;
         }
+
+        public static Func<IQueryable<OrderItem>, IIncludableQueryable<OrderItem, object>> IncludeRequiredField()
+            => query => query
+                .Include(oi => oi.Module)
+                    .ThenInclude(m => m.Components)
+                        .ThenInclude(c => c.ComponentNumericParameters)
+                            .ThenInclude(tp => tp.ParameterType)
+                .Include(oi => oi.Module)
+                    .ThenInclude(m => m.Components)
+                        .ThenInclude(c => c.ComponentTextParameters)
+                            .ThenInclude(tp => tp.ParameterType)
+                .Include(oi => oi.Module)
+                    .ThenInclude(m => m.ModuleType);
 
         public OrderItemDto ConvertToDto()
         => new() 

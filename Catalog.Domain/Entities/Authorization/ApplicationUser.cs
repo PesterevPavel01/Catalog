@@ -1,15 +1,19 @@
-﻿using Catalog.Domain.Dto;
+﻿using System.Security.Cryptography;
 using System.Text;
-using Catalog.Domain.Entities.Base;
-using System.Security.Cryptography;
-using Catalog.Domain.ValueObjects;
 using Calabonga.OperationResults;
+using Catalog.Contracts.Entities.Approval;
+using Catalog.Contracts.Entities.Authorization;
+using Catalog.Domain.Entities.Base;
+using Catalog.Domain.ValueObjects;
 
 namespace Catalog.Domain.Entities.Autorization
 {
     public class ApplicationUser : Entity
     {
         private readonly List<Order> _orders = [];
+        private readonly List<Role> _roles = [];
+        private readonly List<ApprovalWorkflowItem> _approvalWorkflowItems = [];
+
         private ApplicationUser(Guid id, string userName, PasswordValue password, string? email) : base(id)
         {
             UserName = userName;
@@ -23,8 +27,10 @@ namespace Catalog.Domain.Entities.Autorization
         public UserToken UserToken { get; set; } = null!;
 
         public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
+        public IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
+        public IReadOnlyCollection<ApprovalWorkflowItem> ApprovalWorkflowItems => _approvalWorkflowItems.AsReadOnly();
 
-        public static Operation<ApplicationUser, string> Create(Guid id, string userName, string password, string? email = null)
+        public static Operation<ApplicationUser, string> Create(Guid id, string userName, string? password = "DEFAULT_PASSWORD", string? email = null)
         {
             if (string.IsNullOrWhiteSpace(userName))
             {

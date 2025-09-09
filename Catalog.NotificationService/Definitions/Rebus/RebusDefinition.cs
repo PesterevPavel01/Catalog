@@ -1,6 +1,9 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events;
+using Catalog.Contracts.Events.Approval;
+using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.NotificationService.Definitions;
 using Rebus.Config;
@@ -23,16 +26,15 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(INotificationQueueEvent)))
                 .Options(x =>
                 {
-                    x.SetNumberOfWorkers(5);//кол-во потоков
+                    x.SetNumberOfWorkers(3);//кол-во потоков
                     x.SetBusName("NotificationService");
                 });
 
                 return config;
             }, onCreated: async bus =>
                 {
-                    await bus.Subscribe<OrderCreatedEvent>();
-                    await bus.Subscribe<ComponentCreatedEvent>();
-                    await bus.Subscribe<ApprovalCompletedEvent>();
+                    await bus.Subscribe<WorkflowCreatedEvent>();
+                    await bus.Subscribe<WorkflowCancelledEvent>();
                 }
             );
 

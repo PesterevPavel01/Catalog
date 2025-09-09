@@ -12,23 +12,26 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Catalog.OrderService/Catalog.OrderService.csproj", "Catalog.OrderService/"]
+COPY ["Catalog.ModuleConfigurationService/Catalog.ModuleConfigurationService.csproj", "Catalog.ModuleConfigurationService/"]
 COPY ["Catalog.Application/Catalog.Application.csproj", "Catalog.Application/"]
 COPY ["Catalog.Domain/Catalog.Contracts.csproj", "Catalog.Domain/"]
 COPY ["Interceptors/Interceptors.csproj", "Interceptors/"]
+COPY ["Catalog.ComponentCompatibilityValidator/Catalog.ComponentCompatibilityValidator.csproj", "Catalog.ComponentCompatibilityValidator/"]
 COPY ["Catalog.Infrastructure/Catalog.Infrastructure.csproj", "Catalog.Infrastructure/"]
-RUN dotnet restore "./Catalog.OrderService/Catalog.OrderService.csproj"
+COPY ["Catalog.ModuleCompositionValidator/Catalog.ModuleCompositionValidator.csproj", "Catalog.ModuleCompositionValidator/"]
+COPY ["TelegramService/TelegramService.csproj", "TelegramService/"]
+RUN dotnet restore "./Catalog.ModuleConfigurationService/Catalog.ModuleConfigurationService.csproj"
 COPY . .
-WORKDIR "/src/Catalog.OrderService"
-RUN dotnet build "./Catalog.OrderService.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/Catalog.ModuleConfigurationService"
+RUN dotnet build "./Catalog.ModuleConfigurationService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Catalog.OrderService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Catalog.ModuleConfigurationService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Catalog.OrderService.dll"]
+ENTRYPOINT ["dotnet", "Catalog.ModuleConfigurationService.dll"]

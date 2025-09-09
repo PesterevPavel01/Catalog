@@ -11,7 +11,7 @@ namespace Catalog.Infrastructure.Configurations
         {
             builder
                 .HasMany(x => x.OrderItems)
-                .WithOne()
+                .WithOne(x => x.Order)
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 

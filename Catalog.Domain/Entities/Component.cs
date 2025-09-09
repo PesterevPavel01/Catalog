@@ -56,56 +56,63 @@ namespace Catalog.Domain.Entities
             var component =new Component(titleValue.Result, code, Guid.Empty)
                 .SetComponentType(componentType);
 
-            if (textParameters is not null)
-                foreach (var parameter in textParameters)
-                {
-                    var result = component.AddTextParameter(parameter, componentMultiplyParameters);
-                    if (!result.Ok)
-                        return Operation.Error(result.Error);
-                }
-
             if (numericParameters is not null)
-                foreach (var parameter in numericParameters)
-                {
-                    var result = component.AddNumericParameter(parameter, componentMultiplyParameters);
-                    if (!result.Ok)
+            {
+                var result = component
+                    .AddNumericParameters(
+                        numericParameters: numericParameters,
+                        componentMultipleParameters: componentMultiplyParameters,
+                        componentRequaredParameters: requaredParameters,
+                        customComponentRequaredParameters: customComponentRequaredParameters);
+
+                if (!result.Ok)
+                    return Operation.Error(result.Error);
+            }
+
+            if (textParameters is not null)
+            {
+                var result = component
+                    .AddTextParameters(
+                        textParameters: textParameters,
+                        componentMultipleParameters: componentMultiplyParameters,
+                        componentRequaredParameters: requaredParameters,
+                        customComponentRequaredParameters: customComponentRequaredParameters);
+
+                if (!result.Ok)
                         return Operation.Error(result.Error);
-                }
-
-            var checkResult = CheckRequaredPaeameters(
-                component: component,
-                requaredParameters: requaredParameters,
-                textParameters: textParameters,
-                numericParameters:numericParameters);
-
-            if (!checkResult.Ok)
-                return Operation.Error(checkResult.Error);
-
-            if (!component.IsCostom)
-                return component;
-
-            checkResult = CheckRequaredPaeameters(
-                component: component,
-                requaredParameters: customComponentRequaredParameters,
-                textParameters: textParameters,
-                numericParameters: numericParameters);
-
-            if (!checkResult.Ok)
-                return Operation.Error(checkResult.Error);
+            }
 
             return component;
-
         }
 
         public bool IsCostom => CheckCostomization();
 
-        private static Operation<bool, string> CheckRequaredPaeameters(
-            Component component,
-            List<ComponentRequaredRarameter> requaredParameters,
-            List<ComponentTextParameter>? textParameters = null,
-            List<ComponentNumericParameter>? numericParameters = null)
+        private Operation<bool, string> CheckRequaredParameters(
+            List<ComponentRequaredRarameter> componentRequaredParameters,
+            List<ComponentRequaredRarameter>  customComponentRequaredParameters)
         {
-            var currentRequaredParameters = requaredParameters.FirstOrDefault(x => x.ComponentType == component.ComponentType.Title.Value && x.ComponentTitle is null);
+            var checkResult = CheckPaeameters(
+                    requaredParameters: componentRequaredParameters);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            if (!IsCostom)
+                return true;
+
+            checkResult = CheckPaeameters(
+                requaredParameters: customComponentRequaredParameters);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            return true;
+        }
+
+        private Operation<bool, string> CheckPaeameters(
+            List<ComponentRequaredRarameter> requaredParameters)
+        {
+            var currentRequaredParameters = requaredParameters.FirstOrDefault(x => x.ComponentType == ComponentType.Title.Value && x.ComponentTitle is null);
 
             if (currentRequaredParameters is not null)
             {
@@ -113,8 +120,8 @@ namespace Catalog.Domain.Entities
                     (currentRequaredParameters.Parameters
                         .FirstOrDefault(x =>
                             (
-                                numericParameters is null || !numericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                                && (textParameters is null || !textParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
+                                ComponentNumericParameters is null || !ComponentNumericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
+                                && (ComponentTextParameters is null || !ComponentTextParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
                             ) is not null))
                     return Operation.Error("У модели отсутствуют обязательные поля");
             }
@@ -122,78 +129,133 @@ namespace Catalog.Domain.Entities
             return true;
         }
 
-        public Component SetComponentType(ComponentType componentType)
+        private Component SetComponentType(ComponentType componentType)
         {
             ComponentType = componentType;
             return this;
         }
 
-        public Operation<Component, string> AddTextParameter(ComponentTextParameter textParameter, List<String> componentMultipleParameters) 
+        private bool CheckCostomization()
         {
-            var exists = _componentTextParameters.Find(x => x.Id == textParameter.Id);
+            var customComponents = ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == "0000000CSTM");
 
-            if (exists is not null && textParameter.Id != Guid.Empty)
-                return Operation.Error("the component already has this parameter");
+            if (customComponents is not null)
+                return true;
 
-            exists = _componentTextParameters.FirstOrDefault(x => x.ParameterType == textParameter.ParameterType && x.Value == textParameter.Value);
-
-            if (exists is not null)
-                return Operation.Error("the component already has this parameter");
-
-            exists = _componentTextParameters
-                .FirstOrDefault(x =>
-                    !componentMultipleParameters.Contains(textParameter.ParameterType.Title.Value)
-                    && x.ParameterType.Title.Value == textParameter.ParameterType.Title.Value);
-
-            if (exists is not null)
-                return Operation.Error("The component already has a parameter of this type! Parameter is not multiple");
-
-            _componentTextParameters.Add(textParameter);
-
-            return this;
+            return false;
         }
 
-        public Operation<Component, string> AddNumericParameter(ComponentNumericParameter numericParameter, List<String> componentMultipleParameters)
+        public Operation<Component, string> AddTextParameters
+            (List<ComponentTextParameter> textParameters, 
+            List<String> componentMultipleParameters,
+            List<ComponentRequaredRarameter> componentRequaredParameters,
+            List<ComponentRequaredRarameter> customComponentRequaredParameters) 
         {
-            var exists = _componentNumericParameters.Find(x => x.Id == numericParameter.Id);
+            foreach (var parameter in textParameters)
+            {
+                var exists = _componentTextParameters.Find(x => x.Id == parameter.Id);
 
-            if (exists is not null && numericParameter.Id != Guid.Empty)
+                if (exists is not null && parameter.Id != Guid.Empty)
                     return Operation.Error("the component already has this parameter");
+
+                exists = _componentTextParameters.FirstOrDefault(x => x.ParameterType == parameter.ParameterType && x.Value == parameter.Value);
+
+                if (exists is not null)
+                    return Operation.Error("the component already has this parameter");
+
+                exists = _componentTextParameters
+                    .FirstOrDefault(x =>
+                        !componentMultipleParameters.Contains(parameter.ParameterType.Title.Value)
+                        && x.ParameterType.Title.Value == parameter.ParameterType.Title.Value);
+
+                if (exists is not null)
+                    return Operation.Error("The component already has a parameter of this type! Parameter is not multiple");
+
+                _componentTextParameters.Add(parameter);
+            }
+
+            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
             
-            exists = _componentNumericParameters.FirstOrDefault(x => x.ParameterType == numericParameter.ParameterType && x.Value == numericParameter.Value);
-
-            if (exists is not null)
-                return Operation.Error("the component already has this parameter");
-
-            exists = _componentNumericParameters
-                .FirstOrDefault(x =>
-                    !componentMultipleParameters.Contains(numericParameter.ParameterType.Title.Value)
-                    && x.ParameterType.Title.Value == numericParameter.ParameterType.Title.Value);
-
-            if (exists is not null)
-                return Operation.Error("The component already has a parameter of this type! Parameter is not multiple");
-
-            _componentNumericParameters.Add(numericParameter);
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
 
             return this;
         }
 
-        public void RemoveTextParameter(ComponentTextParameter textParameter)
+        public Operation<Component, string> AddNumericParameters
+            (List<ComponentNumericParameter> numericParameters, 
+            List<String> componentMultipleParameters,
+            List<ComponentRequaredRarameter> componentRequaredParameters,
+            List<ComponentRequaredRarameter> customComponentRequaredParameters)
+        {
+            foreach (var parameter in numericParameters)
+            {
+                var exists = _componentNumericParameters.Find(x => x.Id == parameter.Id);
+
+                if (exists is not null && parameter.Id != Guid.Empty)
+                    return Operation.Error("the component already has this parameter");
+
+                exists = _componentNumericParameters.FirstOrDefault(x => x.ParameterType == parameter.ParameterType && x.Value == parameter.Value);
+
+                if (exists is not null)
+                    return Operation.Error("the component already has this parameter");
+
+                exists = _componentNumericParameters
+                    .FirstOrDefault(x =>
+                        !componentMultipleParameters.Contains(parameter.ParameterType.Title.Value)
+                        && x.ParameterType.Title.Value == parameter.ParameterType.Title.Value);
+
+                if (exists is not null)
+                    return Operation.Error("The component already has a parameter of this type! Parameter is not multiple");
+
+                _componentNumericParameters.Add(parameter);
+            }
+
+            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            return this;
+        }
+
+        public Operation<Component, string> RemoveTextParameter
+            (ComponentTextParameter textParameter,
+            List<ComponentRequaredRarameter> componentRequaredParameters,
+            List<ComponentRequaredRarameter> customComponentRequaredParameters)
         {
             var exists = _componentTextParameters.Find(x => x.Id == textParameter.Id);
+            
             if (exists is null)
-                return;
+                return this;
 
             _componentTextParameters.Remove(textParameter);
+
+            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            return this;
         }
 
-        public void RemoveNumericParameter(ComponentNumericParameter numericParameter)
+        public Operation<Component, string> RemoveNumericParameter
+            (ComponentNumericParameter numericParameter,
+            List<ComponentRequaredRarameter> componentRequaredParameters,
+            List<ComponentRequaredRarameter> customComponentRequaredParameters)
         {
             var exists = _componentNumericParameters.Find(x => x.Id == numericParameter.Id);
             if (exists is null)
-                return;
+                return this;
 
             _componentNumericParameters.Remove(numericParameter);
+
+            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            return this;
         }
 
         public ComponentDto ConvertToDto() 
@@ -215,19 +277,8 @@ namespace Catalog.Domain.Entities
                 query => query
                     .Include(x => x.ComponentType)
                     .Include(x => x.ComponentNumericParameters)
-                    .ThenInclude(x => x.ParameterType)
+                        .ThenInclude(x => x.ParameterType)
                     .Include(x => x.ComponentTextParameters)
-                    .ThenInclude(x => x.ParameterType);
-
-
-        private bool CheckCostomization()
-        {
-            var customComponents = ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == "0000000CSTM");
-
-            if (customComponents is not null)
-                return true;
-
-            return false;
-        }
+                        .ThenInclude(x => x.ParameterType);
     }
 }

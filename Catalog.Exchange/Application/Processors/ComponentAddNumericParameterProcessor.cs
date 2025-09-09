@@ -70,13 +70,14 @@ namespace Catalog.ExchangeService.Application.Processors
             if (component is null)
                 return Operation.Error($"Component not found! Code: {model.ComponentCode}");
 
-            foreach (var parameter in numericParameters)
-            { 
-                var insertResult = component.AddNumericParameter(parameter, _applicationConfiguration.Value.ComponentMultipleParameters);
+            var insertResult = component.AddNumericParameters(
+                numericParameters,
+                componentMultipleParameters: _applicationConfiguration.Value.ComponentMultipleParameters,
+                componentRequaredParameters: _applicationConfiguration.Value.ComponentRequaredParameters,
+                customComponentRequaredParameters: _applicationConfiguration.Value.CustomComponentRequaredParameters);
                 
-                if(!insertResult.Ok)
-                    return Operation.Error(insertResult.Error);
-            }
+            if(!insertResult.Ok)
+                return Operation.Error(insertResult.Error);
 
             var result = await _unitOfWork.SaveChangesAsync();
 

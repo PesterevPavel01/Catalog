@@ -1,10 +1,11 @@
-﻿using Catalog.Contracts.Events;
+﻿using Catalog.Contracts.Events.Approval;
 using Catalog.NotificationService.Application.Configurations;
+using Catalog.NotificationService.Application.QueueHandlers.ComponentEventHandlers;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
 
-namespace Catalog.NotificationService.Application.QueueHandlers
+namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHandlers
 {
     public sealed class ApprovalCompletedEventHandler : IHandleMessages<ApprovalCompletedEvent>
     {

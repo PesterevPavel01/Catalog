@@ -1,6 +1,7 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Rebus.Config;
 using Rebus.Serialization.Json;
@@ -29,8 +30,8 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                 return config;
             }, onCreated: async bus =>
                 {
-                    await bus.Subscribe<ModuleCreatedEvent>();
-                    await bus.Subscribe<ModuleUpdatedEvent>();
+                    await bus.Subscribe<OrderCreatedEvent>();
+                    //await bus.Subscribe<ModuleUpdatedEvent>();
                 }
             );
 

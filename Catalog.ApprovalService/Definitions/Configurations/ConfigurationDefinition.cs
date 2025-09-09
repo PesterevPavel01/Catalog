@@ -1,4 +1,5 @@
-﻿using Catalog.Contracts.Entities.Configurations;
+﻿using Catalog.ApprovalService.Application.Configurations;
+using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
 
 namespace Catalog.ApprovalService.Definitions.Configurations
@@ -7,6 +8,8 @@ namespace Catalog.ApprovalService.Definitions.Configurations
     {
         public static void AddSharedConfiguration(this WebApplicationBuilder builder)
         {
+            ConfigureApplication(builder);
+
             ConfigureAuthorization(builder);
 
             ConfigureRabbit(builder);
@@ -21,6 +24,11 @@ namespace Catalog.ApprovalService.Definitions.Configurations
         {
             builder.Services.Configure<RabbitSettings>(
                 builder.Configuration.GetSection("RabbitMq"));
+        }
+        private static void ConfigureApplication(WebApplicationBuilder builder)
+        {
+            builder.Services.Configure<ApplicationConfiguration>(
+                builder.Configuration.GetSection("ApplicationConfiguration"));
         }
     }
 }
