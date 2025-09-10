@@ -83,7 +83,18 @@ namespace Catalog.ApprovalService.Application.Processors
             if (!approveResult.Ok)
                 return Operation.Error(approveResult.Error);
 
-            return approveResult.Result.ConvertToDto();
+            var workflowResult = await _unitOfWork
+                .GetRepository<ApprovalWorkflowItem>()
+                .InsertAsync(approveResult.Result, cancellationToken);
+
+            var result = await _unitOfWork.SaveChangesAsync();
+
+            if (_unitOfWork.Result.Exception is not null)
+            {
+                return Operation.Error(_unitOfWork.Result.Exception.Message);
+            }
+
+            return workflow.ConvertToDto();
         }
     }
 }

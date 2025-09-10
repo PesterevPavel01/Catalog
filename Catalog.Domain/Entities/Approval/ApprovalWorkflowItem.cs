@@ -41,6 +41,7 @@ namespace Catalog.Contracts.Entities.Approval
             {
                 ApprovalStage = this.ApprovalStage.ConvertToDto(),
                 Number = this.Number,
+                InitiatorName = User.UserName
             };
 
         public static Func<IQueryable<ApprovalWorkflowItem>, IIncludableQueryable<ApprovalWorkflowItem, object>> IncludeRequiredField()

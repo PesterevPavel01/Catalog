@@ -34,6 +34,9 @@ namespace Catalog.ApprovalService.Application.Processors
             if (workflow is null) 
                 return Operation.Error("Workflow not found!");
 
+            if(workflow.ActiveStage.ApprovalStage.Code == ApprovalWorkflow.CompletedStageCode)
+                return Operation.Error("Workflow already completed!");
+
             var user = await _unitOfWork
                 .GetRepository<ApplicationUser>()
                 .GetFirstOrDefaultAsync(
@@ -61,7 +64,7 @@ namespace Catalog.ApprovalService.Application.Processors
             var nextStageCode = _applicationConfiguration.Value.ApprovalWorkflowMap
                 .FirstOrDefault(x => x.Position == nextStagePosition)?.ApprovalStageCode;
 
-            if (nextStageCode is null)
+            if (nextStageCode is null || nextStageCode == ApprovalWorkflow.CompletedStageCode)
             {
                 var completedStage = await _unitOfWork.GetRepository<ApprovalStage>()
                     .GetFirstOrDefaultAsync(
@@ -79,24 +82,44 @@ namespace Catalog.ApprovalService.Application.Processors
                     completedStage = stageCreationResult.Result;
                 }
 
-                workflow.Complete(user, completedStage);
+                var completeResult = workflow.Complete(user, completedStage);
+
+                if (!completeResult.Ok)
+                    return Operation.Error(completeResult.Error);
+                
+                var workflowResult = await _unitOfWork
+                    .GetRepository<ApprovalWorkflowItem>()
+                    .InsertAsync(completeResult.Result, cancellationToken);
+            }
+            else
+            {
+                var nextStage = await _unitOfWork.GetRepository<ApprovalStage>()
+                    .GetFirstOrDefaultAsync(
+                        predicate: x => x.Code == nextStageCode,
+                        trackingType: TrackingType.Tracking
+                    );
+
+                if (nextStage is null)
+                    return Operation.Error($"Approval Stage: Code = '{nextStageCode}' not found");
+
+                var approveResult = workflow.Approve(user, nextStage, nextStagePosition);
+
+                if (!approveResult.Ok)
+                    return Operation.Error(approveResult.Error);
+
+                var workflowResult = await _unitOfWork
+                    .GetRepository<ApprovalWorkflowItem>()
+                    .InsertAsync(approveResult.Result, cancellationToken);
             }
 
-            var nextStage = await _unitOfWork.GetRepository<ApprovalStage>()
-                .GetFirstOrDefaultAsync(
-                    predicate: x => x.Code == nextStageCode,
-                    trackingType: TrackingType.Tracking
-                );
+            var result = await _unitOfWork.SaveChangesAsync();
 
-            if (nextStage is null)
-                return Operation.Error($"Approval Stage: Code = \"{nextStageCode}\" not found");
+            if (_unitOfWork.Result.Exception is not null)
+            {
+                return Operation.Error(_unitOfWork.Result.Exception.Message);
+            }
 
-            var approveResult = workflow.Approve(user, nextStage, nextStagePosition);
-
-            if (!approveResult.Ok)
-                return Operation.Error(approveResult.Error);
-
-            return approveResult.Result.ConvertToDto();
+            return workflow.ConvertToDto();
         }
     }
 }

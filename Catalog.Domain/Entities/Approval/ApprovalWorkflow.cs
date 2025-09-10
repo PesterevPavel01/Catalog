@@ -54,13 +54,18 @@ namespace Catalog.Contracts.Entities.Approval
 
         public bool IsCompleted => CheckIsCompleted();
 
-        public IReadOnlyCollection<ApprovalWorkflowItem> ApprovalWorkflowItems => _approvalWorkflowItems.AsReadOnly();
+        public IReadOnlyCollection<ApprovalWorkflowItem> ApprovalWorkflowItems => 
+            _approvalWorkflowItems
+                .OrderBy(x => x.CreatedAt)
+                .ToArray()
+                .AsReadOnly();
+
         public ApprovalWorkflowItem ActiveStage => ApprovalWorkflowItems.Last();
 
         public OrderItem OrderItem { get; private set; } = null!;
         public Guid OrderItemId { get; private set; }
 
-        public Operation<ApprovalWorkflow, string> Approve(ApplicationUser user, ApprovalStage stage, short number) 
+        public Operation<ApprovalWorkflowItem, string> Approve(ApplicationUser user, ApprovalStage stage, short number) 
         {
             if (ActiveStage.ApprovalStage.Code == stage.Code)
                 return Operation.Error("Stage already activated!");
@@ -72,21 +77,26 @@ namespace Catalog.Contracts.Entities.Approval
 
             _approvalWorkflowItems.Add(operationResult.Result);
 
-            return this;
+            return operationResult.Result;
         }
 
         public ApprovalWorkflowDto ConvertToDto()
             => new()
             {
+                Code = this.Code,
                 ActiveStage = ActiveStage.ConvertToDto(),
                 OrderItem = OrderItem.ConvertToDto(),
-                IsCompleted = this.IsCompleted
+                IsCompleted = this.IsCompleted,
+                ApprovalWorkflowItems = ApprovalWorkflowItems.Select(x => x.ConvertToDto())
             };
 
         public static Func<IQueryable<ApprovalWorkflow>, IIncludableQueryable<ApprovalWorkflow, object>> IncludeRequiredField()
             =>
             query => query
-                .Include(x => x.ActiveStage)
+                .Include(x => x.OrderItem)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.Components)
+                            .ThenInclude(c => c.ComponentType)
                 .Include(x => x.OrderItem)
                     .ThenInclude(oi => oi.Module)
                         .ThenInclude(m => m.Components)
@@ -105,7 +115,7 @@ namespace Catalog.Contracts.Entities.Approval
                 .Include(x => x.ApprovalWorkflowItems)
                     .ThenInclude(ai => ai.User);
 
-        public Operation<ApprovalWorkflow, string> Complete(ApplicationUser user, ApprovalStage completedStage)
+        public Operation<ApprovalWorkflowItem, string> Complete(ApplicationUser user, ApprovalStage completedStage)
         {
             if (completedStage.Code != CompletedStageCode)
                 return Operation.Error("Input Stage is not a Completed Stage");

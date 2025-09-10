@@ -79,8 +79,8 @@ namespace Catalog.OrderService.Endpoints
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
-                if (result.Ok)
-                    await bus.Publish(new OrderCreatedEvent(result.Result.First().Code));
+                //if (result.Ok)
+                //    await bus.Publish(new OrderCreatedEvent(result.Result.First().Code));
 
                 return Results.Ok(result.Result);
             })

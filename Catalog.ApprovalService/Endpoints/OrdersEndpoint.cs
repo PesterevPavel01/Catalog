@@ -3,8 +3,7 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ApprovalService.Application.Configurations;
 using Catalog.ApprovalService.Application.Processors;
 using Catalog.Contracts.Dto.Approval;
-using Catalog.Contracts.Events;
-using Catalog.Contracts.Events.OrderEvents;
+using Catalog.Contracts.Events.Approval;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
@@ -57,17 +56,17 @@ namespace Catalog.ApprovalService.Endpoints
                 IOptions <ApplicationConfiguration> applicationConfiguration,
                 ApproveProcessor processor,
                 CancellationToken cancellationToken) =>
-                {
-                    var result = await processor.ProcessAsync(model.WorkflowCode, model.UserName, cancellationToken);
+            {
+                var result = await processor.ProcessAsync(model.WorkflowCode, model.UserName, cancellationToken);
 
-                    if (!result.Ok)
-                        return Results.BadRequest(result.Error);
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
 
-                    if(result.Result.IsCompleted)
-                        await bus.Publish(new OrderCreatedEvent(model.WorkflowCode));
+                if(result.Result.IsCompleted)
+                    await bus.Publish(new WorkflowCancelledEvent(model.WorkflowCode));
 
-                    return Results.Ok(result.Result);
-                })
+                return Results.Ok(result.Result);
+            })
             //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)

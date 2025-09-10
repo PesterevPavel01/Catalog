@@ -6,5 +6,6 @@ namespace Catalog.Contracts.Dto.Approval
     {
         public required int Number { get; set; }
         public required SimpleEntityDto ApprovalStage { get; set; }
+        public required string InitiatorName { get; set; }
     }
 }
