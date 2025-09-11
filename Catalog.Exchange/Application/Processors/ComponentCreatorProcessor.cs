@@ -1,11 +1,12 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Components;
+using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enum;
-using Catalog.ExchangeService.Application.Configurations;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.ExchangeService.Application.Processors
@@ -13,18 +14,15 @@ namespace Catalog.ExchangeService.Application.Processors
     public class ComponentCreatorProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly List<ComponentRequaredRarameter> _componentRequaredParameters;
-        private readonly List<ComponentRequaredRarameter> _customComponentRequaredParameter;
         private readonly List<String> _componentMultipleParameters;
-        public ComponentCreatorProcessor(IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
+        private readonly IComponentParametersValidator _parametersValidator;
+        public ComponentCreatorProcessor(IUnitOfWork unitOfWork, IOptions<ComponentConfiguration> applicationConfiguration, IComponentParametersValidator parametersValidator)
         {
             _unitOfWork = unitOfWork;
 
-            _componentRequaredParameters = applicationConfiguration.Value.ComponentRequaredParameters;
+            _componentMultipleParameters = [.. applicationConfiguration.Value.ComponentMultipleParameters];
 
-            _componentMultipleParameters = applicationConfiguration.Value.ComponentMultipleParameters;
-
-            _customComponentRequaredParameter = applicationConfiguration.Value.CustomComponentRequaredParameters;
+            _parametersValidator = parametersValidator;
 
         }
 
@@ -133,8 +131,7 @@ namespace Catalog.ExchangeService.Application.Processors
                     code: model.ComponentCode, 
                     componentType: componentType, 
                     componentMultiplyParameters: _componentMultipleParameters,
-                    requaredParameters: _componentRequaredParameters,
-                    customComponentRequaredParameters: _customComponentRequaredParameter,
+                    _parametersValidator,
                     textParameters,
                     numericParameters);
 

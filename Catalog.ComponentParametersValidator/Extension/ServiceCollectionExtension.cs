@@ -1,18 +1,18 @@
 ﻿using Catalog.Contracts.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Catalog.ModuleParametersValidator.Extensions
+namespace Catalog.ComponentParametersValidator.Extensions
 {
     public static class ServiceCollectionExtension
     {
-        public static void AddModuleParametersValidator(this IServiceCollection services)
+        public static void AddComponentParametersValidator(this IServiceCollection services)
         {
             InitServices(services);
         }
 
         private static void InitServices(this IServiceCollection services)
         {
-            services.AddScoped<IModuleParametersValidator, ModuleParametersValidator>();
+            services.AddScoped<IComponentParametersValidator, ComponentParametersValidator>();
         }
     }
 }

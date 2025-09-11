@@ -1,6 +1,5 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Module;
-using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Base;
@@ -238,7 +237,7 @@ namespace Catalog.Domain.Entities
 
         private bool CheckCustomization()
         {
-            var customComponents = Components.FirstOrDefault(x => x.IsCostom);
+            var customComponents = Components.FirstOrDefault(x => x.IsCustom);
             
             if (customComponents is not null) 
                 return true;

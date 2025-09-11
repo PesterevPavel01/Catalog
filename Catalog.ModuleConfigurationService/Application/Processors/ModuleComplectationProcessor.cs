@@ -56,7 +56,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == model.ComponentCode,
                     trackingType: TrackingType.Tracking,
-                    include: Component.IncludeRequaredField());
+                    include: Component.IncludeRequiredField());
 
             if (component is null)
                 return Operation.Error("Component not found!");
@@ -95,7 +95,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 .GetAllAsync(
                     predicate: x => x.Modules.FirstOrDefault(x => x.Id == x.Id) != null,
                     trackingType: TrackingType.Tracking,
-                    include: Component.IncludeRequaredField());
+                    include: Component.IncludeRequiredField());
 
             foreach (var existingComponent in existingComponents)
             {

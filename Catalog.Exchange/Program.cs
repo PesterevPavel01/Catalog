@@ -1,5 +1,5 @@
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Entities.Configurations;
+using Catalog.ComponentParametersValidator.Extensions;
 using Catalog.ExchangeService.Definitions.Configurations;
 using Serilog;
 using Serilog.Events;
@@ -19,6 +19,8 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     builder.AddSharedConfiguration();
+
+    builder.Services.AddComponentParametersValidator();
 
     builder.Services.AddTelegramService();
 

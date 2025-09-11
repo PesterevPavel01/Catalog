@@ -107,12 +107,12 @@ namespace Catalog.ModuleParametersValidator
             switch (parameterRule.ComparisonRule.Trim())
             {
                 case "<":
-                    if (!(targetParameter.Value >= parameterRule.Value))
+                    if (!(targetParameter.Value <= parameterRule.Value))
                         return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть <= значения {parameterRule.Value}");
                     break;
 
                 case ">":
-                    if (!(targetParameter.Value <= parameterRule.Value))
+                    if (!(targetParameter.Value >= parameterRule.Value))
                         return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть >= значения {parameterRule.Value}");
                     break;
                 case "=":

@@ -1,6 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Contracts.Entities.Parameters;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -30,8 +31,7 @@ namespace Catalog.Domain.Entities
             string code, 
             ComponentType componentType,
             List<String> componentMultiplyParameters,
-            List<ComponentRequaredRarameter> requaredParameters,
-            List<ComponentRequaredRarameter> customComponentRequaredParameters,
+            IComponentParametersValidator componentParametersValidator,
             List<ComponentTextParameter>? textParameters = null,
             List<ComponentNumericParameter>? numericParameters = null) 
         {
@@ -47,11 +47,7 @@ namespace Catalog.Domain.Entities
                 return Operation.Error(titleValue.Error);
 
             if(componentType is null )
-                return Operation.Error("ComponentTupe not found");
-
-            if (requaredParameters is null)
-                return Operation.Error("RequaredProperties not found");
-
+                return Operation.Error("ComponentType not found");
 
             var component =new Component(titleValue.Result, code, Guid.Empty)
                 .SetComponentType(componentType);
@@ -61,9 +57,7 @@ namespace Catalog.Domain.Entities
                 var result = component
                     .AddNumericParameters(
                         numericParameters: numericParameters,
-                        componentMultipleParameters: componentMultiplyParameters,
-                        componentRequaredParameters: requaredParameters,
-                        customComponentRequaredParameters: customComponentRequaredParameters);
+                        componentMultipleParameters: componentMultiplyParameters);
 
                 if (!result.Ok)
                     return Operation.Error(result.Error);
@@ -74,60 +68,21 @@ namespace Catalog.Domain.Entities
                 var result = component
                     .AddTextParameters(
                         textParameters: textParameters,
-                        componentMultipleParameters: componentMultiplyParameters,
-                        componentRequaredParameters: requaredParameters,
-                        customComponentRequaredParameters: customComponentRequaredParameters);
+                        componentMultipleParameters: componentMultiplyParameters);
 
                 if (!result.Ok)
                         return Operation.Error(result.Error);
             }
 
+            var checkResult = componentParametersValidator.Validate(component);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
             return component;
         }
 
-        public bool IsCostom => CheckCostomization();
-
-        private Operation<bool, string> CheckRequaredParameters(
-            List<ComponentRequaredRarameter> componentRequaredParameters,
-            List<ComponentRequaredRarameter>  customComponentRequaredParameters)
-        {
-            var checkResult = CheckPaeameters(
-                    requaredParameters: componentRequaredParameters);
-
-            if (!checkResult.Ok)
-                return Operation.Error(checkResult.Error);
-
-            if (!IsCostom)
-                return true;
-
-            checkResult = CheckPaeameters(
-                requaredParameters: customComponentRequaredParameters);
-
-            if (!checkResult.Ok)
-                return Operation.Error(checkResult.Error);
-
-            return true;
-        }
-
-        private Operation<bool, string> CheckPaeameters(
-            List<ComponentRequaredRarameter> requaredParameters)
-        {
-            var currentRequaredParameters = requaredParameters.FirstOrDefault(x => x.ComponentType == ComponentType.Title.Value && x.ComponentTitle is null);
-
-            if (currentRequaredParameters is not null)
-            {
-                if (currentRequaredParameters is null ||
-                    (currentRequaredParameters.Parameters
-                        .FirstOrDefault(x =>
-                            (
-                                ComponentNumericParameters is null || !ComponentNumericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                                && (ComponentTextParameters is null || !ComponentTextParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                            ) is not null))
-                    return Operation.Error("У модели отсутствуют обязательные поля");
-            }
-
-            return true;
-        }
+        public bool IsCustom => CheckCustomization();
 
         private Component SetComponentType(ComponentType componentType)
         {
@@ -135,7 +90,7 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        private bool CheckCostomization()
+        private bool CheckCustomization()
         {
             var customComponents = ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == "0000000CSTM");
 
@@ -147,9 +102,7 @@ namespace Catalog.Domain.Entities
 
         public Operation<Component, string> AddTextParameters
             (List<ComponentTextParameter> textParameters, 
-            List<String> componentMultipleParameters,
-            List<ComponentRequaredRarameter> componentRequaredParameters,
-            List<ComponentRequaredRarameter> customComponentRequaredParameters) 
+            List<String> componentMultipleParameters) 
         {
             foreach (var parameter in textParameters)
             {
@@ -174,19 +127,12 @@ namespace Catalog.Domain.Entities
                 _componentTextParameters.Add(parameter);
             }
 
-            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
-            
-            if (!checkResult.Ok)
-                return Operation.Error(checkResult.Error);
-
             return this;
         }
 
         public Operation<Component, string> AddNumericParameters
             (List<ComponentNumericParameter> numericParameters, 
-            List<String> componentMultipleParameters,
-            List<ComponentRequaredRarameter> componentRequaredParameters,
-            List<ComponentRequaredRarameter> customComponentRequaredParameters)
+            List<String> componentMultipleParameters)
         {
             foreach (var parameter in numericParameters)
             {
@@ -211,18 +157,12 @@ namespace Catalog.Domain.Entities
                 _componentNumericParameters.Add(parameter);
             }
 
-            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
-
-            if (!checkResult.Ok)
-                return Operation.Error(checkResult.Error);
-
             return this;
         }
 
         public Operation<Component, string> RemoveTextParameter
             (ComponentTextParameter textParameter,
-            List<ComponentRequaredRarameter> componentRequaredParameters,
-            List<ComponentRequaredRarameter> customComponentRequaredParameters)
+            IComponentParametersValidator parametersValidator)
         {
             var exists = _componentTextParameters.Find(x => x.Id == textParameter.Id);
             
@@ -231,7 +171,7 @@ namespace Catalog.Domain.Entities
 
             _componentTextParameters.Remove(textParameter);
 
-            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
+            var checkResult = parametersValidator.Validate(this);
 
             if (!checkResult.Ok)
                 return Operation.Error(checkResult.Error);
@@ -241,8 +181,7 @@ namespace Catalog.Domain.Entities
 
         public Operation<Component, string> RemoveNumericParameter
             (ComponentNumericParameter numericParameter,
-            List<ComponentRequaredRarameter> componentRequaredParameters,
-            List<ComponentRequaredRarameter> customComponentRequaredParameters)
+            IComponentParametersValidator parametersValidator)
         {
             var exists = _componentNumericParameters.Find(x => x.Id == numericParameter.Id);
             if (exists is null)
@@ -250,7 +189,7 @@ namespace Catalog.Domain.Entities
 
             _componentNumericParameters.Remove(numericParameter);
 
-            var checkResult = CheckRequaredParameters(componentRequaredParameters, customComponentRequaredParameters);
+            var checkResult = parametersValidator.Validate(this);
 
             if (!checkResult.Ok)
                 return Operation.Error(checkResult.Error);
@@ -272,7 +211,7 @@ namespace Catalog.Domain.Entities
                                  .Select(x => x.ConvertToDto())]
             };
 
-        public static Func<IQueryable<Component>, IIncludableQueryable<Component, object>> IncludeRequaredField()
+        public static Func<IQueryable<Component>, IIncludableQueryable<Component, object>> IncludeRequiredField()
             =>
                 query => query
                     .Include(x => x.ComponentType)

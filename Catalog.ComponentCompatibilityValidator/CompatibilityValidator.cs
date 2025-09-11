@@ -2,6 +2,7 @@
 using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Domain.Entities;
+using Newtonsoft.Json;
 
 namespace Catalog.ComponentCompatibilityValidator
 {
@@ -65,10 +66,11 @@ namespace Catalog.ComponentCompatibilityValidator
 
             foreach (var parameterRule in parameterRules.Dependencies) {
 
+                if (parameterRule.TargetComponentTypes is not null && !parameterRule.TargetComponentTypes.Contains(componentToValidate.ComponentType.Title.Value))
+                    continue;
+
                 var validationParameters = componentToValidate.ComponentTextParameters
-                    .Where(x => 
-                        x.ParameterType.Title.Value == parameterRule.Parameter 
-                        && (parameterRule.TargetComponentTypes is null || parameterRule.TargetComponentTypes.Contains(targetComponent.ComponentType.Title.Value))).ToList();
+                    .Where(x => x.ParameterType.Title.Value == parameterRule.Parameter ).ToList();
                 
                 if (validationParameters is null || validationParameters.Count == 0)
                     continue;
@@ -77,14 +79,14 @@ namespace Catalog.ComponentCompatibilityValidator
                 {
                     case "Contains":
                         if (!validationParameters.Select(x => x.Value).Intersect(targetParameters.Select(x => x.Value)).Any())
-                            return Operation.Error($"Не выполняется условие для свойства {targetParameters.First().ParameterType.Title.Value} компонента {targetComponent.ComponentType.Title.Value} (код: {targetComponent.Code})! Ни одно значение {targetParameters.Select(x => x.Value.Value)} его свойства {targetParameters.First().ParameterType.Title.Value} не найдено в списке разрешенных значений({validationParameters.Select(x => x.Value.Value)}) у компонента {componentToValidate.ComponentType.Title} (код: {componentToValidate.Code}), ");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameters.First().ParameterType.Title.Value}' компонента '{targetComponent.ComponentType.Title.Value}' (код: '{targetComponent.Code}')! Ни одно значение {JsonConvert.SerializeObject(targetParameters.Select(x => x.Value.Value), Formatting.Indented)} его свойства '{targetParameters.First().ParameterType.Title.Value}' не найдено в списке разрешенных значений({JsonConvert.SerializeObject(validationParameters.Select(x => x.Value.Value), Formatting.Indented)}) у компонента '{componentToValidate.ComponentType.Title.Value}' (код: {componentToValidate.Code}), ");
                         break;
                     case "NoContains":
                         if (validationParameters.Select(x => x.Value).Intersect(targetParameters.Select(x => x.Value)).Any())
-                            return Operation.Error($"Не выполняется условие для свойства {targetParameters.First().ParameterType.Title.Value} компонента {targetComponent.ComponentType.Title.Value} (код: {targetComponent.Code})! Есть значение {targetParameters.Select(x => x.Value.Value)} его свойства {targetParameters.First().ParameterType.Title.Value}, которое найдено в списке значений({validationParameters.Select(x => x.Value.Value)}) у компонента {componentToValidate.ComponentType.Title} (код: {componentToValidate.Code}), ");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameters.First().ParameterType.Title.Value}' компонента '{targetComponent.ComponentType.Title.Value}' (код: '{targetComponent.Code}')! Есть значение '{JsonConvert.SerializeObject(targetParameters.Select(x => x.Value.Value), Formatting.Indented)}' его свойства '{targetParameters.First().ParameterType.Title.Value}', которое найдено в списке значений({JsonConvert.SerializeObject(validationParameters.Select(x => x.Value.Value), Formatting.Indented)}) у компонента '{componentToValidate.ComponentType.Title.Value}' (код: '{componentToValidate.Code}'), ");
                         break;
                     default:
-                        return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: {targetParameters.First().ParameterType.Title.Value}. Type parameter: {targetParameters.First().GetType().Name})");
+                        return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: '{targetParameters.First().ParameterType.Title.Value}'. Type parameter: '{targetParameters.First().GetType().Name}')");
                 }
             }
             return true;

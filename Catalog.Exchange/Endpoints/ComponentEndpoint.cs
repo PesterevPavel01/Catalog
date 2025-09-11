@@ -128,7 +128,7 @@ namespace Catalog.Web.Endpoints
 
                     return Results.Ok(result.Result);
                 })
-            .RequireAuthorization("Administrator")
+            //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)
             .WithName("GetAllModuleEndpoint")

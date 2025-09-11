@@ -1,6 +1,5 @@
 ﻿using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
-using Catalog.ExchangeService.Application.Configurations;
 
 namespace Catalog.ExchangeService.Definitions.Configurations
 {
@@ -17,7 +16,7 @@ namespace Catalog.ExchangeService.Definitions.Configurations
 
         private static void ConfigureApplication(WebApplicationBuilder builder)
         {
-            builder.Services.Configure<ApplicationConfiguration>(
+            builder.Services.Configure<ComponentConfiguration>(
                 builder.Configuration.GetSection("ApplicationConfiguration"));
         }
 

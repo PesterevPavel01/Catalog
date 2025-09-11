@@ -1,11 +1,11 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Components;
+using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enum;
-using Catalog.ExchangeService.Application.Configurations;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.ExchangeService.Application.Processors
@@ -13,12 +13,12 @@ namespace Catalog.ExchangeService.Application.Processors
     public sealed class ComponentAddNumericParameterProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IOptions<ApplicationConfiguration> _applicationConfiguration;
+        private readonly IOptions<ComponentConfiguration> _componentConfiguration;
 
-        public ComponentAddNumericParameterProcessor(IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public ComponentAddNumericParameterProcessor(IUnitOfWork unitOfWork, IOptions<ComponentConfiguration> options)
         {
             _unitOfWork = unitOfWork;
-            _applicationConfiguration = applicationConfiguration;
+            _componentConfiguration = options;
         }
 
         public async Task<Operation<ComponentDto, string>> ProcessAsync(ComponentAddNumericParameterDto model, CancellationToken cancellationToken)
@@ -64,7 +64,7 @@ namespace Catalog.ExchangeService.Application.Processors
                     .GetFirstOrDefaultAsync(
                         predicate: x => x.Code == model.ComponentCode,
                         trackingType: TrackingType.Tracking,
-                        include: Component.IncludeRequaredField()
+                        include: Component.IncludeRequiredField()
                         );
 
             if (component is null)
@@ -72,9 +72,7 @@ namespace Catalog.ExchangeService.Application.Processors
 
             var insertResult = component.AddNumericParameters(
                 numericParameters,
-                componentMultipleParameters: _applicationConfiguration.Value.ComponentMultipleParameters,
-                componentRequaredParameters: _applicationConfiguration.Value.ComponentRequaredParameters,
-                customComponentRequaredParameters: _applicationConfiguration.Value.CustomComponentRequaredParameters);
+                componentMultipleParameters: [.. _componentConfiguration.Value.ComponentMultipleParameters]);
                 
             if(!insertResult.Ok)
                 return Operation.Error(insertResult.Error);

@@ -1,5 +1,4 @@
 ﻿using Calabonga.OperationResults;
-using Catalog.Contracts.Entities.Configurations;
 using Catalog.Domain.Entities;
 
 namespace Catalog.Contracts.Interfaces

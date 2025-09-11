@@ -22,7 +22,7 @@ try
 
     builder.AddApplicationConfiguration();
 
-    builder.Services.AddModuleCreationValidator();
+    builder.Services.AddModuleParametersValidator();
 
     builder.Services.AddComponentCompatibilityValidator();
 

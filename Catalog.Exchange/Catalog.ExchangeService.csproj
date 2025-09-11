@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Catalog.Application\Catalog.Application.csproj" />
+    <ProjectReference Include="..\Catalog.ComponentParametersValidator\Catalog.ComponentParametersValidator.csproj" />
     <ProjectReference Include="..\Catalog.Domain\Catalog.Contracts.csproj" />
     <ProjectReference Include="..\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\TelegramService\TelegramService.csproj" />
