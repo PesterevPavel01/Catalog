@@ -1,11 +1,11 @@
-﻿namespace Catalog.ModuleCompositionValidator.Contracts
+﻿namespace Catalog.Contracts.Configurations
 {
     public sealed class ModuleCompositionRule
     {
         public required string ModuleParameter { get; set; }
-        public required List<ModuleCompositionDependensy> Dependencies { get; set; }
+        public required List<ModuleCompositionDependency> Dependencies { get; set; }
     }
-    public sealed class ModuleCompositionDependensy
+    public sealed class ModuleCompositionDependency
     {
         public List<string>? TargetComponentTypes { get; set; }
         public required string Parameter { get; set; }

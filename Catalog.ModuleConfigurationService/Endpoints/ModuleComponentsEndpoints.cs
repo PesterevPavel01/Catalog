@@ -57,11 +57,11 @@ namespace Catalog.ModuleConfigurationService.Endpoints
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Добавление компонента.",
-                Description = @"
-                {
-                  ""moduleCode"": ""c2317912-df6c-4a21-8d1a-f451abf6ba29"",
-                  ""componentCode"": ""00080185745""
-                }"
+                //Description = @"
+                //{
+                //  ""moduleCode"": ""c2317912-df6c-4a21-8d1a-f451abf6ba29"",
+                //  ""componentCode"": ""00080185745""
+                //}"
             });
 
             group.MapDelete("remove-component", async (

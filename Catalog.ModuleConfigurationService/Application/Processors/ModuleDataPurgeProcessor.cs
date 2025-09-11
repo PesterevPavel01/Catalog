@@ -21,7 +21,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == moduleCode,
                     trackingType: TrackingType.Tracking,
-                    include: Module.IncludeRequaredField());
+                    include: Module.IncludeRequiredField());
 
             if (module is null)
                 return Operation.Error($"Module not found! Code: {moduleCode}");

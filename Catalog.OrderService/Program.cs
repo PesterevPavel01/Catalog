@@ -21,7 +21,7 @@ try
 
     builder.AddApplicationConfiguration();
 
-    builder.Services.AddComponentCompabilityValidator();
+    builder.Services.AddComponentCompatibilityValidator();
 
     builder.Services.AddModuleCompositionValidator();
 

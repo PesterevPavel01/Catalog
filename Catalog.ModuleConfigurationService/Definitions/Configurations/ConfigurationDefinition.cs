@@ -1,6 +1,6 @@
-﻿using Catalog.Contracts.Entities.Configurations;
+﻿using Catalog.Contracts.Configurations;
+using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
-using Catalog.ModuleConfigurationService.Application.Configurations;
 
 namespace Catalog.ModuleConfigurationService.Definitions.Configurations
 {
@@ -29,7 +29,7 @@ namespace Catalog.ModuleConfigurationService.Definitions.Configurations
 
         private static void ConfigureApplication(WebApplicationBuilder builder)
         {
-            builder.Services.Configure<ApplicationConfiguration>(
+            builder.Services.Configure<ModuleConfiguration>(
                 builder.Configuration.GetSection("ApplicationConfiguration"));
         }
     }

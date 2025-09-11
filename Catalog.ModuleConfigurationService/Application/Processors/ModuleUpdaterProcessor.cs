@@ -1,24 +1,25 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Module;
-using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Contracts.Entities.Parameters;
+using Catalog.Contracts.Entities.Parameters.Base;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enum;
-using Microsoft.Extensions.Options;
-using Catalog.ModuleConfigurationService.Application.Configurations;
 
 namespace Catalog.ModuleConfigurationService.Application.Processors
 {
     public class ModuleUpdaterProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IOptions<ApplicationConfiguration> _applicationConfiguration;
+        private readonly IModuleParametersValidator _moduleParametersValidator;
 
-        public ModuleUpdaterProcessor(IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public ModuleUpdaterProcessor(
+            IUnitOfWork unitOfWork, 
+            IModuleParametersValidator moduleParametersValidator)
         {
             _unitOfWork = unitOfWork;
-            _applicationConfiguration = applicationConfiguration;
+            _moduleParametersValidator = moduleParametersValidator;
         }
 
         public async Task<Operation<ModuleDto, string>> ProcessAsync(UpdateModuleDto model, CancellationToken cancellationToken = default)
@@ -28,7 +29,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == model.ModuleCode,
                     trackingType: TrackingType.Tracking,
-                    include: Module.IncludeRequaredField());
+                    include: Module.IncludeRequiredField());
 
             if (module is null)
                 return Operation.Error($"Module not found! Code: {model.ModuleCode}");
@@ -90,7 +91,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
 
             var updateOperationResult = module.Update
             (
-                requaredParameters: _applicationConfiguration.Value.ModuleRequaredParameters,
+                parametersValidator: _moduleParametersValidator,
                 numericParameters: numericParameters,
                 textParameters: textParameters
             );

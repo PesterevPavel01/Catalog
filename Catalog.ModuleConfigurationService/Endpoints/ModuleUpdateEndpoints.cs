@@ -6,7 +6,6 @@ using Catalog.Contracts.Events;
 using Catalog.Domain.Entities;
 using Catalog.ModuleConfigurationService.Application.Description;
 using Catalog.ModuleConfigurationService.Application.Managers;
-using Catalog.ModuleConfigurationService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
 
@@ -18,7 +17,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
             => app.MapModuleUpdateEndpoints();
     }
 
-    internal static class ModuleComplectationEndpointDefinitionExtensions
+    internal static class ModuleUpdateEndpointDefinitionExtensions
     {
         public static async Task MapModuleUpdateEndpoints(this IEndpointRouteBuilder routes)
         {
@@ -44,7 +43,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                     .GetRepository<Module>()
                     .GetFirstOrDefaultAsync(
                         predicate: x => x.Code == model.ModuleCode,
-                        include: Module.IncludeRequaredField()
+                        include: Module.IncludeRequiredField()
                     );
 
                 await bus.Publish(new ModuleUpdatedEvent(module.Id));

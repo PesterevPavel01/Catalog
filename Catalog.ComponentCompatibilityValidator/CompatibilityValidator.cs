@@ -1,27 +1,27 @@
 ﻿using Calabonga.OperationResults;
-using Catalog.ComponentCompabilityValidator.Contracts;
+using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Domain.Entities;
 
 namespace Catalog.ComponentCompatibilityValidator
 {
-    public class CompabilityValidator
+    public class CompatibilityValidator
     {
-        private List<ComponentCompabilityRule> _componentCompabilityRules = null!;
+        private List<ComponentCompatibilityRule> _componentCompatibilityRules = null!;
 
-        public void SetComponentCompabilityRules(List<ComponentCompabilityRule> componentCompabilityRules) 
+        public void SetComponentCompatibilityRules(List<ComponentCompatibilityRule> componentCompatibilityRules) 
         {
-            _componentCompabilityRules = componentCompabilityRules;
+            _componentCompatibilityRules = componentCompatibilityRules;
         }
 
-        public Operation<bool, string> Validate(Component firstComponent, Component secondConponent)
+        public Operation<bool, string> Validate(Component firstComponent, Component secondComponent)
         {
-            var ValidationResult = ValidateComponent(firstComponent, secondConponent);
+            var ValidationResult = ValidateComponent(firstComponent, secondComponent);
             
             if (!ValidationResult.Ok)
                 return ValidationResult;
 
-            ValidationResult = ValidateComponent(secondConponent, firstComponent);
+            ValidationResult = ValidateComponent(secondComponent, firstComponent);
                 
             return ValidationResult;
         }
@@ -58,7 +58,7 @@ namespace Catalog.ComponentCompatibilityValidator
 
         private Operation<bool, string> CheckTextParameter(List<ComponentTextParameter> targetParameters, Component targetComponent, Component componentToValidate) 
         {
-            var parameterRules = _componentCompabilityRules.FirstOrDefault(x => x.ComponentParameter == targetParameters.First().ParameterType.Title.Value);
+            var parameterRules = _componentCompatibilityRules.FirstOrDefault(x => x.ComponentParameter == targetParameters.First().ParameterType.Title.Value);
 
             if (parameterRules is null)
                 return true;
@@ -79,6 +79,10 @@ namespace Catalog.ComponentCompatibilityValidator
                         if (!validationParameters.Select(x => x.Value).Intersect(targetParameters.Select(x => x.Value)).Any())
                             return Operation.Error($"Не выполняется условие для свойства {targetParameters.First().ParameterType.Title.Value} компонента {targetComponent.ComponentType.Title.Value} (код: {targetComponent.Code})! Ни одно значение {targetParameters.Select(x => x.Value.Value)} его свойства {targetParameters.First().ParameterType.Title.Value} не найдено в списке разрешенных значений({validationParameters.Select(x => x.Value.Value)}) у компонента {componentToValidate.ComponentType.Title} (код: {componentToValidate.Code}), ");
                         break;
+                    case "NoContains":
+                        if (validationParameters.Select(x => x.Value).Intersect(targetParameters.Select(x => x.Value)).Any())
+                            return Operation.Error($"Не выполняется условие для свойства {targetParameters.First().ParameterType.Title.Value} компонента {targetComponent.ComponentType.Title.Value} (код: {targetComponent.Code})! Есть значение {targetParameters.Select(x => x.Value.Value)} его свойства {targetParameters.First().ParameterType.Title.Value}, которое найдено в списке значений({validationParameters.Select(x => x.Value.Value)}) у компонента {componentToValidate.ComponentType.Title} (код: {componentToValidate.Code}), ");
+                        break;
                     default:
                         return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: {targetParameters.First().ParameterType.Title.Value}. Type parameter: {targetParameters.First().GetType().Name})");
                 }
@@ -88,7 +92,7 @@ namespace Catalog.ComponentCompatibilityValidator
 
         private Operation<bool, string> CheckNumericParameter(ComponentNumericParameter targetParameter, Component targetComponent, Component componentToValidate)
         {
-            var parameterRules = _componentCompabilityRules.FirstOrDefault(x => x.ComponentParameter == targetParameter.ParameterType.Title.Value);
+            var parameterRules = _componentCompatibilityRules.FirstOrDefault(x => x.ComponentParameter == targetParameter.ParameterType.Title.Value);
 
             if (parameterRules is null)
                 return true;
@@ -120,7 +124,7 @@ namespace Catalog.ComponentCompatibilityValidator
                             return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()} компонента {targetComponent.ComponentType.Title.Value.ToUpper()} (код: {targetComponent.Code})! Значение {targetParameter.Value} его свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть равно значению {validationParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} у компонента {componentToValidate.ComponentType.Title.Value.ToUpper()} (код: {componentToValidate.Code})");
                         break;
                     case "!=":
-                        if (validationParameter.Value != (targetParameter.Value))
+                        if (validationParameter.Value == (targetParameter.Value))
                             return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()} компонента {targetComponent.ComponentType.Title.Value.ToUpper()} (код: {targetComponent.Code})! Значение {targetParameter.Value} его свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть не равно значению {validationParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} у компонента {componentToValidate.ComponentType.Title.Value.ToUpper()} (код: {componentToValidate.Code})");
                         break;
                     default:

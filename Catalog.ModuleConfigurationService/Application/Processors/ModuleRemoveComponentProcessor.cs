@@ -23,7 +23,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == model.ModuleCode,
                     trackingType: TrackingType.Tracking,
-                    include: Module.IncludeRequaredField()
+                    include: Module.IncludeRequiredField()
                 );
 
             if (module is null)

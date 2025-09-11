@@ -1,11 +1,12 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
+using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enum;
-using Catalog.ModuleConfigurationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.ModuleConfigurationService.Application.Processors
@@ -13,12 +14,12 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
     public class ModuleCreatorProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IOptions<ApplicationConfiguration> _applicationConfiguration;
+        private readonly IModuleParametersValidator _moduleParametersValidator;
 
-        public ModuleCreatorProcessor(IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public ModuleCreatorProcessor(IUnitOfWork unitOfWork, IOptions<ModuleConfiguration> applicationConfiguration, IModuleParametersValidator moduleCreationValidator)
         {
             _unitOfWork = unitOfWork;
-            _applicationConfiguration = applicationConfiguration;
+            _moduleParametersValidator = moduleCreationValidator;
         }
 
         public async Task<Operation<ModuleDto, string>> ProcessAsync(CreateModuleDto model, CancellationToken cancellationToken = default)
@@ -99,7 +100,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 title: "default",
                 code:Guid.NewGuid().ToString(),
                 moduleType: moduleType,
-                requaredParameters: _applicationConfiguration.Value.ModuleRequaredParameters,
+                parametersValidator: _moduleParametersValidator,
                 numericParameters: numericParameters,
                 textParameters: textParameters
             );

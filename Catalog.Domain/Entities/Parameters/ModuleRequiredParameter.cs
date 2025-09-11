@@ -1,18 +1,18 @@
 ﻿namespace Catalog.Contracts.Entities.Parameters
 {
-    public sealed class ModuleRequaredParameter
+    public sealed class ModuleRequiredParameter
     {
-        public required string ModuleType { get; set; }
+        public required string ModuleTypeCode { get; set; }
         public required List<ModuleParameterRule> Parameters { get; set; }
     }
 
     public sealed class ModuleParameterRule 
     {
         public required string Parameter {  get; set; }
-        public List<ModuleRequaredParameterDependency>? Dependencies { get; set; }
+        public List<ModuleRequiredParameterDependency>? Dependencies { get; set; }
     }
 
-    public sealed class ModuleRequaredParameterDependency
+    public sealed class ModuleRequiredParameterDependency
     { 
         public string? ComponentsTitle { get; set; }
         public string? ComponentsTypeTitle { get; set; }

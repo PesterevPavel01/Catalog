@@ -1,11 +1,11 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.ComponentCompatibilityValidator;
+using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Dto.Module;
-using Catalog.Contracts.Entities.Parameters;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities;
 using Catalog.ModuleCompositionValidator;
-using Catalog.ModuleConfigurationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.ModuleConfigurationService.Application.Processors
@@ -13,21 +13,25 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
     public class ModuleComplectationProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IOptions<ApplicationConfiguration> _applicationConfiguration;
+        private readonly IOptions<ModuleConfiguration> _applicationConfiguration;
         private readonly CompositionValidator _moduleCompositionValidator;
-        private readonly CompabilityValidator _componentCompabilityValidator;
-        private readonly List<ModuleRequaredParameter> _moduleRequaredParameters;
+        private readonly CompatibilityValidator _componentCompatibilityValidator;
+        private readonly IModuleParametersValidator _moduleParametersValidator;
 
-        public ModuleComplectationProcessor(IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration,
-            CompabilityValidator compabilityValidator, CompositionValidator moduleCompositionValidator)
+        public ModuleComplectationProcessor(
+            IUnitOfWork unitOfWork, 
+            IOptions<ModuleConfiguration> applicationConfiguration,
+            CompatibilityValidator compatibilityValidator,
+            CompositionValidator moduleCompositionValidator,
+            IModuleParametersValidator moduleParametersValidator)
         {
             _applicationConfiguration = applicationConfiguration;
             _unitOfWork = unitOfWork;
-            _componentCompabilityValidator = compabilityValidator;
-            _componentCompabilityValidator.SetComponentCompabilityRules(_applicationConfiguration.Value.ComponentCompabilityRules);
+            _componentCompatibilityValidator = compatibilityValidator;
+            _componentCompatibilityValidator.SetComponentCompatibilityRules(_applicationConfiguration.Value.ComponentCompatibilityRules);
             _moduleCompositionValidator = moduleCompositionValidator;
             _moduleCompositionValidator.SetModuleCompositionRules(_applicationConfiguration.Value.ModuleCompositionRules);
-            _moduleRequaredParameters = _applicationConfiguration.Value.ModuleRequaredParameters;
+            _moduleParametersValidator = moduleParametersValidator;
         }
 
         public async Task<Operation<ModuleDto, string>> ProcessAsync(ModuleComplectationDto model, CancellationToken cancellationToken = default)
@@ -38,7 +42,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == model.ModuleCode,
                     trackingType: TrackingType.Tracking,
-                    include: Module.IncludeRequaredField());
+                    include: Module.IncludeRequiredField());
 
             if (module is null)
                 return Operation.Error("Module not found!"); 
@@ -70,9 +74,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                     return Operation.Error(result.Error);
             }
 
-            module.ModuleRequaredParameters = _moduleRequaredParameters.First(x => x.ModuleType == module.ModuleType.Title.Value);
-
-            var createModuleResult = module.AddComponent(component);
+            var createModuleResult = module.AddComponent(component, _moduleParametersValidator);
 
             if(!createModuleResult.Ok) 
                 return createModuleResult;
@@ -97,7 +99,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
 
             foreach (var existingComponent in existingComponents)
             {
-                var compabilityResult = _componentCompabilityValidator.Validate(existingComponent, component);
+                var compabilityResult = _componentCompatibilityValidator.Validate(existingComponent, component);
 
                 if (!compabilityResult.Ok)
                     return Operation.Error(compabilityResult.Error);

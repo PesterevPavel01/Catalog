@@ -29,7 +29,7 @@ namespace Catalog.ApprovalService.Application.QueueHandlers.ModuleQueueHandlers
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Id == message.ModuleId,
                     trackingType: TrackingType.NoTracking,
-                    include: Module.IncludeRequaredField());
+                    include: Module.IncludeRequiredField());
 
             if (module == null)
                 return;

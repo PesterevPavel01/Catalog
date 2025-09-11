@@ -24,7 +24,7 @@ namespace Catalog.OrderService.Application.Processors
                 .GetRepository<Module>().GetAllAsync(
                     predicate: entity => modelModules.Contains(entity.Code),
                     trackingType: TrackingType.Tracking,
-                    include: Module.IncludeRequaredField());
+                    include: Module.IncludeRequiredField());
 
             List<OrderItem> orderItems = [];
 

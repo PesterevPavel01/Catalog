@@ -4,14 +4,14 @@ namespace Catalog.ComponentCompatibilityValidator.Extension
 {
     public static class ServiceCollectionExtension
     {
-        public static void AddComponentCompabilityValidator(this IServiceCollection services)
+        public static void AddComponentCompatibilityValidator(this IServiceCollection services)
         {
             InitServices(services);
         }
 
         private static void InitServices(this IServiceCollection services)
         {
-            services.AddScoped<CompabilityValidator>();
+            services.AddScoped<CompatibilityValidator>();
         }
     }
 }

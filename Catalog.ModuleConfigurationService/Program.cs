@@ -2,6 +2,7 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentCompatibilityValidator.Extension;
 using Catalog.ModuleCompositionValidator.Extension;
 using Catalog.ModuleConfigurationService.Definitions.Configurations;
+using Catalog.ModuleParametersValidator.Extensions;
 using Serilog;
 using Serilog.Events;
 using TelegramService.DependencyInjection;
@@ -21,7 +22,9 @@ try
 
     builder.AddApplicationConfiguration();
 
-    builder.Services.AddComponentCompabilityValidator();
+    builder.Services.AddModuleCreationValidator();
+
+    builder.Services.AddComponentCompatibilityValidator();
 
     builder.Services.AddModuleCompositionValidator();
 

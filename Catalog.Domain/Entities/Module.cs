@@ -1,6 +1,8 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Module;
+using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Parameters;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +24,7 @@ namespace Catalog.Domain.Entities
             string title,
             string code,
             ModuleType moduleType,
-            List<ModuleRequaredParameter> requaredParameters,
+            IModuleParametersValidator parametersValidator,
             List<ModuleTextParameter>? textParameters = null,
             List<ModuleNumericParameter>? numericParameters = null)
         {
@@ -35,23 +37,13 @@ namespace Catalog.Domain.Entities
                 return Operation.Error(titleValue.Error);
 
             if (moduleType is null)
-                return Operation.Error("ModuleTupe not found");
-
-            if (requaredParameters is null)
-                return Operation.Error("RequaredParameters not found");
+                return Operation.Error("ModuleType not found");
 
             var module = new Module(titleValue.Result, code, Guid.Empty)
                 .SetModuleType(moduleType);
 
             if (!module.Ok)
                 return Operation.Error(module.Error);
-
-            var moduleRequaredParameters = requaredParameters.FirstOrDefault(x => x.ModuleType == moduleType.Title.Value);
-
-            if (moduleRequaredParameters == null)
-                return Operation.Error("ModuleRequaredParameters not found");
-
-            module.Result.ModuleRequaredParameters = moduleRequaredParameters;
 
             if (textParameters is not null)
                 foreach (var item in textParameters)
@@ -69,27 +61,20 @@ namespace Catalog.Domain.Entities
                         return Operation.Error(operationResult.Error);
                 }
 
-            var checkRequaredParametersResult = module.Result.CheckRequaredParameters();
+            var validationResult = parametersValidator.Validate(module.Result);
 
-            if (!checkRequaredParametersResult.Ok)
-                return Operation.Error(checkRequaredParametersResult.Error);
+            if (!validationResult.Ok)
+                return Operation.Error(validationResult.Error);
 
             return module.Result;
         }
 
         public Operation<Module, string> Update(
-            List<ModuleRequaredParameter> requaredParameters,
+            IModuleParametersValidator parametersValidator,
             List<ModuleTextParameter>? textParameters = null,
             List<ModuleNumericParameter>? numericParameters = null,
             List<Component>? components = null)
         {
-            var moduleRequaredParameters = requaredParameters.FirstOrDefault(x => x.ModuleType == ModuleType.Title.Value);
-
-            if (moduleRequaredParameters == null)
-                return Operation.Error("ModuleRequaredParameters not found");
-
-            ModuleRequaredParameters = moduleRequaredParameters;
-
             if (textParameters is not null)
                 foreach (var item in textParameters)
                 {
@@ -106,23 +91,21 @@ namespace Catalog.Domain.Entities
                         return Operation.Error(operationResult.Error);
                 }
 
-            var checkRequaredParametersResult = CheckRequaredParameters();
+            var validationResult = parametersValidator.Validate(this);
 
-            if (!checkRequaredParametersResult.Ok)
-                return Operation.Error(checkRequaredParametersResult.Error);
+            if (!validationResult.Ok)
+                return Operation.Error(validationResult.Error);
 
             return this;
         }
 
-        public bool IsCustom => CheckCostomization();
+        public bool IsCustom => CheckCustomization();
 
         public IReadOnlyCollection<Component> Components => _components.AsReadOnly();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
 
         public IReadOnlyCollection<ModuleTextParameter> ModuleTextParameters => _moduleTextParameters.AsReadOnly();
         public IReadOnlyCollection<ModuleNumericParameter> ModuleNumericParameters => _moduleNumericParameters.AsReadOnly();
-
-        public ModuleRequaredParameter ModuleRequaredParameters = null!;
 
         public Guid ModuleTypeId { get; private set; }
         public ModuleType ModuleType { get; private set; } = null!;
@@ -133,7 +116,7 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        public Operation<ModuleDto,string> AddComponent(Component component)
+        public Operation<ModuleDto,string> AddComponent(Component component, IModuleParametersValidator parametersValidator)
         {
             var exists = _components.Find(x => x.Id == component.Id);
             
@@ -143,10 +126,10 @@ namespace Catalog.Domain.Entities
             if (_components.FirstOrDefault(x => x.ComponentType.Code == component.ComponentType.Code) is not null)
                 return Operation.Error("Module already has a component of this type!");
 
-            var checkRequaredParametersResult = CheckRequaredParameters(component);
+            var checkRequiredParametersResult = parametersValidator.Validate(this, component);
 
-            if (!checkRequaredParametersResult.Ok)
-                return Operation.Error(checkRequaredParametersResult.Error);
+            if (!checkRequiredParametersResult.Ok)
+                return Operation.Error(checkRequiredParametersResult.Error);
 
             _components.Add(component);
 
@@ -222,56 +205,6 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        private Operation<bool, string> CheckRequaredParameters(Component? component = null)
-        {
-            //проверяем наличие параметров, которые должны быть при создании
-            var requaredParameters = ModuleRequaredParameters.Parameters.Where(x => x.Dependencies is null).ToList();
-
-            if (requaredParameters.Count == 0)
-                return Operation.Error("Default ModuleRequaredParameters not found");
-
-            if (requaredParameters
-                .Select(x => x.Parameter)
-                .FirstOrDefault(x =>
-                (
-                    ModuleNumericParameters is null || !ModuleNumericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                    && (ModuleTextParameters is null || !ModuleTextParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                ) is not null)
-                return Operation.Error("Required parameters are missing from the module");
-
-            if (component is null)
-                return true;
-
-            //проверяем параметры, которые необходимы для компонента
-            requaredParameters = [..ModuleRequaredParameters.Parameters
-                .Where(x => x.Dependencies is not null).ToList()];
-
-            requaredParameters = [..requaredParameters
-                .Where(x => x.Dependencies
-                    .Select(x => x.ComponentsTypeTitle).Contains(component.ComponentType.Title.Value))];
-
-            if (requaredParameters.Count == 0)
-                return true;
-
-            requaredParameters = [.. requaredParameters
-                .Where(x => x.Dependencies
-                    .Select(x => x.ComponentsTitle).Contains(component.Title.Value))];
-
-            if (requaredParameters.Count == 0)
-                return true;
-
-            if (requaredParameters
-                .Select(x => x.Parameter)
-                .FirstOrDefault(x =>
-                (
-                    ModuleNumericParameters is null || !ModuleNumericParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                    && (ModuleTextParameters is null || !ModuleTextParameters.Select(x => x.ParameterType.Title.Value).Contains(x))
-                ) is not null)
-                return Operation.Error("Required parameters are missing from the module");
-
-            return true;
-        }
-
         public ModuleDto ConvertToDto()
             => new()
             {
@@ -286,7 +219,7 @@ namespace Catalog.Domain.Entities
                     .Select(x => x.ConvertToDto())]
             };
 
-        public static Func<IQueryable<Module>, IIncludableQueryable<Module, object>> IncludeRequaredField()
+        public static Func<IQueryable<Module>, IIncludableQueryable<Module, object>> IncludeRequiredField()
             =>
             query => query
                 .Include(x => x.Components)
@@ -299,11 +232,11 @@ namespace Catalog.Domain.Entities
                         .ThenInclude(x => x.ParameterType)
                 .Include(x => x.ModuleType)
                 .Include(x => x.ModuleNumericParameters)
-                    .ThenInclude(x => x.ParameterType)
+                    .ThenInclude(x => x.ParameterType)  
                 .Include(x => x.ModuleTextParameters)
                     .ThenInclude(x => x.ParameterType);
 
-        private bool CheckCostomization()
+        private bool CheckCustomization()
         {
             var customComponents = Components.FirstOrDefault(x => x.IsCostom);
             

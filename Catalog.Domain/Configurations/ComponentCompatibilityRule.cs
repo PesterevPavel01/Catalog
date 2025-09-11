@@ -1,11 +1,11 @@
-﻿namespace Catalog.ComponentCompabilityValidator.Contracts
+﻿namespace Catalog.Contracts.Configurations
 {
-    public sealed class ComponentCompabilityRule
+    public sealed class ComponentCompatibilityRule
     {
         public required string ComponentParameter { get; set; }
-        public required List<ComponentDependensy> Dependencies { get; set; }
+        public required List<ComponentDependency> Dependencies { get; set; }
     }
-    public sealed class ComponentDependensy
+    public sealed class ComponentDependency
     {
         public List<string>? TargetComponentTypes { get; set; }
         public required string Parameter { get; set; }
