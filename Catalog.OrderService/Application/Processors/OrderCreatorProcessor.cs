@@ -2,7 +2,7 @@
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities;
-using Catalog.Domain.Entities.Autorization;
+using Catalog.Domain.Entities.Authorization;
 
 namespace Catalog.OrderService.Application.Processors
 {

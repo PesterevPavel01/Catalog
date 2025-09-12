@@ -1,5 +1,6 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentCompatibilityValidator.Extension;
+using Catalog.Infrastructure;
 using Catalog.ModuleCompositionValidator.Extension;
 using Catalog.ModuleConfigurationService.Definitions.Configurations;
 using Catalog.ModuleParametersValidator.Extensions;
@@ -37,6 +38,8 @@ try
 
     // create application
     var app = builder.Build();
+
+    await DatabaseInitializer.InitializeAsync(app.Services);
 
     // using definition for application
     app.UseDefinitions();

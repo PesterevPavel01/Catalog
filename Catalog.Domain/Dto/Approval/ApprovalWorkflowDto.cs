@@ -4,7 +4,7 @@ namespace Catalog.Contracts.Dto.Approval
 {
     public sealed record ApprovalWorkflowDto
     {
-        public required string Code { get; set; }
+        public required string WorkflowCode { get; set; }
         public required OrderItemDto OrderItem { get; set; }
         public required ApprovalWorkflowItemDto ActiveStage { get; set; }
         public IEnumerable<ApprovalWorkflowItemDto> ApprovalWorkflowItems { get; set; } = [];

@@ -71,19 +71,16 @@ namespace Catalog.ComponentCompatibilityValidator
 
                 var validationParameters = componentToValidate.ComponentTextParameters
                     .Where(x => x.ParameterType.Title.Value == parameterRule.Parameter ).ToList();
-                
-                if (validationParameters is null || validationParameters.Count == 0)
-                    continue;
 
                 switch (parameterRule.ComparisonRule)
                 {
                     case "Contains":
                         if (!validationParameters.Select(x => x.Value).Intersect(targetParameters.Select(x => x.Value)).Any())
-                            return Operation.Error($"Не выполняется условие для свойства '{targetParameters.First().ParameterType.Title.Value}' компонента '{targetComponent.ComponentType.Title.Value}' (код: '{targetComponent.Code}')! Ни одно значение {JsonConvert.SerializeObject(targetParameters.Select(x => x.Value.Value), Formatting.Indented)} его свойства '{targetParameters.First().ParameterType.Title.Value}' не найдено в списке разрешенных значений({JsonConvert.SerializeObject(validationParameters.Select(x => x.Value.Value), Formatting.Indented)}) у компонента '{componentToValidate.ComponentType.Title.Value}' (код: {componentToValidate.Code}), ");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameters.First().ParameterType.Title.Value}' компонента '{targetComponent.ComponentType.Title.Value}' (код: '{targetComponent.Code}')! Ни одно значение {JsonConvert.SerializeObject(targetParameters.Select(x => x.Value.Value), Formatting.Indented)} его свойства '{targetParameters.First().ParameterType.Title.Value}' не найдено в списке разрешенных значений({JsonConvert.SerializeObject(validationParameters.Select(x => x.Value.Value), Formatting.Indented)}) у компонента '{componentToValidate.ComponentType.Title.Value}' (код: '{componentToValidate.Code}')");
                         break;
                     case "NoContains":
                         if (validationParameters.Select(x => x.Value).Intersect(targetParameters.Select(x => x.Value)).Any())
-                            return Operation.Error($"Не выполняется условие для свойства '{targetParameters.First().ParameterType.Title.Value}' компонента '{targetComponent.ComponentType.Title.Value}' (код: '{targetComponent.Code}')! Есть значение '{JsonConvert.SerializeObject(targetParameters.Select(x => x.Value.Value), Formatting.Indented)}' его свойства '{targetParameters.First().ParameterType.Title.Value}', которое найдено в списке значений({JsonConvert.SerializeObject(validationParameters.Select(x => x.Value.Value), Formatting.Indented)}) у компонента '{componentToValidate.ComponentType.Title.Value}' (код: '{componentToValidate.Code}'), ");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameters.First().ParameterType.Title.Value}' компонента '{targetComponent.ComponentType.Title.Value}' (код: '{targetComponent.Code}')! Есть значение '{JsonConvert.SerializeObject(targetParameters.Select(x => x.Value.Value), Formatting.Indented)}' его свойства '{targetParameters.First().ParameterType.Title.Value}', которое найдено в списке значений({JsonConvert.SerializeObject(validationParameters.Select(x => x.Value.Value), Formatting.Indented)}) у компонента '{componentToValidate.ComponentType.Title.Value}' (код: '{componentToValidate.Code}')");
                         break;
                     default:
                         return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: '{targetParameters.First().ParameterType.Title.Value}'. Type parameter: '{targetParameters.First().GetType().Name}')");
@@ -105,7 +102,7 @@ namespace Catalog.ComponentCompatibilityValidator
                 var validationParameter = componentToValidate.ComponentNumericParameters
                     .FirstOrDefault(x =>
                         x.ParameterType.Title.Value == parameterRule.Parameter
-                        && (parameterRule.TargetComponentTypes is null || parameterRule.TargetComponentTypes.Contains(targetComponent.ComponentType.Title.Value)));
+                        && (parameterRule.TargetComponentTypes is null || parameterRule.TargetComponentTypes.Contains(componentToValidate.ComponentType.Title.Value)));
 
                 if (validationParameter is null)
                     continue;
@@ -114,23 +111,23 @@ namespace Catalog.ComponentCompatibilityValidator
                 {
                     case ">":
                         if (!(validationParameter.Value >= targetParameter.Value))
-                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()} компонента {targetComponent.ComponentType.Title.Value.ToUpper()} (код: {targetComponent.Code})! Значение {targetParameter.Value} его свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть <= значения {validationParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} у компонента {componentToValidate.ComponentType.Title.Value.ToUpper()} (код: {componentToValidate.Code})");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameter.ParameterType.Title.Value.ToUpper()}' компонента '{targetComponent.ComponentType.Title.Value.ToUpper()}' (код: {targetComponent.Code})! Значение {targetParameter.Value} его свойства '{targetParameter.ParameterType.Title.Value.ToUpper()}' должно быть <= значения '{validationParameter.Value}' свойства '{validationParameter.ParameterType.Title.Value.ToUpper()}' у компонента '{componentToValidate.ComponentType.Title.Value.ToUpper()}' (код: '{componentToValidate.Code}')");
                         break;
 
                     case "<":
                         if (!(validationParameter.Value <= (targetParameter.Value)))
-                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()} компонента {targetComponent.ComponentType.Title.Value.ToUpper()} (код: {targetComponent.Code})! Значение {targetParameter.Value} его свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть >= значения {validationParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} у компонента {componentToValidate.ComponentType.Title.Value.ToUpper()} (код: {componentToValidate.Code})");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameter.ParameterType.Title.Value.ToUpper()}' компонента '{targetComponent.ComponentType.Title.Value.ToUpper()}' (код: '{targetComponent.Code}')! Значение {targetParameter.Value} его свойства '{targetParameter.ParameterType.Title.Value.ToUpper()}' должно быть >= значения '{validationParameter.Value}' свойства '{validationParameter.ParameterType.Title.Value.ToUpper()}' у компонента '{componentToValidate.ComponentType.Title.Value.ToUpper()}' (код: '{componentToValidate.Code}')");
                         break;
                     case "=":
                         if (validationParameter.Value != (targetParameter.Value))
-                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()} компонента {targetComponent.ComponentType.Title.Value.ToUpper()} (код: {targetComponent.Code})! Значение {targetParameter.Value} его свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть равно значению {validationParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} у компонента {componentToValidate.ComponentType.Title.Value.ToUpper()} (код: {componentToValidate.Code})");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameter.ParameterType.Title.Value.ToUpper()} компонента '{targetComponent.ComponentType.Title.Value.ToUpper()}' (код: '{targetComponent.Code}')! Значение {targetParameter.Value} его свойства '{targetParameter.ParameterType.Title.Value.ToUpper()}' должно быть равно значению '{validationParameter.Value}' свойства '{validationParameter.ParameterType.Title.Value.ToUpper()}' у компонента '{componentToValidate.ComponentType.Title.Value.ToUpper()}' (код: '{componentToValidate.Code}')");
                         break;
                     case "!=":
                         if (validationParameter.Value == (targetParameter.Value))
-                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()} компонента {targetComponent.ComponentType.Title.Value.ToUpper()} (код: {targetComponent.Code})! Значение {targetParameter.Value} его свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть не равно значению {validationParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} у компонента {componentToValidate.ComponentType.Title.Value.ToUpper()} (код: {componentToValidate.Code})");
+                            return Operation.Error($"Не выполняется условие для свойства '{targetParameter.ParameterType.Title.Value.ToUpper()}' компонента '{targetComponent.ComponentType.Title.Value.ToUpper()}' (код: '{targetComponent.Code})! Значение {targetParameter.Value}' его свойства '{targetParameter.ParameterType.Title.Value.ToUpper()}' должно быть не равно значению '{validationParameter.Value}' свойства '{validationParameter.ParameterType.Title.Value.ToUpper()}' у компонента '{componentToValidate.ComponentType.Title.Value.ToUpper()}' (код: '{componentToValidate.Code}')");
                         break;
                     default:
-                        return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: {targetParameter.ParameterType.Title.Value.ToUpper()}. Type parameter: {targetParameter.GetType().Name})");
+                        return Operation.Error($"ComparisonRule not found '{parameterRule.ComparisonRule}' (ComponentParameter: '{targetParameter.ParameterType.Title.Value.ToUpper()}'. Type parameter: '{targetParameter.GetType().Name}')");
                 }
             }
             return true;

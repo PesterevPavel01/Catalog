@@ -1,6 +1,7 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentParametersValidator.Extensions;
 using Catalog.ExchangeService.Definitions.Configurations;
+using Catalog.Infrastructure;
 using Serilog;
 using Serilog.Events;
 using TelegramService.DependencyInjection;
@@ -31,6 +32,8 @@ try
 
     // create application
     var app = builder.Build();
+
+    await DatabaseInitializer.InitializeAsync(app.Services);
 
     // using definition for application
     app.UseDefinitions();

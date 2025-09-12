@@ -6,7 +6,7 @@ namespace Catalog.ApprovalService.Definitions.Configurations
 {
     public static class ConfigurationDefinition
     {
-        public static void AddSharedConfiguration(this WebApplicationBuilder builder)
+        public static void AddApplicationConfiguration(this WebApplicationBuilder builder)
         {
             ConfigureApplication(builder);
 

@@ -1,5 +1,6 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentCompatibilityValidator.Extension;
+using Catalog.Infrastructure;
 using Catalog.ModuleCompositionValidator.Extension;
 using Catalog.OrderService.Definitions.Configurations;
 using Serilog;
@@ -34,6 +35,8 @@ try
 
     // create application
     var app = builder.Build();
+
+    await DatabaseInitializer.InitializeAsync(app.Services);
 
     // using definition for application
     app.UseDefinitions();

@@ -5,7 +5,7 @@ using Catalog.Contracts.Dto.Approval;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Contracts.Entities.Configurations;
 using Catalog.Domain.Entities;
-using Catalog.Domain.Entities.Autorization;
+using Catalog.Domain.Entities.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.ApprovalService.Application.Processors

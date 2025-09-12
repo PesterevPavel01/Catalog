@@ -6,7 +6,7 @@ using Catalog.Contracts.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 
-namespace Catalog.Domain.Entities.Autorization
+namespace Catalog.Domain.Entities.Authorization
 {
     public class ApplicationUser : Entity
     {
@@ -48,6 +48,18 @@ namespace Catalog.Domain.Entities.Autorization
                 return Operation.Error(passwordValue.Error);
 
             return new ApplicationUser(id, userName, passwordValue.Result, email);
+        }
+
+        public Operation<ApplicationUser, string> AddRole(Role role) 
+        {
+            var exists = _roles.FirstOrDefault(x => x.Code == role.Code);
+
+            if (!(exists is null))
+                return Operation.Error($"User already has this role! UserName:{UserName}");
+
+            _roles.Add(role);
+
+            return this;
         }
 
         private static string HashPassword(string password)

@@ -1,7 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Approval;
 using Catalog.Domain.Entities;
-using Catalog.Domain.Entities.Autorization;
+using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -83,7 +83,7 @@ namespace Catalog.Contracts.Entities.Approval
         public ApprovalWorkflowDto ConvertToDto()
             => new()
             {
-                Code = this.Code,
+                WorkflowCode = this.Code,
                 ActiveStage = ActiveStage.ConvertToDto(),
                 OrderItem = OrderItem.ConvertToDto(),
                 IsCompleted = this.IsCompleted,

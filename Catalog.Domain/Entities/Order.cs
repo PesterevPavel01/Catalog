@@ -1,5 +1,5 @@
 ﻿using Calabonga.OperationResults;
-using Catalog.Domain.Entities.Autorization;
+using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore.Query;

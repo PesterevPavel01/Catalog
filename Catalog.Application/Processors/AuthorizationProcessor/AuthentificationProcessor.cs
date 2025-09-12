@@ -5,7 +5,7 @@ using System.Text;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Entities.Configurations;
 using Catalog.Domain.Dto.Authorization;
-using Catalog.Domain.Entities.Autorization;
+using Catalog.Domain.Entities.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 

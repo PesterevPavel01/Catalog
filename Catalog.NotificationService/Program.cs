@@ -1,4 +1,5 @@
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Infrastructure;
 using Catalog.NotificationService.Definitions.Configurations;
 using Serilog;
 using Serilog.Events;
@@ -28,6 +29,8 @@ try
 
     // create application
     var app = builder.Build();
+
+    await DatabaseInitializer.InitializeAsync(app.Services);
 
     // using definition for application
     app.UseDefinitions();

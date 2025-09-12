@@ -123,7 +123,7 @@ namespace Catalog.Domain.Entities
                 return ConvertToDto();
 
             if (_components.FirstOrDefault(x => x.ComponentType.Code == component.ComponentType.Code) is not null)
-                return Operation.Error("Module already has a component of this type!");
+                return Operation.Error($"Module already has a component of this type! Component type: {component.ComponentType.Title.Value}");
 
             var checkRequiredParametersResult = parametersValidator.Validate(this, component);
 
@@ -152,12 +152,12 @@ namespace Catalog.Domain.Entities
             var exists = _moduleTextParameters.FirstOrDefault(x => x.Id == textParameter.Id);
 
             if (exists is not null && textParameter.Id != Guid.Empty)
-                return Operation.Error("the module already has this parameter");
+                return Operation.Error($"Module already has this parameter! Parameter type: {textParameter.ParameterType.Title.Value}");
 
            exists = _moduleTextParameters.FirstOrDefault(x => x.ParameterType == textParameter.ParameterType && x.Value == textParameter.Value);
 
             if (exists is not null)
-                return Operation.Error("the module already has this parameter");
+                return Operation.Error($"Module already has this parameter! Parameter type: {textParameter.ParameterType.Title.Value}");
 
             _moduleTextParameters.Add(textParameter);
 
@@ -169,12 +169,12 @@ namespace Catalog.Domain.Entities
             var exists = _moduleNumericParameters.FirstOrDefault(x => x.Id == numericParameter.Id);
 
             if (exists is not null && numericParameter.Id != Guid.Empty)
-                return Operation.Error("the module already has this parameter");
+                return Operation.Error($"Module already has this parameter! Parameter type: {numericParameter.ParameterType.Title.Value}");
 
-            exists = _moduleNumericParameters.FirstOrDefault(x => x.ParameterType == numericParameter.ParameterType && x.Value == numericParameter.Value);
+            exists = _moduleNumericParameters.FirstOrDefault(x => x.ParameterType.Code == numericParameter.ParameterType.Code);
 
             if (exists is not null)
-                return Operation.Error("the module already has this parameter");
+                return Operation.Error($"The module already has this parameter! Parameter type: {numericParameter.ParameterType.Title.Value}");
 
             _moduleNumericParameters.Add(numericParameter);
 
@@ -186,7 +186,7 @@ namespace Catalog.Domain.Entities
             var exists = _moduleTextParameters.Find(x => x.Id == textParameter.Id);
             
             if (exists is null)
-                return Operation.Error("parameter not found!");
+                return Operation.Error($"parameter not found! Parameter type: {textParameter.ParameterType.Title.Value}");
 
             _moduleTextParameters.Remove(textParameter);
 

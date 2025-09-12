@@ -1,6 +1,6 @@
 ﻿using Catalog.Domain.Entities.Base;
 
-namespace Catalog.Domain.Entities.Autorization
+namespace Catalog.Domain.Entities.Authorization
 {
     public class UserToken : Entity
     {

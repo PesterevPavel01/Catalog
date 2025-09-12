@@ -1,4 +1,4 @@
-﻿using Catalog.Domain.Entities.Autorization;
+﻿using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
