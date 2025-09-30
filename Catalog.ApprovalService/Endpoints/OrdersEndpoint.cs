@@ -117,6 +117,8 @@ namespace Catalog.ApprovalService.Endpoints
             {
                 Summary = "Проверить наличие прав"
             });
+
+            //получить заказы, у которых Approver = роль из запроса
         }
     }
 }

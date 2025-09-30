@@ -27,7 +27,7 @@ namespace Catalog.Exchange.Endpoints.Authorization
 
             group.MapPost("autenticate", async (
             [FromBody] LoginDto model,
-                [FromServices] AuthentificationProcessor authentificationProcessor,
+                [FromServices] AuthenticationProcessor authentificationProcessor,
                 CancellationToken cancellationToken) =>
             {
                 var result = await authentificationProcessor.ProcessAsync(model, cancellationToken);

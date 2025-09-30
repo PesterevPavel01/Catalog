@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
-using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.OrderService.Application.Configurations;
 using Catalog.OrderService.Application.Processors;
@@ -26,9 +25,9 @@ namespace Catalog.OrderService.Endpoints
                 .ReportApiVersions()
                 .Build();
 
-            var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
-                .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(2, 0));
+        var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
+            .WithApiVersionSet(versionSet)
+            .HasApiVersion(new ApiVersion(2, 0));
 
         group.MapPost("create", async (
                 [FromBody] CreateOrderDto model,
@@ -43,55 +42,107 @@ namespace Catalog.OrderService.Endpoints
                     return Results.BadRequest(result.Error);
                
                 await bus.Publish(new OrderCreatedEvent(result.Result.Code));
-                //await bus.Publish(new OrderCreatedEvent(Guid.NewGuid().ToString()));
 
                 return Results.Ok(result.Result);
             })
-            //.RequireAuthorization("Administrator")
             .Produces(200)
             .ProducesProblem(401)
             .WithName("GetCreateEndpoint")
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Создание нового заказа.",
-                Description = @"
-                {
-                  ""orderItems"": [
-                    {
-                      ""moduleCode"": ""0aa3d8ce-3e61-4ca7-b10c-b3221f223b7b"",
-                      ""quantity"": 3
-                    }
-                  ],
-                  ""userName"": ""Administrator""
-                }"
             });
 
-            group.MapGet("GetAll", async (
-                [FromServices] IBus bus,
+            group.MapGet("by-period/{days:int:min(1):max(365)}", async (
+                [FromRoute] int days,
+                OrderLoaderProcessor orderLoaderProcessor,
+                CancellationToken cancellationToken,
+                [FromQuery] bool ascending = false,
+                [FromQuery] bool incompleteOnly = false,
+                [FromQuery] bool customOnly = false) =>
+                {
+                    var ordersResult = await orderLoaderProcessor
+                        .ProcessAsync(
+                            predicate: x => x.Enabled && x.CreatedAt > DateTime.Now.AddDays(-1* days),
+                            ascending, incompleteOnly, customOnly,cancellationToken);
+
+                    if (!ordersResult.Ok)
+                        return Results.BadRequest(ordersResult.Error);
+
+                    var result = ordersResult.Result.Select(x => new CommonOrderDto()
+                    {
+                        Code = x.Code,
+                        Title = x.Title.Value,
+                        IsCompleted = x.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow.IsCompleted == false) is null,
+                        IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
+                        CreatedAt = x.CreatedAt,
+                        UpdatedAt = x.UpdatedAt,
+                        Messages = x.OrderItems.SelectMany(x => x.Messages.Select(message => message.ConvertToDto()))
+                    });
+
+                    return Results.Ok(result);
+                })
+                .Produces(200)
+                .ProducesProblem(401)
+                .WithName("GetAllOrderEndpoint")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Просмотр заказов за период."
+                });
+
+            group.MapGet("by-code/{orderCode}", async (
+                [FromRoute] string orderCode,
                 OrderLoaderProcessor orderLoaderProcessor,
                 CancellationToken cancellationToken) =>
-            {
-                var result = await orderLoaderProcessor
-                    .ProcessAsync(
-                        predicate: x => x.Enabled,
-                        cancellationToken);
+                {
+                    var ordersResult = await orderLoaderProcessor
+                        .ProcessAsync(
+                            predicate: x => x.Enabled
+                            && x.Code == orderCode,
+                            cancellationToken: cancellationToken);
 
-                if (!result.Ok)
-                    return Results.BadRequest(result.Error);
+                    if (!ordersResult.Ok)
+                        return Results.BadRequest(ordersResult.Error);
 
-                //if (result.Ok)
-                //    await bus.Publish(new OrderCreatedEvent(result.Result.First().Code));
+                    var result = ordersResult.Result.Select(x => x.ConvertToDto());
 
-                return Results.Ok(result.Result);
-            })
-            //.RequireAuthorization("Administrator")
-            .Produces(200)
-            .ProducesProblem(401)
-            .WithName("GetAllOrderEndpoint")
-            .WithOpenApi(operation => new(operation)
-            {
-                Summary = "Просмотр заказов."
-            });
+                    return Results.Ok(result);
+                })
+                .Produces(200)
+                .ProducesProblem(401)
+                .WithName("GetByCodeOrderEndpoint")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Получить заказ по коду."
+                });
+
+            group.MapGet("by-customer/{userLogin}/{days:int:min(1):max(365)}",
+                async (
+                [FromRoute] string userLogin,
+                [FromRoute] int days,
+                OrdersByCustomerLoginProcessor processor,
+                CancellationToken cancellationToken, 
+                [FromQuery] bool ascending = false,
+                [FromQuery] bool incompleteOnly = false,
+                [FromQuery] bool customOnly = false
+                ) =>
+                {
+                    var result = await processor.ProcessAsync(userLogin, days, ascending, incompleteOnly, customOnly,  cancellationToken);
+
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
+
+                    return Results.Ok(result.Result);
+                })
+                //.RequireAuthorization("Administrator")
+                .Produces(200)
+                .ProducesProblem(401)
+                .WithName("OrdersByCustomerLoginEndpoint")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Получить заказы пользователя за период"
+                });
+    
         }
     }
 

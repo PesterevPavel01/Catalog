@@ -18,17 +18,38 @@ namespace Catalog.OrderService.Application.Processors
             _unitOfWork = unitOfWork;
             _applicationConfiguration = applicationConfiguration;
         }
-
-        public async Task<Operation<List<OrderDto>, string>> ProcessAsync(Expression<Func<Order, bool>>? predicate = null, CancellationToken cancellationToken = default)
+        public async Task<Operation<List<Order>, string>> ProcessAsync(Expression<Func<Order, bool>>? predicate = null,
+            bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default)
         {
-            var modules = await _unitOfWork
+            var orders = await _unitOfWork
                 .GetRepository<Order>()
                 .GetAllAsync(
                     predicate: predicate,
                     include: Order.IncludeRequiredField(),
                     trackingType: TrackingType.NoTracking);
 
-            return modules.Select(x => x.ConvertToDto()).ToList();
+
+            if (!orders.Any())
+            {
+                return new();
+            }
+
+            if (ascending)
+                orders = [.. orders.OrderBy(x => x.CreatedAt)];
+            else
+                orders = [.. orders.OrderByDescending(x => x.CreatedAt)];
+
+            if (customOnly)
+            {
+                orders = [.. orders.Where(x => x.OrderItems.FirstOrDefault(oi => oi.Module.IsCustom) != null)];
+            }
+
+            if (incompleteOnly)
+            {
+                orders = [.. orders.Where(x => x.OrderItems.FirstOrDefault(oi => !oi.ApprovalWorkflow.IsCompleted) != null)];
+            }
+
+            return orders.ToList();
         }
     }
 }

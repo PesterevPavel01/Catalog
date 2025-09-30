@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Calabonga.OperationResults;
+using Catalog.Contracts.Entities;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Contracts.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
@@ -10,6 +11,7 @@ namespace Catalog.Domain.Entities.Authorization
 {
     public class ApplicationUser : Entity
     {
+        private readonly List<Message> _messages = [];
         private readonly List<Order> _orders = [];
         private readonly List<Role> _roles = [];
         private readonly List<ApprovalWorkflowItem> _approvalWorkflowItems = [];
@@ -25,7 +27,9 @@ namespace Catalog.Domain.Entities.Authorization
         public PasswordValue Password { get; private set; }
         public string? Email { get; private set; }
         public UserToken UserToken { get; set; } = null!;
+        public string? ExternalId { get; private set; }
 
+        public IReadOnlyCollection<Message> Messages => _messages.AsReadOnly();
         public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
         public IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
         public IReadOnlyCollection<ApprovalWorkflowItem> ApprovalWorkflowItems => _approvalWorkflowItems.AsReadOnly();
@@ -70,5 +74,17 @@ namespace Catalog.Domain.Entities.Authorization
 
         public bool CheckPassword(string password)
             => Password == PasswordValue.Create(HashPassword(password)).Result;
+
+        public Operation<ApplicationUser, string> SetExternalId(string externalId)
+        {
+            if (string.IsNullOrWhiteSpace(externalId))
+            {
+                return Operation.Error("ExternalId is empty or null");
+            }
+
+            ExternalId = externalId;
+
+            return this;
+        }
     }
 }

@@ -3,6 +3,7 @@ using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Events.CustomerEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.NotificationService.Definitions;
@@ -33,6 +34,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                 return config;
             }, onCreated: async bus =>
                 {
+                    await bus.Subscribe<CustomerCreatedEvent>();
                     await bus.Subscribe<WorkflowCreatedEvent>();
                     await bus.Subscribe<WorkflowCancelledEvent>();
                 }

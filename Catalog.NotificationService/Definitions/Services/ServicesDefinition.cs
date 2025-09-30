@@ -7,7 +7,7 @@ namespace Catalog.NotificationService.Definitions.Services
     {
         public override void ConfigureServices(WebApplicationBuilder builder)
         {
-            builder.Services.AddScoped<AuthentificationProcessor>();
+            builder.Services.AddScoped<AuthenticationProcessor>();
         }
     }
 }

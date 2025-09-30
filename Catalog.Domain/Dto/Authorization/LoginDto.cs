@@ -1,14 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-
-namespace Catalog.Domain.Dto.Authorization
+﻿namespace Catalog.Domain.Dto.Authorization
 {
-    public class LoginDto
+    public sealed record LoginDto
     {
-        [Required]
-        public string UserName { get; set; }
+        public required string UserName { get; set; }
 
-        [Required]
-        public string Password { get; set; }
+        public required string Password { get; set; }
     }
 }

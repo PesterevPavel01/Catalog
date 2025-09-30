@@ -15,7 +15,7 @@ namespace Catalog.ModuleConfigurationService.Definitions.Services
             builder.Services.AddScoped<ModuleLoaderProcessor>();
             builder.Services.AddScoped<ModuleComplectationProcessor>();
             builder.Services.AddScoped<ModuleRemoveComponentProcessor>();
-            builder.Services.AddScoped<AuthentificationProcessor>();
+            builder.Services.AddScoped<AuthenticationProcessor>();
 
             builder.Services.AddScoped<ModuleUpdateManager>();
             

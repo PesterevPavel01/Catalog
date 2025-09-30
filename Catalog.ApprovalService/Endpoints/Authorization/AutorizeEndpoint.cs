@@ -26,8 +26,8 @@ namespace Catalog.ApprovalService.Endpoints.Authorization
                 .HasApiVersion(new ApiVersion(1, 0));
 
             group.MapPost("autenticate", async (
-            [FromBody] LoginDto model,
-                [FromServices] AuthentificationProcessor authentificationProcessor,
+                [FromBody] LoginDto model,
+                [FromServices] AuthenticationProcessor authentificationProcessor,
                 CancellationToken cancellationToken) =>
             {
                 var result = await authentificationProcessor.ProcessAsync(model, cancellationToken);

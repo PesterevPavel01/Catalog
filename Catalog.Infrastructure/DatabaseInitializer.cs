@@ -43,7 +43,7 @@ namespace Catalog.Infrastructure
 
             await context.Set<Role>().AddAsync(administratorRole);
 
-            roleCreationResult = Role.Create(Guid.NewGuid(), "CONSTRUCTOR", "CONSTRUCTOR");
+            roleCreationResult = Role.Create(Guid.NewGuid(), "constructor", "constructor");
             if (!roleCreationResult.Ok)
                 throw new DbUpdateException(roleCreationResult.Error);
 
@@ -52,6 +52,16 @@ namespace Catalog.Infrastructure
             constructorRole.UpdatedAt = default;
 
             await context.Set<Role>().AddAsync(constructorRole);
+
+            roleCreationResult = Role.Create(Guid.NewGuid(), "customer", "customer");
+            if (!roleCreationResult.Ok)
+                throw new DbUpdateException(roleCreationResult.Error);
+
+            var customerRole = roleCreationResult.Result;
+            customerRole.CreatedAt = DateTime.Now;
+            customerRole.UpdatedAt = default;
+
+            await context.Set<Role>().AddAsync(customerRole);
 
             var administratorResult = ApplicationUser
                 .Create(

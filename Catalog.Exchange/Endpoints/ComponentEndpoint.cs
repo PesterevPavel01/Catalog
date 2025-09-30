@@ -84,7 +84,6 @@ namespace Catalog.Web.Endpoints
 
             group.MapPost("add-text-parameter", async (
                 [FromBody] ComponentAddTextParameterDto model,
-                IBus bus,
                 ComponentAddTextParameterProcessor componentAddTextParameterProcessor,
                 CancellationToken cancellationToken) =>
             {

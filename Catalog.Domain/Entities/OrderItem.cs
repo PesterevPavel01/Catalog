@@ -1,18 +1,23 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Entities;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Domain.Entities.Base;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Catalog.Domain.Entities
 {
     public class OrderItem : Entity
     {
+        private readonly List<Message> _messages = [];
+
         protected OrderItem(Guid id, Int16 quantity) : base(id)
         {
             Quantity = quantity;
         }
+
+        public IReadOnlyCollection<Message> Messages => _messages.AsReadOnly();
 
         public Int16 Quantity { get; private set; }
 
@@ -33,6 +38,15 @@ namespace Catalog.Domain.Entities
                 return Operation.Error("Module is null");
 
             return new OrderItem(Guid.Empty, quantity).SetModule(module);
+        }
+
+        public void AddMessage(Message message)
+        {
+            var exists = _messages.Find(x => x.Id == message.Id);
+            if (exists is not null)
+                return;
+
+            _messages.Add(message);
         }
 
         public OrderItem SetModule(Module module)

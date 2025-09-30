@@ -76,13 +76,23 @@ namespace Catalog.Domain.Entities
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.Module)
                         .ThenInclude(m => m.ModuleType)
-                .Include(x => x.ApplicationUser);
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.ApprovalWorkflow)
+                        .ThenInclude(aw => aw.ApprovalWorkflowItems)
+                            .ThenInclude(awi => awi.ApprovalStage)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Messages)
+                .Include(x => x.ApplicationUser)
+                    .ThenInclude(oi => oi.Roles);
 
         public OrderDto ConvertToDto()
             => new()
             {
                 Code = this.Code,
                 Modules = [.. OrderItems.Select(x => x.ConvertToDto())],
+                Title = this.Title.Value,
+                CreatedAt = this.CreatedAt,
+                UpdatedAt = this.UpdatedAt,
                 UserName = ApplicationUser.UserName
             };
     }

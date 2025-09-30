@@ -11,12 +11,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Catalog.Application.Processors.AuthorizationProcessor
 {
-    public sealed class AuthentificationProcessor
+    public sealed class AuthenticationProcessor
     {
         private readonly IUnitOfWork _unitOfWork = null!;
         private readonly AuthorizationSettings _authorizationSettings;
 
-        public AuthentificationProcessor(IUnitOfWork unitOfWork, IOptions<AuthorizationSettings> authorizationSetts)
+        public AuthenticationProcessor(IUnitOfWork unitOfWork, IOptions<AuthorizationSettings> authorizationSetts)
         {
             _unitOfWork = unitOfWork;
             _authorizationSettings = authorizationSetts.Value;

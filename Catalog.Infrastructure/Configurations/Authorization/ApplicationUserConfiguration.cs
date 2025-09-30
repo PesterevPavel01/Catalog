@@ -23,6 +23,10 @@ namespace Catalog.Infrastructure.Configurations.Auth
                 .HasMaxLength(128);
 
             builder
+                .Property(x => x.ExternalId)
+                .HasMaxLength(128);
+
+            builder
                 .Property(x => x.Password)
                 .IsRequired()
                 .HasMaxLength(PasswordValue.MaxPasswordLength)
@@ -40,6 +44,12 @@ namespace Catalog.Infrastructure.Configurations.Auth
                 .HasMany(x => x.Roles)
                 .WithMany(x => x.ApplicationUsers)
                 .UsingEntity(x => x.ToTable("user_role_items"));
+
+            builder
+                .HasMany(x => x.Messages)
+                .WithOne(x => x.ApplicationUser)
+                .HasForeignKey(x=> x.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

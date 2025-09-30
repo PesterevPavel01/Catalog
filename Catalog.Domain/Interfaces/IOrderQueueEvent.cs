@@ -2,6 +2,7 @@
 {
     public interface IOrderQueueEvent {}
     public interface IExchangeQueueEvent { }
+    public interface IModuleConfigurationQueueEvent { }
     public interface IApprovalQueueEvent { }
     public interface INotificationQueueEvent { }
 }

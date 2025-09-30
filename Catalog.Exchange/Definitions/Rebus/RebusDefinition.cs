@@ -24,7 +24,7 @@ namespace Catalog.ExchangeService.Definitions.Rebus
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IExchangeQueueEvent)))
                 .Options(x =>
                 {
-                    x.SetNumberOfWorkers(5);//кол-во потоков
+                    x.SetNumberOfWorkers(3);//кол-во потоков
                     x.SetBusName("ExchangeService");
                 });
 
