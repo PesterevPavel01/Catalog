@@ -30,13 +30,14 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
                 .GetFirstOrDefaultAsync(
                     trackingType: TrackingType.NoTracking,
                     include: Order.IncludeRequiredField(),
-                    predicate: x => x.Code == message.orderCode);
+                    predicate: x => x.Code == message.OrderCode && x.Enabled);
 
             if (order is null)
-                throw new ArgumentException($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.orderCode}");
+                throw new ArgumentException($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.OrderCode}");
 
-            if( order.OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null)
-                await _telegramService.SendMessageAsync($"{"NotificationService".ToUpper()} Новое событие: В заказе \"{order.Title}\" пользователя: \"{order.ApplicationUser.UserName}\" созданы модули, требующие согласования!");
+            //only for IsCustom orders
+            if (order.OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null)
+                await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{order.Title}\" пользователя: \"{order.ApplicationUser.UserName}\" запущен новый процесс согласования!");
 
             return;
         }

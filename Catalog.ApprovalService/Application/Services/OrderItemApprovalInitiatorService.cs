@@ -4,6 +4,7 @@ using Catalog.ApprovalService.Application.Processors.OrderItems;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Rebus.Bus;
 
 namespace Catalog.ApprovalService.Application.Services
 {
@@ -27,7 +28,7 @@ namespace Catalog.ApprovalService.Application.Services
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        public async Task<Operation<bool, string>> InitializeAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
+        public async Task<Operation<Order, string>> InitializeAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
         {
             var orderCode = models.First(x => x.OrderCode != null).OrderCode;
 
@@ -50,11 +51,9 @@ namespace Catalog.ApprovalService.Application.Services
             //Checking for the presence of ApprovalWorkflow; if it not exists, then return.
 
             if (order.OrderItems.FirstOrDefault(x => x.Enabled && x.ApprovalWorkflow is not null && x.ApprovalWorkflow.Enabled) is null)
-                return true;
+                return Operation.Error("Actual ApprovalWorkflow not found!");
 
-            var result = await _processor.ProcessAsync(models, cancellationToken);
-
-            return true;
+            return await _processor.ProcessAsync(models, cancellationToken); 
         }
     }
 }

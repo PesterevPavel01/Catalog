@@ -43,7 +43,7 @@ namespace Catalog.ApprovalService.Endpoints
             .WithName("GetWorkflowMapEndpoint")
             .WithOpenApi(operation => new(operation)
             {
-                Summary = "Получить конфигурацию"
+                Summary = "Получить конфигурацию."
             });
 
             group.MapPost("create", async (
@@ -69,7 +69,7 @@ namespace Catalog.ApprovalService.Endpoints
             .WithName("CreateWorkflowEndpoint")
             .WithOpenApi(operation => new(operation)
             {
-                Summary = "Запустить процесс согласования"
+                Summary = "Запустить процесс согласования нового проекта."
             });
 
 

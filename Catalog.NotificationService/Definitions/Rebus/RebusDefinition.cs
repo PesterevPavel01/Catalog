@@ -37,6 +37,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                     await bus.Subscribe<CustomerCreatedEvent>();
                     await bus.Subscribe<WorkflowCreatedEvent>();
                     await bus.Subscribe<WorkflowCancelledEvent>();
+                    await bus.Subscribe<CustomWorkflowChangedEvent>();
                 }
             );
 

@@ -28,7 +28,7 @@ namespace Catalog.ApprovalService.Definitions.Services
 
             builder.Services.AddScoped<OrderItemApprovalWorkflowCreatorProcessor>();
 
-            builder.Services.AddScoped<OrderItemApprovalInitiatorService>();            
+            builder.Services.AddScoped<OrderItemApprovalInitiatorService>();
         }
     }
 }

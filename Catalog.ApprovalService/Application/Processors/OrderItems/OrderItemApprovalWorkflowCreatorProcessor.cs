@@ -28,7 +28,7 @@ namespace Catalog.ApprovalService.Application.Processors.OrderItems
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        public async Task<Operation<bool, string>> ProcessAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
+        public async Task<Operation<Order, string>> ProcessAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
         {
             var orderCode = models.First(x => x.OrderCode != null).OrderCode;
 
@@ -107,7 +107,7 @@ namespace Catalog.ApprovalService.Application.Processors.OrderItems
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
 
-            return true;
+            return order;
         }
     }
 }

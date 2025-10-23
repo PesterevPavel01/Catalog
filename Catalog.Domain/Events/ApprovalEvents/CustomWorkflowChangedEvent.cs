@@ -2,7 +2,7 @@
 
 namespace Catalog.Contracts.Events.ApprovalEvents
 {
-    public sealed record WorkflowCreatedEvent(string OrderCode) : IApprovalQueueEvent
+    public sealed record CustomWorkflowChangedEvent(Guid WorkflowId) : IApprovalQueueEvent
     {
     }
 }

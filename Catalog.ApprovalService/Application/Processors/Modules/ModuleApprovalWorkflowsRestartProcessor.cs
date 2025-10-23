@@ -1,6 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.ApprovalService.Application.Configurations;
+using Catalog.Contracts.Dto.Approval;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Contracts.Entities.Configurations;
 using Catalog.Domain.Entities;
@@ -20,7 +21,13 @@ namespace Catalog.ApprovalService.Application.Processors
             _workflowMap = applicationConfiguration.Value.ApprovalWorkflowMap;
         }
 
-        public async Task<Operation<bool, string>> ProcessAsync(Guid moduleId, CancellationToken cancellationToken)
+        /// <summary>
+        /// restarts the ApprovalWorkflow associated with the module
+        /// </summary>
+        /// <param name="moduleId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>module that triggered the update</returns>
+        public async Task<Operation<Module, string>> ProcessAsync(Guid moduleId, CancellationToken cancellationToken)
         {
             var module = await _unitOfWork
                 .GetRepository<Module>()
@@ -33,11 +40,11 @@ namespace Catalog.ApprovalService.Application.Processors
                 return Operation.Error("Module not found!");
 
             if (!module.OrderItems.Where(x => x.Enabled).Any())
-                return true;
+                return Operation.Error("OrderItems not found!");
 
             //Если нет OrderItems, у которых запущен Workflow, то ничего не делаем
             if (!module.OrderItems.Where(x => x.Enabled && x.ApprovalWorkflow is not null).Select(x => x.ApprovalWorkflow).Any())
-                return true;
+                return Operation.Error("Active ApprovalWorkflows not found!");
 
             if (_workflowMap is null)
                 return Operation.Error("WorkflowMap cannot be null!");
@@ -105,7 +112,7 @@ namespace Catalog.ApprovalService.Application.Processors
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
 
-            return true;
+            return module;
         }
     }
 }
