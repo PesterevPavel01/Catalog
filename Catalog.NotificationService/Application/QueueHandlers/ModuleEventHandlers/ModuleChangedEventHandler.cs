@@ -6,12 +6,12 @@ using TelegramService.Interfaces;
 
 namespace Catalog.NotificationService.Application.QueueHandlers.ModuleEventHandlers
 {
-    public sealed class ModuleConfigurationEventHandler : IHandleMessages<ModuleCreatedEvent>
+    public sealed class ModuleChangedEventHandler : IHandleMessages<ModuleChangedEvent>
     {
-        private readonly ILogger<ModuleConfigurationEventHandler> _logger;
+        private readonly ILogger<ModuleChangedEventHandler> _logger;
         private readonly ITelegramService _telegramService;
 
-        public ModuleConfigurationEventHandler(ILogger<ModuleConfigurationEventHandler> logger, ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public ModuleChangedEventHandler(ILogger<ModuleChangedEventHandler> logger, ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             _logger = logger;
             _telegramService = telegramService;
@@ -19,20 +19,22 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ModuleEventHandl
             _telegramService.Initialize(token: approvalBotConfiguration.Token, chatId: approvalBotConfiguration.ChatId);
         }
 
-        public async Task Handle(ModuleCreatedEvent message)
+        public async Task Handle(ModuleChangedEvent message)
         {
-            _logger.LogInformation("[{ServiceName}] Event {EventType} recived successfully. Module ID: {ModuleId}",
+            _logger.LogInformation("[{ServiceName}] Event {EventType} received successfully. Module ID: {ModuleId}",
                 "ModuleConfigurationService".ToUpper(),
                 message.GetType().Name,
                 message.ModuleId);
-
-            var result = await _telegramService.SendMessageAsync($"{"ModuleConfigurationService".ToUpper()} Event {message.GetType().Name} recived successfully. Module ID: {message.ModuleId}");
-
+            /*
+            var result = await _telegramService.SendMessageAsync($"{"ModuleConfigurationService".ToUpper()} Event {message.GetType().Name} received successfully. Module ID: {message.ModuleId}");
+            
             if(!result.Ok)
                 _logger.LogError("[{ServiceName}]. {Message} Module ID: {ModuleId}",
                     "NotificationService".ToUpper(),
                     result.Error,
                     message.ModuleId);
+            */
+            return;
         }
     }
 }

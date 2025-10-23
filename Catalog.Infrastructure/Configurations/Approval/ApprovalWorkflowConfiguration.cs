@@ -14,12 +14,12 @@ namespace Catalog.Infrastructure.Configurations.Approval
                 .WithOne(x => x.ApprovalWorkflow)
                 .HasForeignKey(x => x.ApprovalStageId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(x => x.OrderItem)
                 .WithOne(x => x.ApprovalWorkflow)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         protected override string TableName()

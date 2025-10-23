@@ -233,7 +233,11 @@ namespace Catalog.Domain.Entities
                 .Include(x => x.ModuleNumericParameters)
                     .ThenInclude(x => x.ParameterType)  
                 .Include(x => x.ModuleTextParameters)
-                    .ThenInclude(x => x.ParameterType);
+                    .ThenInclude(x => x.ParameterType)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(x => x.ApprovalWorkflow)
+                        .ThenInclude(x => x.ApprovalWorkflowItems)
+                            .ThenInclude(x => x.ApprovalStage);
 
         private bool CheckCustomization()
         {

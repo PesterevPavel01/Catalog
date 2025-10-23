@@ -65,12 +65,12 @@ namespace Catalog.Contracts.Entities.Approval
         public OrderItem OrderItem { get; private set; } = null!;
         public Guid OrderItemId { get; private set; }
 
-        public Operation<ApprovalWorkflowItem, string> Approve(ApplicationUser user, ApprovalStage stage, short number) 
+        public Operation<ApprovalWorkflowItem, string> Approve(ApplicationUser user, ApprovalStage stage, short number = -1) 
         {
             if (ActiveStage.ApprovalStage.Code == stage.Code)
                 return Operation.Error("Stage already activated!");
 
-            var operationResult = ApprovalWorkflowItem.Create(user, stage, number);
+            var operationResult = ApprovalWorkflowItem.Create(user, stage, (short)(number == -1 ? ActiveStage.Number + 1 : number));
 
             if (!operationResult.Ok)
                 return Operation.Error(operationResult.Error);
@@ -110,6 +110,8 @@ namespace Catalog.Contracts.Entities.Approval
                 .Include(x => x.OrderItem)
                     .ThenInclude(oi => oi.Module)
                         .ThenInclude(m => m.ModuleType)
+                .Include(x => x.OrderItem)
+                    .ThenInclude(oi => oi.Order)
                 .Include(x => x.ApprovalWorkflowItems)
                     .ThenInclude(ai => ai.ApprovalStage)
                 .Include(x => x.ApprovalWorkflowItems)

@@ -35,6 +35,8 @@ try
 
     await DatabaseInitializer.InitializeAsync(app.Services);
 
+    await RequiredStageDefinition.CreateAddRequiredStage(app.Services);
+
     // using definition for application
     app.UseDefinitions();
 

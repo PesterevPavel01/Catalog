@@ -3,7 +3,6 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Application.Processors.AuthorizationProcessor;
 using Catalog.Contracts.Dto.Authorization;
 using Catalog.Contracts.Events.CustomerEvents;
-using Catalog.Domain.Dto.Authorization;
 using Catalog.ExchangeService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
@@ -33,7 +32,7 @@ namespace Catalog.ExchangeService.Endpoints
                 UserSetRoleProcessor processor,
                 CancellationToken cancellationToken) =>
             {
-                model.Roles = ["CUSTOMER"];
+                model.Roles = ["customer"];
                 var result = await processor.ProcessAsync(model, cancellationToken);
 
                 if (!result.Ok)
@@ -41,13 +40,13 @@ namespace Catalog.ExchangeService.Endpoints
 
                 return Results.Ok(result.Result);
             })
-            .RequireAuthorization("Administrator")
+            .RequireAuthorization("Constructor")
             .Produces(200)
             .ProducesProblem(401)
             .WithName("SetCustomerRoleEndpoint")
             .WithOpenApi(operation => new(operation)
             {
-                Summary = "Присвоить роль Customer"
+                Summary = "Присвоить роль customer"
             });
 
             group.MapPost("set-constructor-role", async (
@@ -55,7 +54,7 @@ namespace Catalog.ExchangeService.Endpoints
                 UserSetRoleProcessor processor,
                 CancellationToken cancellationToken) =>
             {
-                model.Roles = ["CONSTRUCTOR"];
+                model.Roles = ["constructor"];
 
                 var result = await processor.ProcessAsync(model, cancellationToken);
 
@@ -70,7 +69,7 @@ namespace Catalog.ExchangeService.Endpoints
             .WithName("SetConstructorRoleEndpoint")
             .WithOpenApi(operation => new(operation)
             {
-                Summary = "Присвоить роль Constructor"
+                Summary = "Присвоить роль constructor"
             });
 
             group.MapPost("create", async (
@@ -119,9 +118,9 @@ namespace Catalog.ExchangeService.Endpoints
             });
 
             group.MapGet("{userName}/roles", async (
-            [FromRoute] string userName,
-            UserRolesLoaderProcessor processor,
-            CancellationToken cancellationToken) =>
+                [FromRoute] string userName,
+                UserRolesLoaderProcessor processor,
+                CancellationToken cancellationToken) =>
             {
                 var result = await processor.ProcessAsync(userName, cancellationToken);
 
@@ -138,6 +137,48 @@ namespace Catalog.ExchangeService.Endpoints
             {
                 Summary = "Получить роли"
             });
+
+            group.MapGet("unassigned", async (
+                UnassignedUserLoaderProcessor processor,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await processor.ProcessAsync(cancellationToken);
+
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
+
+                return Results.Ok(result.Result);
+            })
+            //.RequireAuthorization("Administrator")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("UnassignedUserEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Получить пользователей без роли"
+            });
+
+            group.MapPatch("{userName}/disable", async (
+                [FromRoute] string userName,
+                UserDisableProcessor processor,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await processor.ProcessAsync(userName, cancellationToken);
+
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
+
+                return Results.Ok(result.Result);
+            })
+            .RequireAuthorization("Constructor")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("UserDeleteEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Деактивировать пользователя"
+            });
+
         }
     }
 

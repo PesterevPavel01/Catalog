@@ -1,4 +1,6 @@
-﻿using Catalog.Contracts.Events.ApprovalEvents;
+﻿using Calabonga.UnitOfWork;
+using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Domain.Entities;
 using Catalog.NotificationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
@@ -10,18 +12,31 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
     {
         //private readonly ILogger<ComponentCreatedEventHandler> _logger;
         private readonly ITelegramService _telegramService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public WorkflowCreatedEventHandler(ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public WorkflowCreatedEventHandler(ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration, IUnitOfWork unitOfWork)
         {
             //_logger = logger;
             _telegramService = telegramService;
             var approvalBotConfiguration = applicationConfiguration.Value.ApprovalNotificationBot;
             _telegramService.Initialize(token: approvalBotConfiguration.Token, chatId: approvalBotConfiguration.ChatId);
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Handle(WorkflowCreatedEvent message)
         {
-            await _telegramService.SendMessageAsync($"{"NotificationService".ToUpper()} Event {message.GetType().Name} received successfully. Создан заказ, который требует согласования: Code = \"{message.OrderCode}\"");
+            var order = await _unitOfWork
+                .GetRepository<Order>()
+                .GetFirstOrDefaultAsync(
+                    trackingType: TrackingType.NoTracking,
+                    include: Order.IncludeRequiredField(),
+                    predicate: x => x.Code == message.orderCode);
+
+            if (order is null)
+                throw new ArgumentException($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.orderCode}");
+
+            if( order.OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null)
+                await _telegramService.SendMessageAsync($"{"NotificationService".ToUpper()} Новое событие: В заказе \"{order.Title}\" пользователя: \"{order.ApplicationUser.UserName}\" созданы модули, требующие согласования!");
 
             return;
         }

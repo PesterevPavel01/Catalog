@@ -21,21 +21,21 @@ namespace Catalog.Exchange.Endpoints.Authorization
                 .ReportApiVersions()
                 .Build();
 
-            var group = routes.MapGroup("/api/v{version:apiVersion}/autorize/")
+            var group = routes.MapGroup("/api/v{version:apiVersion}/authorize/")
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(1, 0));
 
-            group.MapPost("autenticate", async (
-            [FromBody] LoginDto model,
-                [FromServices] AuthenticationProcessor authentificationProcessor,
+            group.MapPost("authenticate", async (
+                [FromBody] LoginDto model,
+                [FromServices] AuthenticationProcessor authenticationProcessor,
                 CancellationToken cancellationToken) =>
             {
-                var result = await authentificationProcessor.ProcessAsync(model, cancellationToken);
+                var result = await authenticationProcessor.ProcessAsync(model, cancellationToken);
                 return Results.Ok(result);
             })
             .Produces(200)
             .ProducesProblem(401)
-            .WithName("AutenticateEndpoint")
+            .WithName("AuthenticateEndpoint")
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Аутентификация пользователя",

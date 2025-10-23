@@ -46,7 +46,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                         include: Module.IncludeRequiredField()
                     );
 
-                await bus.Publish(new ModuleUpdatedEvent(module.Id));
+                await bus.Publish(new ModuleChangedEvent(module.Id));
 
                 return Results.Ok(operationResult.Result);
             })

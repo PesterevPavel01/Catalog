@@ -18,30 +18,6 @@ namespace Catalog.OrderService.Application.Processors
         public async Task<Operation<OrderDto, string>> ProcessAsync(CreateOrderDto model, CancellationToken cancellationToken) 
         {
 
-            var modelModules = model.OrderItems.Select(model => model.ModuleCode).ToList();
-
-            var modules = await _unitOfWork
-                .GetRepository<Module>().GetAllAsync(
-                    predicate: entity => modelModules.Contains(entity.Code),
-                    trackingType: TrackingType.Tracking,
-                    include: Module.IncludeRequiredField());
-
-            List<OrderItem> orderItems = [];
-
-            foreach (var x in model.OrderItems)
-            {
-                var orderItemResult = OrderItem.Create(x.Quantity, modules.FirstOrDefault(module => module.Code == x.ModuleCode));
-                
-                if(!orderItemResult.Ok)
-                    return Operation.Error(orderItemResult.Error);
-
-                orderItems.Add(orderItemResult.Result);
-            }
-
-            using var transaction = await _unitOfWork.BeginTransactionAsync();
-
-            await _unitOfWork.GetRepository<OrderItem>().InsertAsync(orderItems, cancellationToken);
-
             var user = await _unitOfWork
                 .GetRepository<ApplicationUser>()
                 .GetFirstOrDefaultAsync(
@@ -51,10 +27,12 @@ namespace Catalog.OrderService.Application.Processors
             if (user is null)
                 return Operation.Error("User not found!");
 
-            var orderResult = Order.Create(title: model.OrderTitle, code: model.OrderCode, user, orderItems);
+            var orderResult = Order.Create(title: model.OrderTitle, code: model.OrderCode, user);
 
             if (!orderResult.Ok)
                 return Operation.Error(orderResult.Error);
+
+            using var transaction = await _unitOfWork.BeginTransactionAsync();
 
             await _unitOfWork.GetRepository<Order>().InsertAsync(orderResult.Result, cancellationToken);
 

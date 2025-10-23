@@ -1,6 +1,5 @@
 ﻿using Catalog.Contracts.Events.Approval;
 using Catalog.NotificationService.Application.Configurations;
-using Catalog.NotificationService.Application.QueueHandlers.ComponentEventHandlers;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
@@ -12,7 +11,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
         //private readonly ILogger<ComponentCreatedEventHandler> _logger;
         private readonly ITelegramService _telegramService;
 
-        public WorkflowCancelledEventHandler(ILogger<ComponentCreatedEventHandler> logger, ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public WorkflowCancelledEventHandler(ILogger<WorkflowCancelledEventHandler> logger, ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             //_logger = logger;
             _telegramService = telegramService;

@@ -11,6 +11,11 @@
 
         public bool Enabled { get; protected set; } = true;
 
+        public void Disable() 
+        {
+            Enabled = false;
+        }
+
         public override bool Equals(object? obj)
         {
             if (obj is null)

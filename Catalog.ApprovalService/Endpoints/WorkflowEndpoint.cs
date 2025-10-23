@@ -1,7 +1,14 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ApprovalService.Application.Configurations;
+using Catalog.ApprovalService.Application.Services;
+using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Events.Approval;
+using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Rebus.Bus;
 
 namespace Catalog.ApprovalService.Endpoints
 {
@@ -38,6 +45,34 @@ namespace Catalog.ApprovalService.Endpoints
             {
                 Summary = "Получить конфигурацию"
             });
+
+            group.MapPost("create", async (
+                IBus bus,
+                IOptions<ApplicationConfiguration> applicationConfiguration,
+                [FromBody] string orderCode,
+                OrderApprovalInitiatorService approvalInitiatorService,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await approvalInitiatorService.InitializeAsync(orderCode, new CancellationToken());
+
+                if(result.Ok)
+                    await bus.Publish(new WorkflowCreatedEvent(orderCode));
+
+                if (!result.Ok)
+                    return Results.BadRequest(result.Error);
+
+                return Results.Ok(result.Result);
+            })
+            //.RequireAuthorization("Administrator")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("CreateWorkflowEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Запустить процесс согласования"
+            });
+
+
         }
     }
 }

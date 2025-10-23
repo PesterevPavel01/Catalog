@@ -21,21 +21,21 @@ namespace Catalog.Infrastructure.Configurations.Approval
                 .WithMany(x => x.ApprovalWorkflowItems)
                 .HasForeignKey(x => x.UserId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(x => x.ApprovalStage)
                 .WithMany(x => x.ApprovalWorkflowItems)
                 .HasForeignKey(x => x.ApprovalStageId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(x => x.ApprovalWorkflow)
                 .WithMany(x => x.ApprovalWorkflowItems)
                 .HasForeignKey(x => x.ApprovalWorkflowId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

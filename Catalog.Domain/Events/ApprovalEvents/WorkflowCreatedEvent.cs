@@ -2,7 +2,7 @@
 
 namespace Catalog.Contracts.Events.ApprovalEvents
 {
-    public sealed record WorkflowCreatedEvent(String OrderCode) : IApprovalQueueEvent
+    public sealed record WorkflowCreatedEvent(string orderCode) : IApprovalQueueEvent
     {
     }
 }

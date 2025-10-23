@@ -6,6 +6,7 @@ namespace Catalog.Contracts.Dto.Order
     {
         public required string Title { get; set; } 
         public required string Code { get; set; }
+        public required string UserName { get; set; }
         public required DateTime CreatedAt { get; set; }
         public required DateTime UpdatedAt { get; set; }
         public required bool IsCustom {  get; set; }

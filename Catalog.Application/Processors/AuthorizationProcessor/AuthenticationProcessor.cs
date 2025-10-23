@@ -6,6 +6,7 @@ using Calabonga.UnitOfWork;
 using Catalog.Contracts.Entities.Configurations;
 using Catalog.Domain.Dto.Authorization;
 using Catalog.Domain.Entities.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -27,7 +28,8 @@ namespace Catalog.Application.Processors.AuthorizationProcessor
             var user = (await _unitOfWork.GetRepository<ApplicationUser>()
                 .GetAllAsync(
                     predicate: x => x.UserName == model.UserName,
-                    trackingType: TrackingType.Tracking
+                    trackingType: TrackingType.Tracking,
+                    include: query => query.Include(x=> x.Roles)
                 )).FirstOrDefault(user => user.CheckPassword(model.Password));
 
             if (user is null)
@@ -65,9 +67,10 @@ namespace Catalog.Application.Processors.AuthorizationProcessor
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Email, "PesterevPavel90@gmail.com"),
-                new Claim(ClaimTypes.Role, "Administrator") // Добавляем claim с ролью
+                new Claim(JwtRegisteredClaimNames.Email, "PesterevPavel90@gmail.com")
             };
+
+            claims.AddRange(user.Roles.Select(x => new Claim(ClaimTypes.Role, x.Title.Value)));
 
             byte[] secretBytes = Encoding.UTF8.GetBytes(_authorizationSettings.SecretKey);
             var key = new SymmetricSecurityKey(secretBytes);

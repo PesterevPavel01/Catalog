@@ -17,7 +17,8 @@ namespace Catalog.ExchangeService.Definitions.Services
             builder.Services.AddScoped<UserGetExternalIdProcessor>();
             builder.Services.AddScoped<UserSetRoleProcessor>();
             builder.Services.AddScoped<UserRolesLoaderProcessor>();
-            
+            builder.Services.AddScoped<UnassignedUserLoaderProcessor>();
+            builder.Services.AddScoped<UserDisableProcessor>();
         }
     }
 }

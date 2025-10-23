@@ -20,19 +20,24 @@ namespace Catalog.Domain.Entities
         public ApplicationUser ApplicationUser { get; private set; }
         public Guid ApplicationUserId { get; private set; }
 
-        public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user, List<OrderItem> orderItems)
+        public bool IsCompleted() => OrderItems.Any() && OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null;
+
+        public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user)
+            //, List<OrderItem> orderItems)
         {
             var titleValue = TitleValue.Create(title ?? Guid.NewGuid().ToString());
 
             if (!titleValue.Ok)
                 return Operation.Error(titleValue.Error);
 
-            if (orderItems is null || orderItems.Count < 1)
-                return Operation.Error("OrderItems Null or Empty");
-
             var order = new Order(titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty).SetUser(user);
 
-            orderItems.ForEach(item => order.AddOrderItem(item));
+            //foreach (var item in orderItems) {
+
+            //    var result = order.AddOrderItem(item);
+            //    if (!result.Ok)
+            //        return Operation.Error(result.Error);
+            //}
 
             return order; 
         }
@@ -43,13 +48,16 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        public void AddOrderItem(OrderItem orderItem)
+        public Operation<bool, string> AddOrderItem(OrderItem orderItem)
         {
-            var exists = _orderItems.Find(x => x.Id == orderItem.Id);
+            var exists = _orderItems.Find(x => x.Id == orderItem.Id || x.Module.Code == orderItem.Module.Code);
+            //если у заказа есть уже OrderItem с этим модулем, то нужно не добавлять новый, а увеличивать Quantity у существующего!
             if (exists is not null)
-                return;
+                return Operation.Error("The order already has an item containing this module!");
 
             _orderItems.Add(orderItem);
+
+            return true;
         }
 
         public void RemoveOrderItem(OrderItem orderItem)
@@ -93,7 +101,8 @@ namespace Catalog.Domain.Entities
                 Title = this.Title.Value,
                 CreatedAt = this.CreatedAt,
                 UpdatedAt = this.UpdatedAt,
-                UserName = ApplicationUser.UserName
+                UserName = ApplicationUser.UserName,
+                IsCompleted = this.IsCompleted(),
             };
     }
 }

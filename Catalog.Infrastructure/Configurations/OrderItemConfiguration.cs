@@ -31,13 +31,14 @@ namespace Catalog.Infrastructure.Configurations
 
             builder
                 .HasOne(x => x.ApprovalWorkflow)
-                .WithOne(x => x.OrderItem);
+                .WithOne(x => x.OrderItem)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasMany(x => x.Messages)
                 .WithOne(x => x.OrderItem)
                 .HasForeignKey(x => x.OrderItemId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

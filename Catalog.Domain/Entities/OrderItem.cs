@@ -40,6 +40,11 @@ namespace Catalog.Domain.Entities
             return new OrderItem(Guid.Empty, quantity).SetModule(module);
         }
 
+        public void SetQuantity(Int16 quantity) 
+        {
+            Quantity = quantity;
+        }
+
         public void AddMessage(Message message)
         {
             var exists = _messages.Find(x => x.Id == message.Id);
@@ -49,7 +54,7 @@ namespace Catalog.Domain.Entities
             _messages.Add(message);
         }
 
-        public OrderItem SetModule(Module module)
+        private OrderItem SetModule(Module module)
         {
             Module = module;
             return this;

@@ -1,6 +1,8 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Application.Processors.AuthorizationProcessor;
 using Catalog.ApprovalService.Application.Processors;
+using Catalog.ApprovalService.Application.Processors.OrderItems;
+using Catalog.ApprovalService.Application.Services;
 
 namespace Catalog.ApprovalService.Definitions.Services
 {
@@ -20,7 +22,13 @@ namespace Catalog.ApprovalService.Definitions.Services
 
             builder.Services.AddScoped<PermissionCheckerProcessor>();
 
-            builder.Services.AddScoped<ApprovalWorkflowInitiatorProcessor>();
+            builder.Services.AddScoped<OrderApprovalInitiatorService>();
+
+            builder.Services.AddScoped<ModuleApprovalWorkflowRestartProcessor>();
+
+            builder.Services.AddScoped<OrderItemApprovalWorkflowCreatorProcessor>();
+
+            builder.Services.AddScoped<OrderItemApprovalInitiatorService>();            
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Catalog.Contracts.Events
 {
-    public sealed record ComponentCreatedEvent(List<String> ComponentCodes) : IExchangeQueueEvent
+    public sealed record ComponentCustomizedEvent(String componentCode) : IExchangeQueueEvent
     {
     }
 }

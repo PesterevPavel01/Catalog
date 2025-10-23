@@ -14,7 +14,7 @@ namespace Catalog.Infrastructure.Configurations.Approval
                 .WithOne(x => x.ApprovalStage)
                 .HasForeignKey(x => x.ApprovalStageId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         protected override string TableName()

@@ -1,8 +1,6 @@
 ﻿using Calabonga.UnitOfWork;
 using Catalog.Contracts.Events.OrderEvents;
-using Catalog.Domain.Entities;
 using Catalog.NotificationService.Application.Configurations;
-using Catalog.NotificationService.Application.QueueHandlers.ComponentEventHandlers;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
@@ -11,11 +9,11 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
 {
     public sealed class OrderCreatedEventHandler : IHandleMessages<OrderCreatedEvent>
     {
-        private readonly ILogger<ComponentCreatedEventHandler> _logger;
+        private readonly ILogger<OrderCreatedEventHandler> _logger;
         private readonly ITelegramService _telegramService;
         private readonly IUnitOfWork _unitOfWork;
 
-        public OrderCreatedEventHandler(ILogger<ComponentCreatedEventHandler> logger, ITelegramService telegramService, IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public OrderCreatedEventHandler(ILogger<OrderCreatedEventHandler> logger, ITelegramService telegramService, IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             _logger = logger;
             _telegramService = telegramService;
@@ -26,6 +24,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
 
         public async Task Handle(OrderCreatedEvent message)
         {
+            /*
             var order = await _unitOfWork
                 .GetRepository<Order>()
                 .GetFirstOrDefaultAsync(
@@ -38,7 +37,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
 
             if(order.OrderItems.FirstOrDefault(x => x.Module.IsCustom == true) is not null)
                 await _telegramService.SendMessageAsync($"Получен нестандартный заказ, который требует согласования конструктора. Код заказа: {message.OrderCode}");
-
+            */
             return;
         }
     }

@@ -16,6 +16,8 @@ namespace Catalog.Exchange.Definitions.Authorization
             {
                 options.AddPolicy("Administrator", policy =>
                     policy.RequireRole("Administrator"));
+                options.AddPolicy("Constructor", policy =>
+                    policy.RequireRole("Administrator", "constructor"));
             });
 
             builder.Services.AddAuthentication(options =>

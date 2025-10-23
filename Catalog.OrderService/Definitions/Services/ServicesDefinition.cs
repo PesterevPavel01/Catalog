@@ -12,6 +12,9 @@ namespace Catalog.Web.Definitions.Services
             builder.Services.AddScoped<OrderLoaderProcessor>();
             builder.Services.AddScoped<AuthenticationProcessor>();
             builder.Services.AddScoped<OrdersByCustomerLoginProcessor>();
+            builder.Services.AddScoped<OrderDisableProcessor>();
+            builder.Services.AddScoped<OrderItemRemovalProcessor>();
+            builder.Services.AddScoped<OrderItemCreatorProcessor>();
         }
     }
 }

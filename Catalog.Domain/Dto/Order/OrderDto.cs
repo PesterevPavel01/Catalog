@@ -4,9 +4,10 @@
     {
         public required string Code { get; set; }
         public required string UserName { get; set; }
-        public string Title { get; set; }
+        public string? Title { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public List<OrderItemDto> Modules { get; set; } = [];
+        public required bool IsCompleted { get; set; }
     }
 }

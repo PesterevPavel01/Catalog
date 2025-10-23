@@ -1,6 +1,8 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Components;
+using Catalog.Contracts.Events;
+using Catalog.Domain.Entities;
 using Catalog.ExchangeService.Application.Description;
 using Catalog.ExchangeService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
@@ -81,16 +83,19 @@ namespace Catalog.Web.Endpoints
                 }"
             });
 
-
             group.MapPost("add-text-parameter", async (
                 [FromBody] ComponentAddTextParameterDto model,
                 ComponentAddTextParameterProcessor componentAddTextParameterProcessor,
+                IBus bus,
                 CancellationToken cancellationToken) =>
             {
                 var result = await componentAddTextParameterProcessor.ProcessAsync(model, cancellationToken);
 
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
+
+                //if(model.TextParameters.FirstOrDefault(x => x.TypeCode == Component.CustomParameterTypeCode) is not null)
+                //    await bus.Publish(new ComponentCustomizedEvent(result.Result.ComponentCode));
 
                 return Results.Ok(result.Result);
             })

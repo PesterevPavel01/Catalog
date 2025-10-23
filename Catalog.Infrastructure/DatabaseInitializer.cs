@@ -19,21 +19,28 @@ namespace Catalog.Infrastructure
             var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
             var context = services.GetRequiredService<ApplicationDbContext>();
             await CreateDefaultUserAsync(context, configuration);
-
         }
 
         private static async Task CreateDefaultUserAsync(ApplicationDbContext context, IConfiguration configuration)
         {
-
             var administrator = await context.Set<ApplicationUser>().FirstOrDefaultAsync(x => x.UserName == "Administrator");
 
             if (administrator is not null)
                 return;
 
-            string administratorPassword = configuration.GetSection("Authorization").GetSection("AdministratorPassword").Value ?? "DefaultPassword";
-            string constructorPassword = configuration.GetSection("Authorization").GetSection("ConstructorPassword").Value ?? "DefaultPassword";
+            string administratorPassword = configuration
+                .GetSection("Authorization")
+                .GetSection("AdministratorPassword")
+                .Value ?? "DefaultPassword";
 
-            var roleCreationResult = Role.Create(Guid.NewGuid(), "Administrator", "Administrator");
+            string constructorPassword = configuration
+                .GetSection("Authorization")
+                .GetSection("ConstructorPassword")
+                .Value ?? "DefaultPassword";
+
+            var roleCreationResult = Role
+                .Create(Guid.NewGuid(), "Administrator", "Administrator");
+            
             if (!roleCreationResult.Ok)
                 throw new DbUpdateException(roleCreationResult.Error);
 
@@ -114,6 +121,8 @@ namespace Catalog.Infrastructure
 
             if (!technicalUserResult.Ok)
                 throw new DbUpdateException(technicalUserResult.Error);
+
+            technicalUserResult = technicalUserResult.Result.AddRole(administratorRole);
 
             var technicalUser = technicalUserResult.Result;
             technicalUser.CreatedAt = DateTime.Now;

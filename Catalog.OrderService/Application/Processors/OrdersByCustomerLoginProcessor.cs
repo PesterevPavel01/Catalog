@@ -55,7 +55,8 @@ namespace Catalog.OrderService.Application.Processors
                 {
                     Code = x.Code,
                     Title = x.Title.Value,
-                    IsCompleted = x.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow.IsCompleted == false) is null,
+                    UserName = x.ApplicationUser.UserName,
+                    IsCompleted = x.IsCompleted(),
                     IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
                     CreatedAt = x.CreatedAt,
                     UpdatedAt = x.UpdatedAt,

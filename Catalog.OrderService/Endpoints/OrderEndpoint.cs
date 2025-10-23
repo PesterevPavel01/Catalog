@@ -25,41 +25,49 @@ namespace Catalog.OrderService.Endpoints
                 .ReportApiVersions()
                 .Build();
 
-        var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
-            .WithApiVersionSet(versionSet)
-            .HasApiVersion(new ApiVersion(2, 0));
+            var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
+                .WithApiVersionSet(versionSet)
+                .HasApiVersion(new ApiVersion(2, 0));
 
-        group.MapPost("create", async (
-                [FromBody] CreateOrderDto model,
-                IOptions <ApplicationConfiguration> applicationConfiguration,
-                IBus bus,
-                OrderCreatorProcessor orderProcessor,
-                CancellationToken cancellationToken) =>
-            {
-                var result = await orderProcessor.ProcessAsync(model, cancellationToken);
+            group.MapPost("create",
+                async (
+                    [FromBody] CreateOrderDto model,
+                    IOptions <ApplicationConfiguration> applicationConfiguration,
+                    OrderCreatorProcessor orderProcessor,
+                    OrderItemCreatorProcessor orderItemProcessor,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await orderProcessor.ProcessAsync(model, cancellationToken);
 
-                if (!result.Ok)
-                    return Results.BadRequest(result.Error);
-               
-                await bus.Publish(new OrderCreatedEvent(result.Result.Code));
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
 
-                return Results.Ok(result.Result);
-            })
+                    if (model.OrderItems.Any())
+                    {
+                        var operationResult = await orderItemProcessor.ProcessAsync(model.OrderItems, cancellationToken);
+
+                        if (!operationResult.Ok)
+                            return Results.BadRequest(operationResult.Error);
+                    }
+
+                    return Results.Ok(result.Result);
+                })
             .Produces(200)
             .ProducesProblem(401)
-            .WithName("GetCreateEndpoint")
+            .WithName("OrderCreateEndpoint")
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Создание нового заказа.",
             });
 
-            group.MapGet("by-period/{days:int:min(1):max(365)}", async (
-                [FromRoute] int days,
-                OrderLoaderProcessor orderLoaderProcessor,
-                CancellationToken cancellationToken,
-                [FromQuery] bool ascending = false,
-                [FromQuery] bool incompleteOnly = false,
-                [FromQuery] bool customOnly = false) =>
+            group.MapGet("by-period/{days:int:min(1):max(365)}", 
+                async (
+                    [FromRoute] int days,
+                    OrderLoaderProcessor orderLoaderProcessor,
+                    CancellationToken cancellationToken,
+                    [FromQuery] bool ascending = false,
+                    [FromQuery] bool incompleteOnly = false,
+                    [FromQuery] bool customOnly = false) =>
                 {
                     var ordersResult = await orderLoaderProcessor
                         .ProcessAsync(
@@ -73,7 +81,8 @@ namespace Catalog.OrderService.Endpoints
                     {
                         Code = x.Code,
                         Title = x.Title.Value,
-                        IsCompleted = x.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow.IsCompleted == false) is null,
+                        UserName = x.ApplicationUser.UserName,
+                        IsCompleted = x.IsCompleted(),
                         IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
                         CreatedAt = x.CreatedAt,
                         UpdatedAt = x.UpdatedAt,
@@ -82,18 +91,19 @@ namespace Catalog.OrderService.Endpoints
 
                     return Results.Ok(result);
                 })
-                .Produces(200)
-                .ProducesProblem(401)
-                .WithName("GetAllOrderEndpoint")
-                .WithOpenApi(operation => new(operation)
-                {
-                    Summary = "Просмотр заказов за период."
-                });
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("GetAllOrderEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Просмотр заказов за период."
+            });
 
-            group.MapGet("by-code/{orderCode}", async (
-                [FromRoute] string orderCode,
-                OrderLoaderProcessor orderLoaderProcessor,
-                CancellationToken cancellationToken) =>
+            group.MapGet("by-code/{orderCode}", 
+                async (
+                    [FromRoute] string orderCode,
+                    OrderLoaderProcessor orderLoaderProcessor,
+                    CancellationToken cancellationToken) =>
                 {
                     var ordersResult = await orderLoaderProcessor
                         .ProcessAsync(
@@ -108,24 +118,23 @@ namespace Catalog.OrderService.Endpoints
 
                     return Results.Ok(result);
                 })
-                .Produces(200)
-                .ProducesProblem(401)
-                .WithName("GetByCodeOrderEndpoint")
-                .WithOpenApi(operation => new(operation)
-                {
-                    Summary = "Получить заказ по коду."
-                });
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("GetByCodeOrderEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Получить заказ по коду."
+            });
 
             group.MapGet("by-customer/{userLogin}/{days:int:min(1):max(365)}",
                 async (
-                [FromRoute] string userLogin,
-                [FromRoute] int days,
-                OrdersByCustomerLoginProcessor processor,
-                CancellationToken cancellationToken, 
-                [FromQuery] bool ascending = false,
-                [FromQuery] bool incompleteOnly = false,
-                [FromQuery] bool customOnly = false
-                ) =>
+                    [FromRoute] string userLogin,
+                    [FromRoute] int days,
+                    OrdersByCustomerLoginProcessor processor,
+                    CancellationToken cancellationToken, 
+                    [FromQuery] bool ascending = false,
+                    [FromQuery] bool incompleteOnly = false,
+                    [FromQuery] bool customOnly = false) =>
                 {
                     var result = await processor.ProcessAsync(userLogin, days, ascending, incompleteOnly, customOnly,  cancellationToken);
 
@@ -134,15 +143,36 @@ namespace Catalog.OrderService.Endpoints
 
                     return Results.Ok(result.Result);
                 })
-                //.RequireAuthorization("Administrator")
-                .Produces(200)
-                .ProducesProblem(401)
-                .WithName("OrdersByCustomerLoginEndpoint")
-                .WithOpenApi(operation => new(operation)
+            //.RequireAuthorization("Administrator")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("OrdersByCustomerLoginEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Получить заказы пользователя за период"
+            });
+
+            group.MapPatch("{orderCode}/disable", 
+                async (
+                    [FromRoute] string orderCode,
+                    OrderDisableProcessor processor,
+                    CancellationToken cancellationToken) =>
                 {
-                    Summary = "Получить заказы пользователя за период"
-                });
-    
+                    var result = await processor.ProcessAsync(orderCode, cancellationToken);
+
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
+
+                    return Results.Ok(result.Result);
+                })
+            //.RequireAuthorization("Constructor")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("OrderDisableEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+            Summary = "Деактивировать заказ"
+            });
         }
     }
 

@@ -19,7 +19,7 @@ namespace Catalog.ExchangeService.Application.Processors
         {
             var user = await _unitOfWork.GetRepository<ApplicationUser>()
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.UserName == userName,
+                    predicate: x => x.UserName == userName && x.Enabled,
                     trackingType: TrackingType.NoTracking,
                     include: query => query.Include(x => x.Roles)
                 );

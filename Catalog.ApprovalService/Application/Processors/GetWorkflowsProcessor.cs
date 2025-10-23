@@ -23,7 +23,7 @@ namespace Catalog.ApprovalService.Application.Processors
                 );
 
             if (!operationResult.Any())
-                return new();
+                return new List<ApprovalWorkflowDto>();
 
             return operationResult.Select(x => x.ConvertToDto()).ToList();
         }

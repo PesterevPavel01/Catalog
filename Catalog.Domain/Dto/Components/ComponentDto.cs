@@ -6,6 +6,7 @@
         public string ComponentTitle { get; set; } = null!;
         public string ComponentTypeCode { get;  set; } = null!;
         public string ComponentTypeTitle { get;  set; } = null!;
+        public bool IsCustom { get; set; }
 
         public List<TextParameterDto> TextParameters { get; set; } = [];
 

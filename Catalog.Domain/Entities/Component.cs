@@ -11,6 +11,7 @@ namespace Catalog.Domain.Entities
 {
     public class Component : SimpleEntity
     {
+        public static string CustomParameterTypeCode = "0000000CSTM";
         private readonly List<ComponentTextParameter> _componentTextParameters = [];
         private readonly List<ComponentNumericParameter> _componentNumericParameters = [];
         private readonly List<Module> _modules = [];
@@ -92,7 +93,7 @@ namespace Catalog.Domain.Entities
 
         private bool CheckCustomization()
         {
-            var customComponents = ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == "0000000CSTM");
+            var customComponents = ComponentTextParameters.FirstOrDefault(parameter => parameter.ParameterType.Code == CustomParameterTypeCode);
 
             if (customComponents is not null)
                 return true;
@@ -205,6 +206,7 @@ namespace Catalog.Domain.Entities
                 ComponentTitle = Title.Value,
                 ComponentTypeTitle = ComponentType?.Title.Value,
                 ComponentTypeCode = ComponentType?.Code,
+                IsCustom = IsCustom,
                 TextParameters = [.. ComponentTextParameters
                                 .Select(x => x.ConvertToDto())],
                 NumericParameters = [.. ComponentNumericParameters
