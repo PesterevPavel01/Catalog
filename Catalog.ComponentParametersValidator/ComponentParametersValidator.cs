@@ -9,8 +9,8 @@ namespace Catalog.ComponentParametersValidator
 {
     public class ComponentParametersValidator: IComponentParametersValidator
     {
-        private readonly IEnumerable<ComponentRequiredRarameter> _requiredParameters;
-        private readonly IEnumerable<ComponentRequiredRarameter> _customComponentRequiredParameters;
+        private readonly IEnumerable<ComponentRequiredParameter> _requiredParameters;
+        private readonly IEnumerable<ComponentRequiredParameter> _customComponentRequiredParameters;
 
         public ComponentParametersValidator(IOptions<ComponentConfiguration> options)
         {
@@ -42,7 +42,7 @@ namespace Catalog.ComponentParametersValidator
             return true;
         }
 
-        private Operation<bool, string> CheckParameters(Component component, IEnumerable<ComponentRequiredRarameter> requiredParameters)
+        private Operation<bool, string> CheckParameters(Component component, IEnumerable<ComponentRequiredParameter> requiredParameters)
         {
             var currentRequiredParameters = requiredParameters.FirstOrDefault(x => x.ComponentType == component.ComponentType.Title.Value && x.ComponentTitle is null);
 
@@ -60,7 +60,7 @@ namespace Catalog.ComponentParametersValidator
                         return true;
                 }
 
-                if (component.ComponentNumericParameters is not null)
+                if (component.ComponentTextParameters is not null)
                 {
                     var parameter = currentRequiredParameters.Parameters
                         .FirstOrDefault(x => component.ComponentTextParameters.Select(x => x.ParameterType.Title.Value).Contains(x));

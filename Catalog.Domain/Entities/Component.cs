@@ -1,4 +1,5 @@
-﻿using Calabonga.OperationResults;
+﻿using System.ComponentModel;
+using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Interfaces;
@@ -101,6 +102,34 @@ namespace Catalog.Domain.Entities
             return false;
         }
 
+        public Operation<Component, string> ReplaceTextParameters(
+            List<String> componentMultiplyParameters,
+            IComponentParametersValidator componentParametersValidator,
+            List<ComponentTextParameter> textParameters)
+        {
+
+            if (textParameters is null)
+            {
+                return Operation.Error("Parameters not found!");
+            }
+
+            ClearTextParameters();
+
+            var result = AddTextParameters(
+                    textParameters: textParameters,
+                    componentMultipleParameters: componentMultiplyParameters);
+
+            if (!result.Ok)
+                return Operation.Error(result.Error);
+
+            var checkResult = componentParametersValidator.Validate(this);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            return this;
+        }
+
         public Operation<Component, string> AddTextParameters
             (List<ComponentTextParameter> textParameters, 
             List<String> componentMultipleParameters) 
@@ -176,6 +205,13 @@ namespace Catalog.Domain.Entities
 
             if (!checkResult.Ok)
                 return Operation.Error(checkResult.Error);
+
+            return this;
+        }
+
+        public Operation<Component, string> ClearTextParameters()
+        {
+            _componentTextParameters.Clear();
 
             return this;
         }

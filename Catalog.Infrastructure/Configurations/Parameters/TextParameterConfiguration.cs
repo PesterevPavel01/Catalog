@@ -20,6 +20,7 @@ namespace Catalog.Infrastructure.Configurations.Parameters
 
             builder
                 .Property(x => x.Value)
+                .HasMaxLength(TextParameterValue.MaxValueLength)
                 .IsRequired()
                 .HasConversion(x => x.Value, x => TextParameterValue.Create(x).Result);
         }

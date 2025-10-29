@@ -19,6 +19,7 @@ namespace Catalog.ExchangeService.Definitions.Swagger
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1.0");
                 c.SwaggerEndpoint("/swagger/v2/swagger.json", "Api v2.0");
+                c.SwaggerEndpoint("/swagger/v3/swagger.json", "Api v3.0");
 
                 // Настройка OAuth
                 c.OAuthClientId("swagger-ui");
@@ -61,6 +62,13 @@ namespace Catalog.ExchangeService.Definitions.Swagger
                     Version = "v2",
                     Title = "Сервис Catalog.ExchangeServise",
                     Description = "Версия 2.0",
+                });
+
+                options.SwaggerDoc("v3", new OpenApiInfo()
+                {
+                    Version = "v3",
+                    Title = "Сервис Catalog.ExchangeServise",
+                    Description = "Версия 3.0",
                 });
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()

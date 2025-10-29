@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ModuleConfigurationService.Application.Processors;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.ModuleConfigurationService.Endpoints
 {
@@ -19,11 +20,11 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                 .ReportApiVersions()
                 .Build();
 
-            var group = routes.MapGroup("/api/v{version:apiVersion}/module/")
+            var group = routes.MapGroup("/api/v{version:apiVersion}/modules/")
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0));
 
-            group.MapPost("all", 
+            group.MapGet("all", 
                 async (ModuleLoaderProcessor moduleLoaderProcessor, CancellationToken cancellationToken) 
                 => 
                 {
@@ -44,6 +45,32 @@ namespace Catalog.ModuleConfigurationService.Endpoints
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Просмотр модулей"
+            });
+
+            group.MapGet("by-code/{ModuleCode}",
+                async (
+                    [FromRoute] string ModuleCode,
+                    ModuleLoaderProcessor moduleLoaderProcessor,
+                    CancellationToken cancellationToken)
+                =>
+                {
+                    var result = await moduleLoaderProcessor
+                        .ProcessAsync(
+                            predicate: x => x.Enabled == true && x.Code == ModuleCode,
+                            cancellationToken);
+
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
+
+                    return Results.Ok(result.Result);
+                })
+            //.RequireAuthorization("Administrator")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("GetModuleByCodeEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Получить модуль по коду."
             });
         }
     }

@@ -31,7 +31,7 @@ namespace Catalog.OrderService.Application.Processors
 
             if (!orders.Any())
             {
-                return new();
+                return orders.ToList();
             }
 
             if (ascending)

@@ -2,6 +2,7 @@
 using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Components;
+using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities;
 using Catalog.Infrastructure.Configurations;
 using Microsoft.Extensions.Options;
@@ -19,13 +20,14 @@ namespace Catalog.ExchangeService.Application.Processors
         }
 
         /// <summary>
-        /// Метод для создания нового компонента
+        /// Метод для получения списка компонентов по заданным параметрам
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="predicate"></param>
+        /// <param name="ascending"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        public async Task<Operation<List<ComponentDto>, string>> ProcessAsync(Expression<Func<Component, bool>>? predicate = null, CancellationToken cancellationToken = default)
+        public async Task<Operation<List<ComponentDto>, string>> ProcessAsync(Expression<Func<Component, bool>>? predicate = null, bool ascending = false, CancellationToken cancellationToken = default)
         {
             var components = await _unitOfWork
                 .GetRepository<Component>()
@@ -34,8 +36,17 @@ namespace Catalog.ExchangeService.Application.Processors
                     include: Component.IncludeRequiredField(),
                     trackingType: TrackingType.NoTracking);
 
-            return components.Select(x => x.ConvertToDto()).ToList();
+            if (!components.Any())
+            {
+                return new List<ComponentDto>();
+            }
 
+            if (ascending)
+                components = [.. components.OrderBy(x => x.CreatedAt)];
+            else
+                components = [.. components.OrderByDescending(x => x.CreatedAt)];
+
+            return components.Select(x => x.ConvertToDto()).ToList();
         }
     }
 }

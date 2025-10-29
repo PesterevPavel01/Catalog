@@ -5,7 +5,7 @@ namespace Catalog.Domain.ValueObjects
 {
     public class TextParameterValue : ValueObject
     {
-        public const int MaxTitleLength = 36;
+        public const int MaxValueLength = 255;
 
         private TextParameterValue(string value)
         {
@@ -21,7 +21,7 @@ namespace Catalog.Domain.ValueObjects
                 return Operation.Error("Value is null or empty.");
             }
 
-            if (code.Length > MaxTitleLength)
+            if (code.Length > MaxValueLength)
             {
                 return Operation.Error("Value length is greater than Max value.");
             }

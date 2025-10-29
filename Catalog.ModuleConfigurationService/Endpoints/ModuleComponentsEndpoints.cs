@@ -25,7 +25,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                 .ReportApiVersions()
                 .Build();
 
-            var group = routes.MapGroup("/api/v{version:apiVersion}/module/")
+            var group = routes.MapGroup("/api/v{version:apiVersion}/modules/")
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0));
 

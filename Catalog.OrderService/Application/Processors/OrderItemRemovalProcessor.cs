@@ -31,9 +31,6 @@ namespace Catalog.OrderService.Application.Processors
                     trackingType: TrackingType.Tracking
                 );
 
-            //module 65b3c952-da19-4e93-851a-9d06091903f4
-            //order 7bd3395a-d9aa-459c-9690-fbf2bc08b482
-
             if (order.OrderItems.FirstOrDefault(x => x.Module.Code == moduleCode) is null)
                 return Operation.Error("OrderItem not found!");
 

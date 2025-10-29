@@ -27,7 +27,15 @@ namespace Catalog.OrderService.Application.Processors
             if (user is null)
                 return Operation.Error("User not found!");
 
-            var orderResult = Order.Create(title: model.OrderTitle, code: model.OrderCode, user);
+            string title = model.OrderTitle;
+
+            if(string.IsNullOrWhiteSpace(title))
+                title = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+
+            var orderResult = Order
+                .Create(
+                    title: title, 
+                    code: model.OrderCode, user);
 
             if (!orderResult.Ok)
                 return Operation.Error(orderResult.Error);

@@ -33,7 +33,7 @@ namespace Catalog.OrderService.Application.Processors
 
                 if (!orders.Any())
                 {
-                    return new();
+                    return new List<CommonOrderDto>();
                 }
 
                 if (ascending)

@@ -14,16 +14,16 @@ namespace Catalog.Contracts.Entities.Parameters
             var textParameterValue = TextParameterValue.Create(value);
 
             if (!textParameterValue.Ok)
-                throw new Exception(textParameterValue.Error);
+                return Operation.Error(textParameterValue.Error);
 
-            var conponentTextParameter = new ComponentTextParameter(textParameterValue.Result, Guid.Empty);
+            var componentTextParameter = new ComponentTextParameter(textParameterValue.Result, Guid.Empty);
 
-            var setTypeResult = conponentTextParameter.SetType(parameterType);
+            var setTypeResult = componentTextParameter.SetType(parameterType);
 
             if (!setTypeResult.Ok)
                 return Operation.Error(setTypeResult.Error);
 
-            return conponentTextParameter;
+            return componentTextParameter;
         }
 
         public Guid ComponentId { get; private set; }

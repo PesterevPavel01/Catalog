@@ -13,10 +13,10 @@ namespace Catalog.Infrastructure.Configurations.Parameters
                 .WithMany(x => x.ComponentNumericParameters)
                 .HasForeignKey(x => x.ParameterTypeId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         protected override string TableName()
-            => "conponent_numeric_parameters";
+            => "component_numeric_parameters";
     }
 }

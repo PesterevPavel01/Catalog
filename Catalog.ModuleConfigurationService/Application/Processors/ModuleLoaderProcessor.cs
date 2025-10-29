@@ -24,6 +24,9 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                     include: Module.IncludeRequiredField(),
                     trackingType: TrackingType.NoTracking);
 
+            if (!modules.Any())
+                return new List<ModuleDto>();
+
             return modules.Select(x => x.ConvertToDto()).ToList();
         }
     }

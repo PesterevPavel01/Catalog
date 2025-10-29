@@ -17,6 +17,6 @@ namespace Catalog.Infrastructure.Configurations.Parameters
         }
 
         protected override string TableName()
-            => "conponent_text_parameters";
+            => "component_text_parameters";
     }
 }

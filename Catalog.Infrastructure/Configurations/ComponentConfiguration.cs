@@ -13,13 +13,13 @@ namespace Catalog.Infrastructure.Configurations
                 .HasMany(x => x.ComponentTextParameters)
                 .WithOne()
                 .HasForeignKey(x => x.ComponentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasMany(x => x.ComponentNumericParameters)
                 .WithOne()
                 .HasForeignKey(x => x.ComponentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(x => x.ComponentType)

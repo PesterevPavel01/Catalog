@@ -1,6 +1,6 @@
 ﻿namespace Catalog.Contracts.Entities.Parameters
 {
-    public record ComponentRequiredRarameter 
+    public record ComponentRequiredParameter 
     {
         public required string ComponentType { get; set; }
         public string? ComponentTitle { get; set; }
