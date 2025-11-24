@@ -39,6 +39,10 @@ namespace Catalog.ModuleConfigurationService.Endpoints
             {
                 var operationResult = await updateManager.UpdateAsync(model, cancellationToken);
 
+                if (!operationResult.Ok)
+                    return Results.BadRequest(operationResult.Error);
+
+
                 var module = await unitOfWork
                     .GetRepository<Module>()
                     .GetFirstOrDefaultAsync(

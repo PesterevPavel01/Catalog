@@ -39,12 +39,17 @@ namespace Catalog.Contracts.Entities
         public static Func<IQueryable<Message>, IIncludableQueryable<Message, object>> IncludeRequiredField()
         => query => query
             .Include(x => x.ApplicationUser)
-                .ThenInclude(x => x.Roles);
+                .ThenInclude(x => x.Roles)
+            .Include(x => x.OrderItem)
+                .ThenInclude(x => x.Module)
+            .Include(x => x.OrderItem)
+                .ThenInclude(x => x.Order);
 
         public MessageDto ConvertToDto()
         => new ()
             {
-                OrderItemCode = this.OrderItemId.ToString(),
+                OrderCode = this.OrderItem.Order.Code,
+                ModuleCode = this.OrderItem.Module.Code,
                 CreatedAt = this.CreatedAt,
                 Text = this.Text,
                 SenderRoles = ApplicationUser.Roles.Select(x => x.Code)

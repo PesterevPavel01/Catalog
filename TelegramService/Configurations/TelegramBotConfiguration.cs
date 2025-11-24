@@ -1,4 +1,4 @@
-﻿namespace Catalog.NotificationService.Application.Configurations
+﻿namespace TelegramService.Configurations
 {
     public sealed class TelegramBotConfiguration
     {

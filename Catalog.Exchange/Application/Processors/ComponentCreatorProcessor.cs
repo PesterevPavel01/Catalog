@@ -101,9 +101,11 @@ namespace Catalog.ExchangeService.Application.Processors
 
             using var transaction = await _unitOfWork.BeginTransactionAsync();
 
-            await _unitOfWork.GetRepository<ComponentTextParameter>().InsertAsync(textParameters, cancellationToken);
+            if(textParameters.Any())
+                await _unitOfWork.GetRepository<ComponentTextParameter>().InsertAsync(textParameters, cancellationToken);
 
-            await _unitOfWork.GetRepository<ComponentNumericParameter>().InsertAsync(numericParameters, cancellationToken);
+            if (numericParameters.Any())
+                await _unitOfWork.GetRepository<ComponentNumericParameter>().InsertAsync(numericParameters, cancellationToken);
 
             var componentType = await _unitOfWork
                 .GetRepository<ComponentType>()
@@ -124,6 +126,9 @@ namespace Catalog.ExchangeService.Application.Processors
                     .GetRepository<ComponentType>()
                         .InsertAsync(componentType, cancellationToken);
             }
+
+            if (string.IsNullOrWhiteSpace(model.ComponentCode) && model.ComponentTitle == "Нестандартная")
+                model.ComponentCode = Guid.NewGuid().ToString();
 
             var componentCreateResult = Component
                 .Create(

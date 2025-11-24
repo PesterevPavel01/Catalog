@@ -93,16 +93,16 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
             
             var existingComponents = await componentRepository
                 .GetAllAsync(
-                    predicate: x => x.Modules.FirstOrDefault(x => x.Id == x.Id) != null,
+                    predicate: x => x.Modules.FirstOrDefault(x => x.Id == module.Id) != null,
                     trackingType: TrackingType.Tracking,
                     include: Component.IncludeRequiredField());
 
             foreach (var existingComponent in existingComponents)
             {
-                var compabilityResult = _componentCompatibilityValidator.Validate(existingComponent, component);
+                var compatibilityResult = _componentCompatibilityValidator.Validate(existingComponent, component);
 
-                if (!compabilityResult.Ok)
-                    return Operation.Error(compabilityResult.Error);
+                if (!compatibilityResult.Ok)
+                    return Operation.Error(compatibilityResult.Error);
 
             }
 

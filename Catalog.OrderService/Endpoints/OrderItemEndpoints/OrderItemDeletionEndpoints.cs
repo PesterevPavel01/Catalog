@@ -1,22 +1,19 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Dto.Order;
-using Catalog.Contracts.Events.OrderEvents;
 using Catalog.OrderService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
-using Rebus.Bus;
 
-namespace Catalog.OrderService.Endpoints
+namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 {
-    public class OrderItemsEndpoint: AppDefinition
+    public class OrderItemDeletionEndpoints : AppDefinition
     {
         public override void ConfigureApplication(WebApplication app)
-            => app.MapOrderItemsEndpoints();
+            => app.MapOrderItemDeletionEndpoints();
     }
 
-    internal static class OrderItemsEndpointDefinitionExtensions
+    internal static class OrderItemDeletionEndpointDefinitionExtensions
     {
-        public static async Task MapOrderItemsEndpoints(this IEndpointRouteBuilder routes)
+        public static async Task MapOrderItemDeletionEndpoints(this IEndpointRouteBuilder routes)
         {
             var versionSet = routes.NewApiVersionSet()
                 .HasApiVersion(new ApiVersion(3, 0))
@@ -27,31 +24,7 @@ namespace Catalog.OrderService.Endpoints
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(3, 0));
 
-            group.MapPost("order-item/create", 
-                async (
-                    [FromBody] IEnumerable<CreateOrderItemDto> models,
-                    IBus bus,
-                    OrderItemCreatorProcessor orderProcessor,
-                    CancellationToken cancellationToken) =>
-                {
-                    var result = await orderProcessor.ProcessAsync(models, cancellationToken);
-
-                    if (!result.Ok)
-                        return Results.BadRequest(result.Error);
-
-                    await bus.Publish(new OrderItemsIncludedEvent(models));
-
-                    return Results.Ok(result.Result);
-                })
-            .Produces(200)
-            .ProducesProblem(401)
-            .WithName("OrderItemCreateEndpoint")
-            .WithOpenApi(operation => new(operation)
-            {
-                Summary = "Создание новых элементов заказа.",
-            });
-
-            group.MapDelete("{orderCode}/remove/{moduleCode}", 
+            group.MapDelete("{orderCode}/remove/{moduleCode}",
                 async (
                     [FromRoute] string orderCode,
                     [FromRoute] string moduleCode,
@@ -75,6 +48,4 @@ namespace Catalog.OrderService.Endpoints
             });
         }
     }
-
-
 }

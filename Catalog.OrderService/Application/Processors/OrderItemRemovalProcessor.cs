@@ -25,6 +25,9 @@ namespace Catalog.OrderService.Application.Processors
             if (order is null)
                 return Operation.Error("Order not found!");
 
+            if (order.IsCompleted())
+                return Operation.Error("Order is completed!");
+
             var orderItem = await _unitOfWork.GetRepository<OrderItem>()
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Order.Code == orderCode && x.Module.Code == moduleCode,

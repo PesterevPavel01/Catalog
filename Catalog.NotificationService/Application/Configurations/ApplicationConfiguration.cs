@@ -1,4 +1,6 @@
-﻿namespace Catalog.NotificationService.Application.Configurations
+﻿using TelegramService.Configurations;
+
+namespace Catalog.NotificationService.Application.Configurations
 {
     public sealed record ApplicationConfiguration
     {

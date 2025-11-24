@@ -3,7 +3,6 @@ using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Configurations;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.OrderService.Application.Processors
@@ -59,8 +58,7 @@ namespace Catalog.OrderService.Application.Processors
                     IsCompleted = x.IsCompleted(),
                     IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
                     CreatedAt = x.CreatedAt,
-                    UpdatedAt = x.UpdatedAt,
-                    Messages = x.OrderItems.SelectMany(x => x.Messages.Select(message => message.ConvertToDto()))
+                    UpdatedAt = x.UpdatedAt
                 }).ToArray();
 
                 return result;

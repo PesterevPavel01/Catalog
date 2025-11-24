@@ -2,10 +2,6 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Components;
-using Catalog.Contracts.Dto.Module;
-using Catalog.Contracts.Events;
-using Catalog.Domain.Entities;
-using Catalog.ExchangeService.Application.Description;
 using Catalog.ExchangeService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;

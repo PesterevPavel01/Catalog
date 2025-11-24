@@ -9,5 +9,6 @@ namespace Catalog.Contracts.Configurations
         public required List<ComponentCompatibilityRule> ComponentCompatibilityRules { get; set; }
         public required List<ModuleRequiredParameter> ModuleRequiredParameters { get; set; }
         public required List<ModuleCompositionRule> ModuleCompositionRules { get; set; }
+        public required bool AllowModifyModuleWithCompletedOrders { get; set; }
     }
 }

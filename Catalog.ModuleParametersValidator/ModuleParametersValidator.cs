@@ -12,17 +12,25 @@ namespace Catalog.ModuleParametersValidator
     {
         private readonly IEnumerable<ModuleTechnologicalRestriction> _technologicalRestrictions;
         private readonly IEnumerable<ModuleRequiredParameter> _requiredParameters;
+        private readonly bool _allowModifyModuleWithCompletedOrders;
 
         public ModuleParametersValidator(IOptions<ModuleConfiguration> options)
         {
             _technologicalRestrictions = [.. options.Value.ModuleTechnologicalRestrictions];
             _requiredParameters = [.. options.Value.ModuleRequiredParameters];
+            _allowModifyModuleWithCompletedOrders = options.Value.AllowModifyModuleWithCompletedOrders;
         }
 
         public Operation<bool, string> Validate(Module module, Component? component = null)
         {
             if (_requiredParameters is null)
                 return Operation.Error("RequiredParameters not found");
+
+            if (!_allowModifyModuleWithCompletedOrders && module.OrderItems.Any() && module.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null)
+            {
+                return Operation.Error("Модуль не может быть изменен т.к. заказ был завершен.");
+                //return Operation.Error("The module cannot be modified because it has completed orders.");
+            }
 
             foreach (var parameter in module.ModuleNumericParameters)
             {
@@ -99,34 +107,36 @@ namespace Catalog.ModuleParametersValidator
         {
             var technologicalRestrictions = _technologicalRestrictions.Where(x => x.ModuleTypeCode == moduleTypeCode).ToList();
 
-            var parameterRule = technologicalRestrictions.FirstOrDefault(x => x.Parameter == targetParameter.ParameterType.Title.Value);
+            var parameterRules = technologicalRestrictions.Where(x => x.Parameter == targetParameter.ParameterType.Title.Value);
 
-            if (parameterRule is null)
+            if (!parameterRules.Any())
                 return true;
 
-            switch (parameterRule.ComparisonRule.Trim())
+            foreach (var parameterRule in parameterRules)
             {
-                case "<":
-                    if (!(targetParameter.Value <= parameterRule.Value))
-                        return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть <= значения {parameterRule.Value}");
-                    break;
+                switch (parameterRule.ComparisonRule.Trim())
+                {
+                    case "<":
+                        if (!(targetParameter.Value <= parameterRule.Value))
+                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть <= значения {parameterRule.Value}");
+                        break;
 
-                case ">":
-                    if (!(targetParameter.Value >= parameterRule.Value))
-                        return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть >= значения {parameterRule.Value}");
-                    break;
-                case "=":
-                    if (targetParameter.Value != parameterRule.Value)
-                        return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть != значению {parameterRule.Value}");
-                    break;
-                case "!=":
-                    if (targetParameter.Value == parameterRule.Value)
-                        return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть = значению {parameterRule.Value}");
-                    break;
-                default:
-                    return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: {targetParameter.ParameterType.Title.Value.ToUpper()}. Type parameter: {targetParameter.GetType().Name})");
+                    case ">":
+                        if (!(targetParameter.Value >= parameterRule.Value))
+                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть >= значения {parameterRule.Value}");
+                        break;
+                    case "=":
+                        if (targetParameter.Value != parameterRule.Value)
+                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть != значению {parameterRule.Value}");
+                        break;
+                    case "!=":
+                        if (targetParameter.Value == parameterRule.Value)
+                            return Operation.Error($"Не выполняется условие для свойства {targetParameter.ParameterType.Title.Value.ToUpper()}! Значение {targetParameter.Value} свойства {targetParameter.ParameterType.Title.Value.ToUpper()} должно быть = значению {parameterRule.Value}");
+                        break;
+                    default:
+                        return Operation.Error($"ComparisonRule not found {parameterRule.ComparisonRule} (ComponentParameter: {targetParameter.ParameterType.Title.Value.ToUpper()}. Type parameter: {targetParameter.GetType().Name})");
+                }
             }
-
             return true;
         }
     }

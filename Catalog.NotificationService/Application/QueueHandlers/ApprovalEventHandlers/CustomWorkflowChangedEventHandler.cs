@@ -33,14 +33,17 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
                     trackingType: TrackingType.NoTracking,
                     include: query => query
                         .Include(x => x.OrderItem)
-                            .ThenInclude(x => x.Order),
+                            .ThenInclude(x => x.Order)
+                        .Include(x => x.OrderItem)
+                            .ThenInclude(x => x.Order)
+                                .ThenInclude(x => x.ApplicationUser),
                     predicate: x => x.Id == message.WorkflowId && x.Enabled);
 
             if (workflow is null)
                 throw new ArgumentException($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. workflow not found! Id: {message.WorkflowId}");
 
             //only for IsCustom orders
-            await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{workflow.OrderItem.Order.Title}\" пользователя: \"{workflow.OrderItem.Order.ApplicationUser.UserName}\" произошли изменения нестандартного модуля!");
+            await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{workflow.OrderItem.Order.Title.Value}\" пользователя: \"{workflow.OrderItem.Order.ApplicationUser.UserName}\" произошли изменения нестандартного модуля!");
 
             return;
         }

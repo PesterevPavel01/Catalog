@@ -28,6 +28,9 @@ namespace Catalog.OrderService.Application.Processors
             if (order is null)
                 return Operation.Error("Order not found!");
 
+            if(order.IsCompleted())
+                return Operation.Error("Order is completed!");
+
             var orderItemsModels = models
                 .GroupBy(x => x.ModuleCode)
                 .Select(group => new CreateOrderItemDto()

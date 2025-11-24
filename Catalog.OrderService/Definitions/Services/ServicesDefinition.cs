@@ -1,5 +1,7 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Application.Processors.AuthorizationProcessor;
+using Catalog.OrderService.Application.Handlers.CommandHandlers;
+using Catalog.OrderService.Application.Handlers.QueryHandlers;
 using Catalog.OrderService.Application.Processors;
 
 namespace Catalog.Web.Definitions.Services
@@ -15,6 +17,10 @@ namespace Catalog.Web.Definitions.Services
             builder.Services.AddScoped<OrderDisableProcessor>();
             builder.Services.AddScoped<OrderItemRemovalProcessor>();
             builder.Services.AddScoped<OrderItemCreatorProcessor>();
+
+            builder.Services.AddScoped<OrderMessagesQueryHandler>();
+            builder.Services.AddScoped<SetOrderItemQuantityCommandHandler>();
+            builder.Services.AddScoped<AddMessageCommandHandler>();
         }
     }
 }

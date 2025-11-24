@@ -33,6 +33,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.ModuleParametersVal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.ComponentParametersValidator", "Catalog.ComponentParametersValidator\Catalog.ComponentParametersValidator.csproj", "{7B81218B-E0A8-429F-A5FC-A2A561CF8508}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.FacadeOrderTitleValidator", "Catalog.FacadesOrderTitleValidator\Catalog.FacadeOrderTitleValidator.csproj", "{24F84A43-90EE-4ED2-8FF0-603F2BA22A55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.Logging.Middleware", "Catalog.Logging.Middleware\Catalog.Logging.Middleware.csproj", "{66C0B537-FC11-42BD-8DEC-FCB8BE422441}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +99,14 @@ Global
 		{7B81218B-E0A8-429F-A5FC-A2A561CF8508}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B81218B-E0A8-429F-A5FC-A2A561CF8508}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B81218B-E0A8-429F-A5FC-A2A561CF8508}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24F84A43-90EE-4ED2-8FF0-603F2BA22A55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24F84A43-90EE-4ED2-8FF0-603F2BA22A55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24F84A43-90EE-4ED2-8FF0-603F2BA22A55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24F84A43-90EE-4ED2-8FF0-603F2BA22A55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66C0B537-FC11-42BD-8DEC-FCB8BE422441}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66C0B537-FC11-42BD-8DEC-FCB8BE422441}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66C0B537-FC11-42BD-8DEC-FCB8BE422441}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66C0B537-FC11-42BD-8DEC-FCB8BE422441}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +116,7 @@ Global
 		{C9528E19-C5F4-5BCA-AE35-853D629B0B49} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{5F5CF46A-878F-25B7-C69E-1143CD85A5F4} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{7B81218B-E0A8-429F-A5FC-A2A561CF8508} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{24F84A43-90EE-4ED2-8FF0-603F2BA22A55} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5AFA2B88-538A-4CC1-A060-E09C06F84C35}

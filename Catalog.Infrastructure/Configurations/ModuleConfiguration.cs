@@ -20,6 +20,18 @@ namespace Catalog.Infrastructure.Configurations
                 .HasMany(x => x.Components)
                 .WithMany(x => x.Modules)
                 .UsingEntity(x => x.ToTable("module_items"));
+
+            builder
+                .HasMany(x => x.ModuleTextParameters)
+                .WithOne()
+                .HasForeignKey(x => x.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder
+                .HasMany(x => x.ModuleNumericParameters)
+                .WithOne()
+                .HasForeignKey(x => x.ModuleId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         protected override string TableName()

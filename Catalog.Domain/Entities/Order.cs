@@ -1,10 +1,10 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
-using Catalog.Contracts.Dto.Order;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Catalog.Domain.Entities
 {
@@ -74,6 +74,10 @@ namespace Catalog.Domain.Entities
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.Module)
                         .ThenInclude(m => m.Components)
+                            .ThenInclude(c => c.ComponentType)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.Components)
                             .ThenInclude(c => c.ComponentNumericParameters)
                                 .ThenInclude(tp => tp.ParameterType)
                 .Include(x => x.OrderItems)
@@ -84,6 +88,20 @@ namespace Catalog.Domain.Entities
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.Module)
                         .ThenInclude(m => m.ModuleType)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.ModuleTextParameters)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.ModuleTextParameters)
+                            .ThenInclude(mt => mt.ParameterType)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.ModuleNumericParameters)
+                .Include(x => x.OrderItems)
+                    .ThenInclude(oi => oi.Module)
+                        .ThenInclude(m => m.ModuleNumericParameters)
+                            .ThenInclude(mt => mt.ParameterType)
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.ApprovalWorkflow)
                         .ThenInclude(aw => aw.ApprovalWorkflowItems)

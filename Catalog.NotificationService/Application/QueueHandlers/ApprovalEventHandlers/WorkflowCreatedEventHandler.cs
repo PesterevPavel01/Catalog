@@ -37,7 +37,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
 
             //only for IsCustom orders
             if (order.OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null)
-                await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{order.Title}\" пользователя: \"{order.ApplicationUser.UserName}\" запущен новый процесс согласования!");
+                await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{order.Title.Value}\" пользователя: \"{order.ApplicationUser.UserName}\" запущен новый процесс согласования!");
 
             return;
         }
