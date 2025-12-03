@@ -1,25 +1,16 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentParametersValidator.Extensions;
 using Catalog.ExchangeService.Definitions.Configurations;
+using Catalog.Logging.Middleware;
 using Catalog.Infrastructure;
 using Serilog;
-using Serilog.Events;
 using TelegramService.DependencyInjection;
 
 try
 {
-    // configure logger (Serilog)
-    Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateLogger();
-
-    // created builder
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.AddSharedConfiguration();
+    builder.AddApplicationConfiguration();
 
     builder.Services.AddComponentParametersValidator();
 
@@ -30,17 +21,13 @@ try
 
     builder.AddDefinitions(typeof(Program));
 
-    // create application
     var app = builder.Build();
 
     await DatabaseInitializer.InitializeAsync(app.Services);
 
-    // using definition for application
     app.UseDefinitions();
 
-    // using Serilog request logging
-    app.UseSerilogRequestLogging();
-
+    app.UseRequestResponseLogging();
 
     app.UseAuthentication();
 
@@ -48,19 +35,12 @@ try
 
     app.UseHttpsRedirection();
 
-    // start application
     app.Run();
 
     return 0;
 }
 catch (Exception ex)
 {
-    var type = ex.GetType().Name;
-    if (type.Equals("HostAbortedException", StringComparison.Ordinal))
-    {
-        throw;
-    }
-
     Log.Fatal(ex, "Unhandled exception");
     throw;
 }

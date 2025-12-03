@@ -31,6 +31,9 @@ namespace Catalog.OrderService.Application.Processors
             if(order.IsCompleted())
                 return Operation.Error("Order is completed!");
 
+            if (order.OrderItems.Where(x => x.ApprovalWorkflow is not null).Any())
+                return Operation.Error("У заказа запущен процесс согласования!");
+
             var orderItemsModels = models
                 .GroupBy(x => x.ModuleCode)
                 .Select(group => new CreateOrderItemDto()

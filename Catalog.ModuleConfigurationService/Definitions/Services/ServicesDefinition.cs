@@ -18,7 +18,8 @@ namespace Catalog.ModuleConfigurationService.Definitions.Services
             builder.Services.AddScoped<AuthenticationProcessor>();
 
             builder.Services.AddScoped<ModuleUpdateManager>();
-            
+            builder.Services.AddScoped<ModuleCreateManager>();
+
         }
     }
 }

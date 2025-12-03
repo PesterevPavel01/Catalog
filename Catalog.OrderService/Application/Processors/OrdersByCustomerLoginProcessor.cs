@@ -35,22 +35,23 @@ namespace Catalog.OrderService.Application.Processors
                     return new List<CommonOrderDto>();
                 }
 
-                if (ascending)
-                    orders = [.. orders.OrderBy(x => x.CreatedAt)];
-                else
-                    orders = [.. orders.OrderByDescending(x => x.CreatedAt)];
+            if (ascending)
+                orders = [.. orders.OrderBy(x => x.CreatedAt)];
 
-                if (customOnly)
-                {
-                    orders = [.. orders.Where(x => x.OrderItems.FirstOrDefault(oi => oi.Module.IsCustom) != null)];
-                }
+            else
+                orders = [.. orders.OrderByDescending(x => x.CreatedAt)];
 
-                if (incompleteOnly) 
-                {
-                    orders = [.. orders.Where(x => x.OrderItems.FirstOrDefault(oi => !oi.ApprovalWorkflow.IsCompleted) != null)];
-                }
+            if (customOnly)
+            {
+                orders = [.. orders.Where(x => x.OrderItems.FirstOrDefault(oi => oi.Module.IsCustom) != null)];
+            }
 
-                var result = orders.Select(x => new CommonOrderDto()
+            if (incompleteOnly)
+            {
+                orders = [.. orders.Where(x => !x.IsCompleted())];
+            }
+
+            var result = orders.Select(x => new CommonOrderDto()
                 {
                     Code = x.Code,
                     Title = x.Title.Value,

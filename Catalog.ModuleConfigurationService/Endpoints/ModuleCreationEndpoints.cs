@@ -5,6 +5,7 @@ using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Events;
 using Catalog.Domain.Entities;
 using Catalog.ModuleConfigurationService.Application.Description;
+using Catalog.ModuleConfigurationService.Application.Managers;
 using Catalog.ModuleConfigurationService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
@@ -34,10 +35,10 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                     [FromBody] CreateModuleDto model,
                     IBus bus,
                     IUnitOfWork unitOfWork,
-                    ModuleCreatorProcessor creatorProcessor,
+                    ModuleCreateManager createManager,
                     CancellationToken cancellationToken) =>
             {
-                var result = await creatorProcessor.ProcessAsync(model, cancellationToken);
+                var result = await createManager.CreateAsync(model, cancellationToken);
 
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);

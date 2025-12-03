@@ -1,6 +1,7 @@
 ﻿using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
+using TelegramService.Configurations;
 
 namespace Catalog.ModuleConfigurationService.Definitions.Configurations
 {
@@ -31,6 +32,9 @@ namespace Catalog.ModuleConfigurationService.Definitions.Configurations
         {
             builder.Services.Configure<ModuleConfiguration>(
                 builder.Configuration.GetSection("ApplicationConfiguration"));
+
+            builder.Services.Configure<TelegramBotConfiguration>(
+                builder.Configuration.GetSection("TelegramBot"));
         }
     }
 }

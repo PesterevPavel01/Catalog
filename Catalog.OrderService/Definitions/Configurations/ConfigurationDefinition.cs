@@ -1,6 +1,5 @@
 ﻿using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
-using Catalog.OrderService.Application.Configurations;
 using TelegramService.Configurations;
 
 namespace Catalog.OrderService.Definitions.Configurations

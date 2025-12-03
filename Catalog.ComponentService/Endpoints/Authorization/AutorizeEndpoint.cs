@@ -1,0 +1,50 @@
+﻿using Asp.Versioning;
+using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Application.Processors.AuthorizationProcessor;
+using Catalog.Domain.Dto.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Catalog.Exchange.Endpoints.Authorization
+{
+    public class AutorizeEndpoint : AppDefinition
+    {
+        public override void ConfigureApplication(WebApplication app)
+            => app.MapAutorizeEndpoints();
+    }
+
+    public static class AutorizeEndpointDefinitionExtensions
+    {
+        public static void MapAutorizeEndpoints(this IEndpointRouteBuilder routes)
+        {
+            var versionSet = routes.NewApiVersionSet()
+                .HasApiVersion(new ApiVersion(1, 0))
+                .ReportApiVersions()
+                .Build();
+
+            var group = routes.MapGroup("/api/v{version:apiVersion}/authorize/")
+                .WithApiVersionSet(versionSet)
+                .HasApiVersion(new ApiVersion(1, 0));
+
+            group.MapPost("authenticate", async (
+                [FromBody] LoginDto model,
+                [FromServices] AuthenticationProcessor authenticationProcessor,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await authenticationProcessor.ProcessAsync(model, cancellationToken);
+                return Results.Ok(result);
+            })
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("AuthenticateEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Аутентификация пользователя",
+                Description = @"Пример запроса:<br>
+                    {
+                    ""userName"": ""Administrator"",
+                    ""password"": ""Qwerty1234!""
+                    }"
+            });
+        }
+    }
+}

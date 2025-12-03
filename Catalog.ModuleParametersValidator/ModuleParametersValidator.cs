@@ -28,7 +28,7 @@ namespace Catalog.ModuleParametersValidator
 
             if (!_allowModifyModuleWithCompletedOrders && module.OrderItems.Any() && module.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null)
             {
-                return Operation.Error("Модуль не может быть изменен т.к. заказ был завершен.");
+                return Operation.Error("Модуль не может быть изменен т.к. у модуля завершен процесс согласования.");
                 //return Operation.Error("The module cannot be modified because it has completed orders.");
             }
 

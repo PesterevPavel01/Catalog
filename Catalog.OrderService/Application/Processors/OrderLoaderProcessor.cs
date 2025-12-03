@@ -46,7 +46,7 @@ namespace Catalog.OrderService.Application.Processors
 
             if (incompleteOnly)
             {
-                orders = [.. orders.Where(x => x.IsCompleted())];
+                orders = [.. orders.Where(x => !x.IsCompleted())];
             }
 
             return orders.ToList();

@@ -44,15 +44,15 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
             var parameterTypes = await _unitOfWork
                 .GetRepository<ParameterType>()
                 .GetAllAsync(
-                    predicate: x=>model.textParameters != null && model.textParameters.Select(p => p.TypeCode).Contains(x.Code)
-                    || model.numericParameters != null && model.numericParameters.Select(p => p.TypeCode).Contains(x.Code),
+                    predicate: x=>model.TextParameters != null && model.TextParameters.Select(p => p.TypeCode).Contains(x.Code)
+                    || model.NumericParameters != null && model.NumericParameters.Select(p => p.TypeCode).Contains(x.Code),
                     trackingType: TrackingType.Tracking);
 
             //создаю параметры
             List<ModuleTextParameter> textParameters = [];
             List<ModuleNumericParameter> numericParameters = [];
 
-            foreach (var textParameter in model.textParameters)
+            foreach (var textParameter in model.TextParameters)
             {
                 var parameterType = parameterTypes.FirstOrDefault(x => x.Code == textParameter.TypeCode);
                 
@@ -74,7 +74,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 textParameters.Add(createParameterResult.Result);
             }
 
-            foreach (var numericParameter in model.numericParameters)
+            foreach (var numericParameter in model.NumericParameters)
             {
                 var parameterType = parameterTypes.FirstOrDefault(x => x.Code == numericParameter.TypeCode);
 
@@ -107,8 +107,6 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
 
             if (!createModuleResult.Ok)
                 return Operation.Error(createModuleResult.Error);
-
-            using var transaction = await _unitOfWork.BeginTransactionAsync();
             
             await _unitOfWork.GetRepository<Module>().InsertAsync(createModuleResult.Result, cancellationToken);
 
@@ -116,12 +114,8 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
 
             if (_unitOfWork.Result.Exception is not null)
             {
-                await transaction.RollbackAsync();
-
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
-
-            transaction.Commit();
 
             return createModuleResult.Result.ConvertToDto();
         }
