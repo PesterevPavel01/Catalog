@@ -1,9 +1,13 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Calabonga.UnitOfWork;
+using Catalog.ComponentService.Application.Command;
+using Catalog.ComponentService.Application.Processors;
 using Catalog.Contracts.Dto.Components;
+using Catalog.Domain.Entities;
 using Catalog.ExchangeService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using Rebus.Bus;
 
 namespace Catalog.Web.Endpoints
@@ -113,10 +117,21 @@ namespace Catalog.Web.Endpoints
                 }"
             });
 
-            group.MapGet("all", async (
-                ComponentLoaderProcessor componentLoaderProcessor,
-                CancellationToken cancellationToken) =>
+            group.MapGet("all", 
+                async (
+                    IBus bus,
+                    CachedComponentLoaderProcessor cachedComponentLoaderProcessor,
+                    ComponentLoaderProcessor componentLoaderProcessor,
+                    CancellationToken cancellationToken,
+                    [FromQuery] bool ascending = false) =>
                 {
+                    var cacheKey = cachedComponentLoaderProcessor.GenerateCacheKey(("entity", "Component"), ("type", "all"), ("ascending", ascending));
+
+                    var cachedComponents = await cachedComponentLoaderProcessor.GetComponentsAsync(cacheKey, cancellationToken);
+
+                    if (cachedComponents.Ok)
+                        return Results.Ok(cachedComponents.Result);
+
                     var result = await componentLoaderProcessor
                         .ProcessAsync(
                             cancellationToken: cancellationToken, 
@@ -124,6 +139,8 @@ namespace Catalog.Web.Endpoints
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
+
+                    await bus.Send(new SetComponentsInCacheCommand(cacheKey, result.Result));
 
                     return Results.Ok(result.Result);
                 })
@@ -139,18 +156,30 @@ namespace Catalog.Web.Endpoints
             group.MapGet("by-type/{typeCode}",
                 async (
                     [FromRoute] string typeCode,
+                    IBus bus,
+                    CachedComponentLoaderProcessor cachedComponentLoaderProcessor,
                     ComponentLoaderProcessor componentLoaderProcessor,
                     CancellationToken cancellationToken,
                     [FromQuery] bool ascending = false) =>
                 {
+                    var cacheKey = cachedComponentLoaderProcessor.GenerateCacheKey(("entity", "Component"), ("type", typeCode), ("ascending", ascending));
+
+                    var cachedComponents = await cachedComponentLoaderProcessor.GetComponentsAsync(cacheKey, cancellationToken);
+
+                    if (cachedComponents.Ok)
+                        return Results.Ok(cachedComponents.Result);
+
                     var result = await componentLoaderProcessor
                         .ProcessAsync(
                             cancellationToken: cancellationToken,
                             ascending: ascending,
-                            predicate: x => x.Enabled == true && x.ComponentType.Code == typeCode);
+                            predicate: x => x.Enabled == true && x.ComponentType.Code == typeCode
+                            && x.ComponentTextParameters.FirstOrDefault(tp => tp.ParameterType.Code == Component.CustomParameterTypeCode) == null);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
+
+                    await bus.Send(new SetComponentsInCacheCommand(cacheKey, result.Result));
 
                     return Results.Ok(result.Result);
                 })

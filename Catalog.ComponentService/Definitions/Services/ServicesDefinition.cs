@@ -1,5 +1,6 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Application.Processors.AuthorizationProcessor;
+using Catalog.ComponentService.Application.Processors;
 using Catalog.ExchangeService.Application.Processors;
 
 namespace Catalog.ExchangeService.Definitions.Services
@@ -14,6 +15,9 @@ namespace Catalog.ExchangeService.Definitions.Services
             builder.Services.AddScoped<ComponentAddTextParameterProcessor>();
             builder.Services.AddScoped<ComponentRemovalProcessor>();
             builder.Services.AddScoped<TextParametersReplacer>();
+
+            builder.Services.AddScoped<CachedComponentLoaderProcessor>();
+            
 
             builder.Services.AddScoped<AuthenticationProcessor>();
         }

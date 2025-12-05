@@ -17,9 +17,6 @@ namespace Catalog.ExchangeService.Definitions.Configurations
 
         private static void ConfigureApplication(WebApplicationBuilder builder)
         {
-            builder.Services.Configure<ComponentConfiguration>(
-                builder.Configuration.GetSection("ApplicationConfiguration"));
-
             builder.Services.Configure<TelegramBotConfiguration>(
                 builder.Configuration.GetSection("TelegramBot"));
         }
