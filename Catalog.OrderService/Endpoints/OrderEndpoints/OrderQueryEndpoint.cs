@@ -1,8 +1,8 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Dto;
 using Catalog.Contracts.Dto.Order;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
-using Catalog.OrderService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.OrderService.Endpoints.OrderEndpoints
@@ -26,35 +26,47 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0));
 
-            group.MapGet("by-period/{days:int:min(1):max(365)}", 
+            group.MapGet("by-period/{days:int:min(1):max(365)}",
                 async (
                     [FromRoute] int days,
-                    OrderLoaderProcessor orderLoaderProcessor,
+                    OrdersQueryHandler queryHandler,
                     CancellationToken cancellationToken,
                     [FromQuery] bool ascending = false,
                     [FromQuery] bool incompleteOnly = false,
-                    [FromQuery] bool customOnly = false) =>
+                    [FromQuery] bool customOnly = false,
+                    [FromQuery] int pageSize = 20,
+                    [FromQuery] int pageIndex = 0) =>
                 {
-                    var ordersResult = await orderLoaderProcessor
-                        .ProcessAsync(
-                            predicate: x => x.Enabled && x.CreatedAt > DateTime.Now.AddDays(-1* days),
-                            ascending, incompleteOnly, customOnly,cancellationToken);
+                    var result = await queryHandler.HandleAsync(
+                         days: days,
+                         ascending: ascending,
+                         incompleteOnly: incompleteOnly,
+                         customOnly: customOnly,
+                         pageSize: pageSize,
+                         pageIndex: pageIndex,
+                         cancellationToken: cancellationToken);
 
-                    if (!ordersResult.Ok)
-                        return Results.BadRequest(ordersResult.Error);
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
 
-                    var result = ordersResult.Result.Select(x => new CommonOrderDto()
-                    {
-                        Code = x.Code,
-                        Title = x.Title.Value,
-                        UserName = x.ApplicationUser.UserName,
-                        IsCompleted = x.IsCompleted(),
-                        IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
-                        CreatedAt = x.CreatedAt,
-                        UpdatedAt = x.UpdatedAt
-                    });
-
-                    return Results.Ok(result);
+                    return Results.Ok(new PagedResponseDto<CommonOrderDto>
+                    (
+                        items: result.Result.Items.Select(x =>
+                            new CommonOrderDto()
+                            {
+                                Code = x.Code,
+                                Title = x.Title.Value,
+                                UserName = x.ApplicationUser.UserName,
+                                IsCompleted = x.IsCompleted(),
+                                IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
+                                CreatedAt = x.CreatedAt,
+                                UpdatedAt = x.UpdatedAt
+                            }
+                        ),
+                        pageSize: result.Result.PageSize,
+                        pageIndex: result.Result.PageIndex,
+                        totalCount: result.Result.TotalCount
+                    ));
                 })
             .Produces(200)
             .ProducesProblem(401)
@@ -67,21 +79,19 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             group.MapGet("by-code/{orderCode}", 
                 async (
                     [FromRoute] string orderCode,
-                    OrderLoaderProcessor orderLoaderProcessor,
+                    OrdersQueryHandler queryHandler,
                     CancellationToken cancellationToken) =>
                 {
-                    var ordersResult = await orderLoaderProcessor
-                        .ProcessAsync(
-                            predicate: x => x.Enabled
-                            && x.Code == orderCode,
+                    var ordersResult = await queryHandler
+                        .HandleAsync(
+                            code: orderCode,
+                            days: -1,
                             cancellationToken: cancellationToken);
 
                     if (!ordersResult.Ok)
                         return Results.BadRequest(ordersResult.Error);
 
-                    var result = ordersResult.Result.Select(x => x.ConvertToDto());
-
-                    return Results.Ok(result);
+                    return Results.Ok(ordersResult.Result.Items.Select(x => x.ConvertToDto()));
                 })
             .Produces(200)
             .ProducesProblem(401)
@@ -95,18 +105,45 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 async (
                     [FromRoute] string userLogin,
                     [FromRoute] int days,
-                    OrdersByCustomerLoginProcessor processor,
+                    OrdersQueryHandler queryHandler,
                     CancellationToken cancellationToken, 
                     [FromQuery] bool ascending = false,
                     [FromQuery] bool incompleteOnly = false,
-                    [FromQuery] bool customOnly = false) =>
+                    [FromQuery] bool customOnly = false,
+                    [FromQuery] int pageSize = 20,
+                    [FromQuery] int pageIndex = 0) =>
                 {
-                    var result = await processor.ProcessAsync(userLogin, days, ascending, incompleteOnly, customOnly,  cancellationToken);
+                    var result = await queryHandler.HandleAsync(
+                        days: days, 
+                        userLogin: userLogin,
+                        ascending: ascending,
+                        incompleteOnly: incompleteOnly,
+                        customOnly: customOnly,
+                        pageSize: pageSize,
+                        pageIndex: pageIndex,
+                        cancellationToken: cancellationToken);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    return Results.Ok(result.Result);
+                    return Results.Ok(new PagedResponseDto<CommonOrderDto>
+                    (
+                        items: result.Result.Items.Select(x =>
+                            new CommonOrderDto()
+                            {
+                                Code = x.Code,
+                                Title = x.Title.Value,
+                                UserName = x.ApplicationUser.UserName,
+                                IsCompleted = x.IsCompleted(),
+                                IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
+                                CreatedAt = x.CreatedAt,
+                                UpdatedAt = x.UpdatedAt
+                            }
+                        ),
+                        pageSize: result.Result.PageSize,
+                        pageIndex: result.Result.PageIndex,
+                        totalCount: result.Result.TotalCount
+                    ));
                 })
             //.RequireAuthorization("Administrator")
             .Produces(200)

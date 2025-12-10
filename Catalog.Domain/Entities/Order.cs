@@ -1,5 +1,6 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Entities.Approval;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
