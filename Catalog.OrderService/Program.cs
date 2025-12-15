@@ -4,6 +4,7 @@ using Catalog.FacadeOrderTitleValidator.Extensions;
 using Catalog.Infrastructure;
 using Catalog.Logging.Middleware;
 using Catalog.ModuleCompositionValidator.Extension;
+using Catalog.FacadesOrderTitleValidator.Extensions;
 using Catalog.OrderService.Definitions.Configurations;
 using Serilog;
 using TelegramService.DependencyInjection;
@@ -21,6 +22,8 @@ try
     builder.Services.AddComponentCompatibilityValidator();
 
     builder.Services.AddModuleCompositionValidator();
+
+    builder.Services.AddFacadesOrderCompositionValidator();
 
     builder.Host.UseSerilog((context, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));

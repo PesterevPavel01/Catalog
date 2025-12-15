@@ -1,11 +1,8 @@
-﻿using System.Linq.Expressions;
-using Calabonga.OperationResults;
+﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto;
-using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Domain.Entities;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Catalog.OrderService.Application.Handlers.QueryHandlers
 {

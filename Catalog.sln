@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.Logging.Middleware"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.ComponentService", "Catalog.ComponentService\Catalog.ComponentService.csproj", "{457BDAA8-EE7B-7EC7-0BA2-B1B315B7DFD6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catalog.FacadesOrderCompositionValidator", "Catalog.FacadesOrderCompositionValidator\Catalog.FacadesOrderCompositionValidator.csproj", "{61B55AD9-8CA0-4CB4-895B-B056282B4643}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,10 @@ Global
 		{457BDAA8-EE7B-7EC7-0BA2-B1B315B7DFD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{457BDAA8-EE7B-7EC7-0BA2-B1B315B7DFD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{457BDAA8-EE7B-7EC7-0BA2-B1B315B7DFD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61B55AD9-8CA0-4CB4-895B-B056282B4643}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61B55AD9-8CA0-4CB4-895B-B056282B4643}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61B55AD9-8CA0-4CB4-895B-B056282B4643}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61B55AD9-8CA0-4CB4-895B-B056282B4643}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -123,6 +129,7 @@ Global
 		{5F5CF46A-878F-25B7-C69E-1143CD85A5F4} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{7B81218B-E0A8-429F-A5FC-A2A561CF8508} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{24F84A43-90EE-4ED2-8FF0-603F2BA22A55} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{61B55AD9-8CA0-4CB4-895B-B056282B4643} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5AFA2B88-538A-4CC1-A060-E09C06F84C35}

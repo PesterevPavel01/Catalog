@@ -4,8 +4,12 @@ using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Contracts.Interfaces;
+using Catalog.Contracts.Request;
+using Catalog.Contracts.Response;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enum;
+using Rebus;
+using Rebus.Bus;
 
 namespace Catalog.ModuleConfigurationService.Application.Processors
 {
@@ -15,8 +19,8 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
         private readonly IModuleParametersValidator _moduleParametersValidator;
 
         public ModuleUpdaterProcessor(
-            IUnitOfWork unitOfWork, 
-            IModuleParametersValidator moduleParametersValidator)
+            IModuleParametersValidator moduleParametersValidator,
+            IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _moduleParametersValidator = moduleParametersValidator;
@@ -101,7 +105,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
 
             var insertResult = await _unitOfWork.SaveChangesAsync();
 
-            return module.ConvertToDto();
+            return module.ConvertToDto(); ;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities;
 
 namespace Catalog.OrderService.Application.Processors
@@ -8,10 +9,12 @@ namespace Catalog.OrderService.Application.Processors
     public class OrderItemCreatorProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IOrderValidator _orderValidator;
 
-        public OrderItemCreatorProcessor(IUnitOfWork unitOfWork)
+        public OrderItemCreatorProcessor(IUnitOfWork unitOfWork, IOrderValidator orderValidator)
         {
             _unitOfWork = unitOfWork;
+            _orderValidator = orderValidator;
         }
 
         public async Task<Operation<List<Guid>, string>> ProcessAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
@@ -45,7 +48,8 @@ namespace Catalog.OrderService.Application.Processors
             var modules = await _unitOfWork.GetRepository<Module>()
             .GetAllAsync(
                 predicate: x => orderItemsModels.Select(m => m.ModuleCode).Contains(x.Code) && x.Enabled,
-                trackingType: TrackingType.Tracking
+                trackingType: TrackingType.Tracking,
+                include: Module.IncludeRequiredField()
             );
 
             if (!modules.Any())
@@ -81,7 +85,7 @@ namespace Catalog.OrderService.Application.Processors
 
                     foreach (var item in newOrderItems)
                     {
-                        var operationResult = order.AddOrderItem(item);
+                        var operationResult = order.AddOrderItem(item, _orderValidator);
 
                         if (!operationResult.Ok)
                             return Operation.Error(operationResult.Error);

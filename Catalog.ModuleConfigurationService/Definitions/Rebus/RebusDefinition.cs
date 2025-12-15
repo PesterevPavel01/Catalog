@@ -1,6 +1,11 @@
-﻿using Calabonga.AspNetCore.AppDefinitions;
+﻿using System.Text.Json.Serialization;
+using System.Text.Json;
+using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Entities.Rabbit;
+using Catalog.Contracts.Interfaces;
+using Catalog.Contracts.Request;
 using Rebus.Config;
+using Rebus.Routing.TypeBased;
 using Rebus.Serialization.Json;
 using Serilog;
 
@@ -18,8 +23,11 @@ namespace Catalog.ModuleConfigurationService.Definitions.Rebus
                 .Logging(x => x.Serilog(Log.Logger))
                 .Serialization(x => x.UseSystemTextJson())
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, "IModuleConfigurationQueueEvent"))
+                .Routing(r => r.TypeBased()
+                    .Map<ModuleChangePermissionRequest>(nameof(IOrderQueueEvent)))
                 .Options(x =>
                 {
+                    x.EnableSynchronousRequestReply();
                     x.SetNumberOfWorkers(5);//кол-во потоков
                     x.SetBusName("ModuleConfigurationService");
                 });

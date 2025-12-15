@@ -31,18 +31,18 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 async (
                     [FromBody] CreateOrderDto model,
                     IOptions <ApplicationConfiguration> applicationConfiguration,
-                    OrderCreatorProcessor orderProcessor,
-                    OrderItemCreatorProcessor orderItemProcessor,
+                    OrderCreatorProcessor orderCreatorProcessor,
+                    OrderItemCreatorProcessor orderItemCreatorProcessor,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await orderProcessor.ProcessAsync(model, cancellationToken);
+                    var result = await orderCreatorProcessor.ProcessAsync(model, cancellationToken);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
                     if (model.OrderItems.Any())
                     {
-                        var operationResult = await orderItemProcessor.ProcessAsync(model.OrderItems, cancellationToken);
+                        var operationResult = await orderItemCreatorProcessor.ProcessAsync(model.OrderItems, cancellationToken);
 
                         if (!operationResult.Ok)
                             return Results.BadRequest(operationResult.Error);

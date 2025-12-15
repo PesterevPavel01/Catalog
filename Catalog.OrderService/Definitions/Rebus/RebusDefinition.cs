@@ -22,6 +22,7 @@ namespace Catalog.OrderService.Definitions.Rebus
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IOrderQueueEvent)))
                 .Options(x =>
                 {
+                    x.EnableSynchronousRequestReply();
                     x.SetNumberOfWorkers(5);//кол-во потоков
                     x.SetBusName("OrderService");
                 });

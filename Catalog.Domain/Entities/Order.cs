@@ -1,6 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities.Approval;
+using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
@@ -49,7 +50,7 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        public Operation<bool, string> AddOrderItem(OrderItem orderItem)
+        public Operation<bool, string> AddOrderItem(OrderItem orderItem, IOrderValidator validator)
         {
             var exists = _orderItems.Find(x => x.Id == orderItem.Id || x.Module.Code == orderItem.Module.Code);
             //если у заказа есть уже OrderItem с этим модулем, то нужно не добавлять новый, а увеличивать Quantity у существующего!
@@ -58,7 +59,7 @@ namespace Catalog.Domain.Entities
 
             _orderItems.Add(orderItem);
 
-            return true;
+            return validator.Validate(this);
         }
 
         public void RemoveOrderItem(OrderItem orderItem)
@@ -123,5 +124,10 @@ namespace Catalog.Domain.Entities
                 UserName = ApplicationUser.UserName,
                 IsCompleted = this.IsCompleted(),
             };
+
+        public Operation<bool, string> Validate(IOrderValidator validator) 
+            => validator.Validate(this);
+
+
     }
 }

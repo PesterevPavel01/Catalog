@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Catalog.Application\Catalog.Application.csproj" />
     <ProjectReference Include="..\Catalog.ComponentCompatibilityValidator\Catalog.ComponentCompatibilityValidator.csproj" />
     <ProjectReference Include="..\Catalog.Domain\Catalog.Contracts.csproj" />
+    <ProjectReference Include="..\Catalog.FacadesOrderCompositionValidator\Catalog.FacadesOrderCompositionValidator.csproj" />
     <ProjectReference Include="..\Catalog.FacadesOrderTitleValidator\Catalog.FacadeOrderTitleValidator.csproj" />
     <ProjectReference Include="..\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\Catalog.Logging.Middleware\Catalog.Logging.Middleware.csproj" />
