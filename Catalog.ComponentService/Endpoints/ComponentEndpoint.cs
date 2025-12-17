@@ -7,7 +7,6 @@ using Catalog.Contracts.Dto.Components;
 using Catalog.Domain.Entities;
 using Catalog.ExchangeService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Rebus.Bus;
 
 namespace Catalog.Web.Endpoints

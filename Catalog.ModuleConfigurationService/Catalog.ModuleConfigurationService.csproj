@@ -43,8 +43,4 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Application\QueueHandlers\" />
-  </ItemGroup>
-
 </Project>

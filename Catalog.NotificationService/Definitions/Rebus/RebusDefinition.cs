@@ -1,10 +1,8 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Entities.Rabbit;
-using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Contracts.Events.CustomerEvents;
-using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.NotificationService.Definitions;
 using Rebus.Config;
@@ -40,7 +38,6 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                     await bus.Subscribe<CustomWorkflowChangedEvent>();
                 }
             );
-
             builder.Services.AutoRegisterHandlersFromAssemblyOf<NotificationAssemblyReference>();
         }
     }

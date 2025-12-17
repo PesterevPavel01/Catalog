@@ -31,7 +31,7 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
                     SetOrderItemQuantityCommandHandler commandHandler,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await commandHandler.ExecuteAsync(orderCode, cancellationToken);
+                    var result = await commandHandler.HandleAsync(orderCode, cancellationToken);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);

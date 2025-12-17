@@ -16,7 +16,7 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Operation<bool, string>> ExecuteAsync(CreateMessageDto model, CancellationToken cancellationToken) 
+        public async Task<Operation<bool, string>> HandleAsync(CreateMessageDto model, CancellationToken cancellationToken) 
         {
             var orderItem = await _unitOfWork
                 .GetRepository<OrderItem>()

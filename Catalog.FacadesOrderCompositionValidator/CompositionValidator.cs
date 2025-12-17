@@ -10,9 +10,9 @@ namespace Catalog.FacadesOrderCompositionValidator
 {
     public class CompositionValidator : IOrderValidator
     {
-        private OrderCompositionRules _orderCompositionRules = null!;
+        private readonly OrderConfiguration _orderCompositionRules;
 
-        public CompositionValidator(IOptions<OrderCompositionRules> options)
+        public CompositionValidator(IOptions<OrderConfiguration> options)
         {
             _orderCompositionRules = options.Value;
         }

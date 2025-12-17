@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.OrderService.Application.Handlers.CommandHandlers;
 using Catalog.OrderService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,7 +44,28 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             .WithName("OrderDisableEndpoint")
             .WithOpenApi(operation => new(operation)
             {
-            Summary = "Деактивировать заказ"
+                Summary = "Деактивировать заказ"
+            });
+
+            group.MapGet("cleanup-old-orders",
+                async (
+                    CleanupOldOrderCommandHandler handler,
+                    CancellationToken cancellationToken) =>
+                {
+                    var result = await handler.HandleAsync(cancellationToken);
+
+                    if (!result.Ok)
+                        return Results.BadRequest(result.Error);
+
+                    return Results.Ok(result.Result);
+                })
+            //.RequireAuthorization("Constructor")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("CleanupOldOrderEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Проверка старых заказов"
             });
         }
     }

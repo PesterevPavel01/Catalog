@@ -31,7 +31,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     AddMessageCommandHandler commandHandler,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await commandHandler.ExecuteAsync(model, cancellationToken);
+                    var result = await commandHandler.HandleAsync(model, cancellationToken);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);

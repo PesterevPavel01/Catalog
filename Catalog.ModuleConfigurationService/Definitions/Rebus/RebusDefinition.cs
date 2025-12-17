@@ -8,6 +8,7 @@ using Rebus.Config;
 using Rebus.Routing.TypeBased;
 using Rebus.Serialization.Json;
 using Serilog;
+using Catalog.Contracts.Events.OrderEvents;
 
 namespace Catalog.ModuleConfigurationService.Definitions.Rebus
 {
@@ -36,7 +37,7 @@ namespace Catalog.ModuleConfigurationService.Definitions.Rebus
             }
             , onCreated: async bus =>
             {
-                //await bus.Subscribe<OrderCreatedEvent>();
+                await bus.Subscribe<CleanupOldOrderEvent>();
             }
             );
 

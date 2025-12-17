@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Threading;
 using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Contracts.Entities.Configurations;

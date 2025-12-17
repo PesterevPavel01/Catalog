@@ -30,7 +30,7 @@ namespace Catalog.OrderService.Definitions.Configurations
 
         private static void ConfigureApplication(WebApplicationBuilder builder)
         {
-            builder.Services.Configure<OrderCompositionRules>(
+            builder.Services.Configure<OrderConfiguration>(
                 builder.Configuration.GetSection("ApplicationConfiguration"));
 
             builder.Services.Configure<TelegramBotConfiguration>(

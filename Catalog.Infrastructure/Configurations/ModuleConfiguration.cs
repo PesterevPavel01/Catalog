@@ -14,7 +14,7 @@ namespace Catalog.Infrastructure.Configurations
                 .WithMany(x => x.Modules)
                 .HasForeignKey(x => x.ModuleTypeId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasMany(x => x.Components)

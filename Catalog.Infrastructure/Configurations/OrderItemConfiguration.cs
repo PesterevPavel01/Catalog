@@ -20,7 +20,7 @@ namespace Catalog.Infrastructure.Configurations
                 .WithMany(x => x.OrderItems)
                 .HasForeignKey(x => x.OrderId)
                 .HasPrincipalKey(x => x.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(x => x.Module)

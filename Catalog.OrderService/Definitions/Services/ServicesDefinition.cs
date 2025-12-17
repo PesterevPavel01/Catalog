@@ -17,6 +17,7 @@ namespace Catalog.Web.Definitions.Services
             builder.Services.AddScoped<OrderDisableProcessor>();
             builder.Services.AddScoped<OrderItemRemovalProcessor>();
             builder.Services.AddScoped<OrderItemCreatorProcessor>();
+            builder.Services.AddScoped<CleanupOldOrderCommandHandler>();
 
             builder.Services.AddScoped<OrderMessagesQueryHandler>();
             builder.Services.AddScoped<SetOrderItemQuantityCommandHandler>();
