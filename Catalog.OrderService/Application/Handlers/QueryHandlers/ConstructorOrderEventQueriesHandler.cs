@@ -20,7 +20,7 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
             var pagedResult = await _unitOfWork
                 .GetRepository<OrderEvent>()
                 .GetPagedListAsync(
-                    predicate: x => x.Order.Enabled,
+                    //predicate: x => x.Order.Enabled,
                     orderBy: x => x.OrderByDescending(e => e.CreatedAt),
                     include: OrderEvent.IncludeRequiredField(),
                     selector: x => x.ConvertToDto(),

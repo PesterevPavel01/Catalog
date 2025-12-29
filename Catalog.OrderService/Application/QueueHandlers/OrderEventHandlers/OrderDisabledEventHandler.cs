@@ -1,0 +1,25 @@
+﻿using Catalog.Contracts.Commands;
+using Catalog.Contracts.Events.OrderEvents;
+using Rebus.Bus;
+using Rebus.Handlers;
+
+namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandlers
+{
+    public class OrderDisabledEventHandler : IHandleMessages<OrderDisabledEvent>
+    {
+        private readonly IBus _bus; 
+
+        public OrderDisabledEventHandler(IBus bus)
+        {
+            _bus = bus;
+        }
+
+        public async Task Handle(OrderDisabledEvent message)
+        {
+            if (message.Order is null)
+                throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found!");
+
+            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, "Удален!"));
+        }
+    }
+}

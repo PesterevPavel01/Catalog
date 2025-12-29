@@ -1,8 +1,10 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.OrderService.Application.Handlers.CommandHandlers;
 using Catalog.OrderService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Endpoints.OrderEndpoints
 {
@@ -28,6 +30,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             group.MapPatch("{orderCode}/disable", 
                 async (
                     [FromRoute] string orderCode,
+                    IBus bus,
                     OrderDisableProcessor processor,
                     CancellationToken cancellationToken) =>
                 {
@@ -35,6 +38,8 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
+
+                    await bus.Publish(new OrderDisabledEvent(result.Result));
 
                     return Results.Ok(result.Result);
                 })

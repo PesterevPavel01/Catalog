@@ -41,6 +41,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                     await bus.Subscribe<OrderApprovalWorkflowsRemoveEvent>();
                     await bus.Subscribe<CustomWorkflowChangedEvent>();
                     await bus.Subscribe<OrderAddMessageEvent>();
+                    await bus.Subscribe<OrderDisabledEvent>();
                 }
             );
             builder.Services.AutoRegisterHandlersFromAssemblyOf<NotificationAssemblyReference>();

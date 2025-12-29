@@ -23,7 +23,9 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
             var pagedResult = await _unitOfWork
                 .GetRepository<OrderEvent>()
                 .GetPagedListAsync(
-                    predicate: x => x.Order.Enabled && x.Order.ApplicationUser.UserName == userName,
+                    predicate: x =>
+                        x.Order.ApplicationUser.UserName == userName,
+                    //    && x.Order.Enabled,                        
                     orderBy: x => x.OrderByDescending(e => e.CreatedAt),
                     include: OrderEvent.IncludeRequiredField(),
                     selector: x => x.ConvertToDto(),

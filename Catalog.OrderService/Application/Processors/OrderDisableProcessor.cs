@@ -1,6 +1,8 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
+using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.OrderService.Application.Processors
 {
@@ -13,11 +15,12 @@ namespace Catalog.OrderService.Application.Processors
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Operation<bool, string>> ProcessAsync(String orderCode, CancellationToken cancellationToken)
+        public async Task<Operation<OrderDto, string>> ProcessAsync(String orderCode, CancellationToken cancellationToken)
         {
             var order = await _unitOfWork.GetRepository<Order>()
                 .GetFirstOrDefaultAsync(
                     predicate: x => x.Code == orderCode,
+                    include: query => query.Include(x => x.ApplicationUser),
                     trackingType: TrackingType.Tracking
                 );
 
@@ -33,7 +36,13 @@ namespace Catalog.OrderService.Application.Processors
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
 
-            return result > 0;
+            return new OrderDto() 
+            {
+                Code = order.Code,
+                Title = order.Title.Value,
+                UserName = order.ApplicationUser.UserName,
+                IsCompleted = false
+            };
         }
     }
 }
