@@ -7,6 +7,7 @@ namespace Catalog.Contracts.Dto.Module
         public required string ModuleType { get; set; }
         public required string ModuleTypeCode { get; set; }
         public required string ModuleCode { get; set; }
+        public required bool IsCustom { get; set; }
         public required List<ComponentDto> Components { get; set; }
         public List<NumericParameterDto>? ModuleNumericParameters { get; set; }
         public List<TextParameterDto>? ModuleTextParameters { get; set; }

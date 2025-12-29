@@ -1,5 +1,6 @@
-﻿using Catalog.ComponentService.Application.Command;
-using Catalog.ComponentService.Application.Processors;
+﻿using Catalog.ComponentService.Application.Commands;
+using Catalog.Contracts.Dto.Components;
+using Catalog.Redis;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
 
@@ -9,13 +10,13 @@ namespace Catalog.ComponentService.Application.QueueHandlers
     {
         private readonly ILogger<SetComponentsInCacheCommandHandler> _logger;
         private readonly ITelegramService _telegramService;
-        CachedComponentLoaderProcessor _cachedComponentLoaderProcessor;
+        private readonly RedisService<ComponentDto> _redisService;
 
-        public SetComponentsInCacheCommandHandler(CachedComponentLoaderProcessor cachedComponentLoaderProcessor, ILogger<SetComponentsInCacheCommandHandler> logger, ITelegramService telegramService)
+        public SetComponentsInCacheCommandHandler(RedisServiceFactory redisServiceFactory, ILogger<SetComponentsInCacheCommandHandler> logger, ITelegramService telegramService)
         {
+            _redisService = redisServiceFactory.GetService<ComponentDto>();
             _logger = logger;
             _telegramService = telegramService;
-            _cachedComponentLoaderProcessor = cachedComponentLoaderProcessor;
         }
 
         public async Task Handle(SetComponentsInCacheCommand message)
@@ -25,7 +26,7 @@ namespace Catalog.ComponentService.Application.QueueHandlers
                 message.GetType().Name,
                 message.CacheKey);
 
-            var sendToCacheResult = await _cachedComponentLoaderProcessor.SendToCacheAsync(message.CacheKey, message.Components, default);
+            var sendToCacheResult = await _redisService.SendToCacheAsync(message.CacheKey, message.Components, default);
 
             if (!sendToCacheResult.Ok)
             {

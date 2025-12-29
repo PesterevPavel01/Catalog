@@ -28,13 +28,11 @@ namespace Catalog.ApprovalService.Application.Processors.OrderItems
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        public async Task<Operation<Order, string>> ProcessAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
+        public async Task<Operation<Order, string>> ProcessAsync(OrderDto model, CancellationToken cancellationToken)
         {
-            var orderCode = models.First(x => x.OrderCode != null).OrderCode;
-
             var order = await _unitOfWork.GetRepository<Order>()
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.Code == orderCode && x.Enabled,
+                    predicate: x => x.Code == model.Code && x.Enabled,
                     trackingType: TrackingType.Tracking,
                     include: Order.IncludeRequiredField()
                 );
@@ -79,7 +77,7 @@ namespace Catalog.ApprovalService.Application.Processors.OrderItems
             if (user == null)
                 return Operation.Error("TECHNICAL_USER not found!");
 
-            var orderItemModels = order.OrderItems.Where(x => x.Enabled && models.Select(m => m.ModuleCode).Contains(x.Module.Code));
+            var orderItemModels = order.OrderItems.Where(x => x.Enabled && model.Modules.Select(m => m.Module.ModuleCode).Contains(x.Module.Code));
 
             //only for OrderItems that are present in the input model
             foreach (var item in orderItemModels)
@@ -87,7 +85,7 @@ namespace Catalog.ApprovalService.Application.Processors.OrderItems
                 var workflowCreateResult = ApprovalWorkflow.Create("DEFAULT", Guid.NewGuid().ToString(), item, item.Module.IsCustom ? startStage : completeStage, user);
 
                 if (!workflowCreateResult.Ok)
-                    return Operation.Error($"Failed to create order workflow: OrderCode = {orderCode}, OrderItemId = {item.Id}, ModuleCode = {item.Module.Code}");
+                    return Operation.Error($"Failed to create order workflow: OrderCode = {model.Code}, OrderItemId = {item.Id}, ModuleCode = {item.Module.Code}");
 
                 workflows.Add(workflowCreateResult.Result);
             }

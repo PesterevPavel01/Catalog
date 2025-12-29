@@ -18,9 +18,7 @@ namespace Catalog.FacadeOrderTitleValidator
             var lastOrder = await _unitOfWork.GetRepository<Order>().GetFirstOrDefaultAsync(orderBy: q => q.OrderByDescending(o => o.CreatedAt));
 
             if (lastOrder is null)
-            {
                 return "1";
-            }
 
             var lastValue = lastOrder.Title.Value;
 

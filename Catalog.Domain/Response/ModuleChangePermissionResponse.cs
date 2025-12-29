@@ -1,7 +1,4 @@
-﻿using Calabonga.OperationResults;
-using Catalog.Contracts.Dto.Module;
-
-namespace Catalog.Contracts.Response
+﻿namespace Catalog.Contracts.Response
 {
     public sealed class ModuleChangePermissionResponse
     {

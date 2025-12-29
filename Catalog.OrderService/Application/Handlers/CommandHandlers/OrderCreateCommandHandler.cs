@@ -5,22 +5,21 @@ using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.FacadeOrderTitleValidator;
 
-namespace Catalog.OrderService.Application.Processors
+namespace Catalog.OrderService.Application.Handlers.CommandHandlers
 {
-    public sealed class OrderCreatorProcessor
+    public sealed class OrderCreateCommandHandler
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITitleValidator _titleValidator;
 
-        public OrderCreatorProcessor(IUnitOfWork unitOfWork, ITitleValidator titleValidator)
+        public OrderCreateCommandHandler(IUnitOfWork unitOfWork, ITitleValidator titleValidator)
         {
             _unitOfWork = unitOfWork;
             _titleValidator = titleValidator;
         }
 
-        public async Task<Operation<OrderDto, string>> ProcessAsync(CreateOrderDto model, CancellationToken cancellationToken) 
+        public async Task<Operation<OrderDto, string>> HandleAsync(CreateOrderDto model, CancellationToken cancellationToken) 
         {
-
             var user = await _unitOfWork
                 .GetRepository<ApplicationUser>()
                 .GetFirstOrDefaultAsync(
@@ -34,11 +33,11 @@ namespace Catalog.OrderService.Application.Processors
 
             var titleResult = await _titleValidator.Validate(cancellationToken);
 
-            if(!titleResult.Ok)
+            if (!titleResult.Ok)
+            {
+                await transaction.RollbackAsync(cancellationToken);
                 return Operation.Error(titleResult.Error);
-
-            /*if (string.IsNullOrWhiteSpace(title))
-                title = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");*/
+            }
 
             var orderResult = Order
                 .Create(
@@ -46,7 +45,10 @@ namespace Catalog.OrderService.Application.Processors
                     code: model.OrderCode, user);
 
             if (!orderResult.Ok)
+            {
+                await transaction.RollbackAsync(cancellationToken);
                 return Operation.Error(orderResult.Error);
+            }
 
             await _unitOfWork.GetRepository<Order>().InsertAsync(orderResult.Result, cancellationToken);
 

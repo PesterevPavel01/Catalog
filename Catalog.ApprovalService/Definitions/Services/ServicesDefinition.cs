@@ -20,6 +20,8 @@ namespace Catalog.ApprovalService.Definitions.Services
 
             builder.Services.AddScoped<RejectProcessor>();
 
+            builder.Services.AddScoped<RemoveOrderWorkflowsProcessor>(); 
+
             builder.Services.AddScoped<PermissionCheckerProcessor>();
 
             builder.Services.AddScoped<OrderApprovalInitiatorService>();

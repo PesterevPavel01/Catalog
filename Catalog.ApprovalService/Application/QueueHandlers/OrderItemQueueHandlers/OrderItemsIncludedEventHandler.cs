@@ -23,16 +23,14 @@ namespace Catalog.ApprovalService.Application.QueueHandlers.OrderItemQueueHandle
 
         public async Task Handle(OrderItemsIncludedEvent message)
         {
-            var result = await _processor.InitializeAsync(message.models, new CancellationToken());
+            var result = await _processor.InitializeAsync(message.Order, new CancellationToken());
 
             if (!result.Ok)
                 return;
 
-            var createdOrderItems = result.Result.OrderItems.Where(x => message.models.Select(m => m.ModuleCode).Contains(x.Module.Code));
-
-            if (createdOrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null)
+            if (message.Order.Modules.FirstOrDefault(x => x.Module.IsCustom) is not null)
             {
-                await _bus.Publish(new WorkflowCreatedEvent(result.Result.Code));
+                await _bus.Publish(new WorkflowCreatedEvent(message.Order));
             }
 
             return;

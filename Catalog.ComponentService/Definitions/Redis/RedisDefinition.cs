@@ -1,6 +1,4 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Infrastructure;
-using Interceptors;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.ComponentService.Definitions.Redis

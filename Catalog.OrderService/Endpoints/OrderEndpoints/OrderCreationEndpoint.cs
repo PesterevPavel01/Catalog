@@ -2,6 +2,7 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
 using Catalog.OrderService.Application.Configurations;
+using Catalog.OrderService.Application.Handlers.CommandHandlers;
 using Catalog.OrderService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -31,11 +32,11 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 async (
                     [FromBody] CreateOrderDto model,
                     IOptions <ApplicationConfiguration> applicationConfiguration,
-                    OrderCreatorProcessor orderCreatorProcessor,
+                    OrderCreateCommandHandler createCommandHandler,
                     OrderItemCreatorProcessor orderItemCreatorProcessor,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await orderCreatorProcessor.ProcessAsync(model, cancellationToken);
+                    var result = await createCommandHandler.HandleAsync(model, cancellationToken);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);

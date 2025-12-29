@@ -26,18 +26,13 @@ namespace Catalog.ApprovalService.Application.Services
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        public async Task<Operation<bool, string>> InitializeAsync(string orderCode, CancellationToken cancellationToken)
+        public async Task<Operation<OrderDto, string>> InitializeAsync(string orderCode, CancellationToken cancellationToken)
         {
             var order = await _unitOfWork
                 .GetRepository<Order>()
                 .GetFirstOrDefaultAsync(
                     trackingType: TrackingType.Tracking,
-                    include: query => query
-                        .Include(x => x.OrderItems)
-                            .ThenInclude(x => x.ApprovalWorkflow)
-                                .ThenInclude(x => x.ApprovalWorkflowItems)
-                        .Include(x => x.OrderItems)
-                            .ThenInclude(x => x.Module),
+                    include: Order.IncludeRequiredField(),
                     predicate: x => x.Code == orderCode && x.Enabled);
 
             if (order is null)
@@ -51,16 +46,9 @@ namespace Catalog.ApprovalService.Application.Services
             if (order.OrderItems.FirstOrDefault(x => x.Enabled && x.ApprovalWorkflow is not null && x.ApprovalWorkflow.Enabled) is not null)
                 return Operation.Error("The approval workflow for the order has already been initiated.");
 
-            var result = await _processor.ProcessAsync(
-                order.OrderItems
-                    .Select(x => 
-                        new CreateOrderItemDto() 
-                        { 
-                            OrderCode = order.Code, 
-                            ModuleCode = x.Module.Code }),
-                cancellationToken);
+            var result = await _processor.ProcessAsync(order.ConvertToDto(), cancellationToken);
 
-            return true;
+            return order.ConvertToDto();
         }
     }
 }

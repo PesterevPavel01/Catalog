@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
-using Catalog.ComponentService.Application.Processors;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Domain.Entities;
 
@@ -39,9 +38,9 @@ namespace Catalog.ExchangeService.Application.Processors
                 }
 
                 if (ascending)
-                    components = [.. components.OrderBy(x => x.CreatedAt)];
+                    components = [.. components.OrderBy(x => x.Title.Value)];
                 else
-                    components = [.. components.OrderByDescending(x => x.CreatedAt)];
+                    components = [.. components.OrderByDescending(x => x.Title.Value)];
 
                 var componentDto = components.Select(x => x.ConvertToDto()).ToList();
 

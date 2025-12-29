@@ -69,6 +69,4 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             });
         }
     }
-
-
 }

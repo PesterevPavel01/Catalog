@@ -1,9 +1,9 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Message;
+using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
 using Catalog.Domain.Entities;
-using Catalog.Domain.Entities.Authorization;
 
 namespace Catalog.OrderService.Application.Handlers.CommandHandlers
 {
@@ -16,22 +16,24 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Operation<bool, string>> HandleAsync(CreateMessageDto model, CancellationToken cancellationToken) 
+        public async Task<Operation<OrderDto, string>> HandleAsync(CreateMessageDto model, CancellationToken cancellationToken) 
         {
-            var orderItem = await _unitOfWork
-                .GetRepository<OrderItem>()
+            var order = await _unitOfWork
+                .GetRepository<Order>()
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.Order.Code == model.OrderCode && x.Module.Code == model.ModuleCode,
+                    predicate: x => x.Code == model.OrderCode,
+                    include: Order.IncludeRequiredField(),
                     trackingType: TrackingType.Tracking);
+
+            if (order is null)
+                return Operation.Error("Order not found!");
+
+            var orderItem = order.OrderItems.FirstOrDefault(x => x.Module.Code == model.ModuleCode);
 
             if (orderItem is null)
                 return Operation.Error("OrderItem not found!");
 
-            var user = await _unitOfWork
-                .GetRepository<ApplicationUser>()
-                .GetFirstOrDefaultAsync(
-                    predicate: x => x.UserName == model.SenderName,
-                    trackingType: TrackingType.Tracking);
+            var user = order.ApplicationUser;
 
             if (user is null)
                 return Operation.Error("ApplicationUser not found!");
@@ -53,7 +55,7 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
 
-            return true;
+            return order.ConvertToDto();
         }
     }
 }

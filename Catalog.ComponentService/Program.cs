@@ -5,6 +5,7 @@ using Catalog.Infrastructure;
 using Serilog;
 using Catalog.Logging.Middleware;
 using TelegramService.DependencyInjection;
+using Catalog.Redis.Extension;
 
 try
 {
@@ -20,6 +21,8 @@ try
         configuration.ReadFrom.Configuration(context.Configuration));
 
     builder.AddDefinitions(typeof(Program));
+
+    builder.Services.AddRedis();
 
     var app = builder.Build();
 

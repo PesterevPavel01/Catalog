@@ -1,8 +1,11 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Commands;
 using Catalog.Contracts.Dto.Message;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.OrderService.Application.Handlers.CommandHandlers;
 using Microsoft.AspNetCore.Mvc;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Endpoints.OrderEndpoints
 {
@@ -29,12 +32,15 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 async (
                     [FromBody] CreateMessageDto model,
                     AddMessageCommandHandler commandHandler,
+                    IBus bus,
                     CancellationToken cancellationToken) =>
                 {
                     var result = await commandHandler.HandleAsync(model, cancellationToken);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
+
+                    await bus.Publish(new OrderAddMessageEvent(result.Result));
 
                     return Results.Ok(result.Result);
                 })

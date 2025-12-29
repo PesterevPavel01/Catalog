@@ -39,7 +39,7 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Publish(new OrderItemsIncludedEvent(models));
+                    await bus.Publish(new OrderItemsIncludedEvent(result.Result));
 
                     return Results.Ok(result.Result);
                 })

@@ -1,14 +1,12 @@
-﻿using System.Text.Json.Serialization;
-using System.Text.Json;
-using Calabonga.AspNetCore.AppDefinitions;
+﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Entities.Rabbit;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Request;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
 using Rebus.Serialization.Json;
 using Serilog;
-using Catalog.Contracts.Events.OrderEvents;
 
 namespace Catalog.ModuleConfigurationService.Definitions.Rebus
 {
@@ -23,7 +21,7 @@ namespace Catalog.ModuleConfigurationService.Definitions.Rebus
                 config
                 .Logging(x => x.Serilog(Log.Logger))
                 .Serialization(x => x.UseSystemTextJson())
-                .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, "IModuleConfigurationQueueEvent"))
+                .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IModuleQueueEvent)))
                 .Routing(r => r.TypeBased()
                     .Map<ModuleChangePermissionRequest>(nameof(IOrderQueueEvent)))
                 .Options(x =>

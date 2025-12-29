@@ -174,7 +174,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             .WithOpenApi(operation => new(operation)
             {
                 Summary = "Получить комментарии заказа."
-});
+            });
 
         }
     }

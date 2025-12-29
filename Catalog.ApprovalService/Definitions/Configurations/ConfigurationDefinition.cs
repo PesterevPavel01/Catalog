@@ -1,6 +1,7 @@
 ﻿using Catalog.ApprovalService.Application.Configurations;
 using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
+using TelegramService.Configurations;
 
 namespace Catalog.ApprovalService.Definitions.Configurations
 {
@@ -29,6 +30,9 @@ namespace Catalog.ApprovalService.Definitions.Configurations
         {
             builder.Services.Configure<ApplicationConfiguration>(
                 builder.Configuration.GetSection("ApplicationConfiguration"));
+
+            builder.Services.Configure<TelegramBotConfiguration>(
+                builder.Configuration.GetSection("TelegramBot"));
         }
     }
 }

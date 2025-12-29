@@ -17,7 +17,7 @@ namespace Catalog.OrderService.Application.Processors
             _orderValidator = orderValidator;
         }
 
-        public async Task<Operation<List<Guid>, string>> ProcessAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
+        public async Task<Operation<OrderDto, string>> ProcessAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
         {
             var orderCode = models.First(x => x.OrderCode != null).OrderCode;
 
@@ -108,9 +108,7 @@ namespace Catalog.OrderService.Application.Processors
 
             await transaction.CommitAsync(cancellationToken);
 
-            List<Guid> newOrderItemsId = [.. newOrderItems.Select(x => x.Id)];
-
-            return newOrderItemsId;
+            return order.ConvertToDto();
 
         }
     }

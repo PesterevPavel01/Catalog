@@ -1,6 +1,7 @@
 ﻿using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Entities.Configurations;
 using Catalog.Contracts.Entities.Rabbit;
+using Catalog.Redis.Configuration;
 using TelegramService.Configurations;
 
 namespace Catalog.OrderService.Definitions.Configurations
@@ -35,6 +36,9 @@ namespace Catalog.OrderService.Definitions.Configurations
 
             builder.Services.Configure<TelegramBotConfiguration>(
                 builder.Configuration.GetSection("TelegramBot"));
+
+            builder.Services.Configure<RedisConfiguration>(
+                builder.Configuration.GetSection("RedisConfiguration"));
         }
     }
 }

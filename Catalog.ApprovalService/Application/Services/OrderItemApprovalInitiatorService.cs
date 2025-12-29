@@ -28,10 +28,8 @@ namespace Catalog.ApprovalService.Application.Services
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        public async Task<Operation<Order, string>> InitializeAsync(IEnumerable<CreateOrderItemDto> models, CancellationToken cancellationToken)
+        public async Task<Operation<Order, string>> InitializeAsync(OrderDto model, CancellationToken cancellationToken)
         {
-            var orderCode = models.First(x => x.OrderCode != null).OrderCode;
-
             var order = await _unitOfWork
                 .GetRepository<Order>()
                 .GetFirstOrDefaultAsync(
@@ -40,7 +38,7 @@ namespace Catalog.ApprovalService.Application.Services
                         .Include(x => x.OrderItems)
                             .ThenInclude(x => x.ApprovalWorkflow)
                                 .ThenInclude(x => x.ApprovalWorkflowItems),
-                    predicate: x => x.Code == orderCode && x.Enabled);
+                    predicate: x => x.Code == model.Code && x.Enabled);
 
             if (order is null)
                 return Operation.Error("Order not found!");
@@ -48,12 +46,10 @@ namespace Catalog.ApprovalService.Application.Services
             if (order.OrderItems is null || !order.OrderItems.Where(x => x.Enabled).Any())
                 return Operation.Error("Order Items not found!");
 
-            //Checking for the presence of ApprovalWorkflow; if it not exists, then return.
-
             if (order.OrderItems.FirstOrDefault(x => x.Enabled && x.ApprovalWorkflow is not null && x.ApprovalWorkflow.Enabled) is null)
                 return Operation.Error("Actual ApprovalWorkflow not found!");
 
-            return await _processor.ProcessAsync(models, cancellationToken); 
+            return await _processor.ProcessAsync(model, cancellationToken); 
         }
     }
 }

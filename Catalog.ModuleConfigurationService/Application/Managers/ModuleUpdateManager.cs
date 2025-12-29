@@ -7,42 +7,6 @@ using Catalog.ModuleConfigurationService.Application.Processors;
 using Rebus;
 using Rebus.Bus;
 
-
-/*{
-    "moduleCode": "518c7a69-4ae0-496b-9318-d0ac9f25a8d2",
-    "components": [
-      {
-        "componentCode": "00080196914"
-      },
-      {
-        "componentCode": "C00080140002"
-      },
-      {
-        "componentCode": "C00080230002"
-      },
-      {
-        "componentCode": "C00080320002"
-      },
-      {
-        "componentCode": "C00080100019"
-      }
-    ],
-  "numericParameters": [
-            {
-              "type": "Ширина",
-              "typeCode": "0000000WDHT",
-              "value": 600
-            },
-            {
-              "type": "Высота",
-              "typeCode": "000000LNGTH",
-              "value": 800
-            }
-  ],
-  "textParameters": [
-  ]
-}*/
-
 namespace Catalog.ModuleConfigurationService.Application.Managers
 {
     public sealed class ModuleUpdateManager

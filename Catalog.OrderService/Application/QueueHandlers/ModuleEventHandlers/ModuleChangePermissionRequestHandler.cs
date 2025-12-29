@@ -6,7 +6,7 @@ using Catalog.Domain.Entities;
 using Rebus.Bus;
 using Rebus.Handlers;
 
-namespace Catalog.OrderService.Application.QueueHandlers
+namespace Catalog.OrderService.Application.QueueHandlers.ModuleEventHandlers
 {
     public class ModuleChangePermissionRequestHandler : IHandleMessages<ModuleChangePermissionRequest>
     {

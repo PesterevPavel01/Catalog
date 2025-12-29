@@ -1,7 +1,7 @@
 ﻿using Calabonga.UnitOfWork;
+using Catalog.Contracts.Entities;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
-using Catalog.Domain.Entities;
 using Catalog.NotificationService.Application.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -30,7 +30,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             var workflow = await _unitOfWork
                 .GetRepository<ApprovalWorkflow>()
                 .GetFirstOrDefaultAsync(
-                    trackingType: TrackingType.NoTracking,
+                    trackingType: TrackingType.Tracking,
                     include: query => query
                         .Include(x => x.OrderItem)
                             .ThenInclude(x => x.Order)

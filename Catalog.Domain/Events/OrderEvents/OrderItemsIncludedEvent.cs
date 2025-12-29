@@ -3,7 +3,7 @@ using Catalog.Contracts.Interfaces;
 
 namespace Catalog.Contracts.Events.OrderEvents
 {
-    public sealed record OrderItemsIncludedEvent(IEnumerable<CreateOrderItemDto> models) : IOrderQueueEvent
+    public sealed record OrderItemsIncludedEvent(OrderDto Order) : IOrderQueueEvent
     {
     }
 }

@@ -9,18 +9,24 @@ namespace Catalog.Web.Definitions.Swagger
     {
         public override void ConfigureApplication(WebApplication app)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
+            if (app.Environment.IsDevelopment())
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1.0");
-                c.SwaggerEndpoint("/swagger/v2/swagger.json", "Api v2.0");
-                c.SwaggerEndpoint("/swagger/v3/swagger.json", "Api v3.0");
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI(c =>
+                    {
+                        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1.0");
+                        c.SwaggerEndpoint("/swagger/v2/swagger.json", "Api v2.0");
+                        c.SwaggerEndpoint("/swagger/v3/swagger.json", "Api v3.0");
 
-                // Настройка OAuth
-                c.OAuthClientId("swagger-ui");
-                c.OAuthClientSecret("swagger-ui-secret");
-                c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
-            });
+                        // Настройка OAuth
+                        c.OAuthClientId("swagger-ui");
+                        c.OAuthClientSecret("swagger-ui-secret");
+                        c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+                    });
+                }
+            }
         }
 
         public override void ConfigureServices(WebApplicationBuilder builder)
@@ -43,61 +49,62 @@ namespace Catalog.Web.Definitions.Swagger
 
             builder.Services.AddEndpointsApiExplorer();
 
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo()
+            if (builder.Environment.IsDevelopment())
+                builder.Services.AddSwaggerGen(options =>
                 {
-                    Version = "v1",
-                    Title = "Сервис Catalog.OrderService",
-                    Description = "Авторизация",
-                });
-
-                options.SwaggerDoc("v2", new OpenApiInfo()
-                {
-                    Version = "v2",
-                    Title = "Сервис Catalog.OrderService",
-                    Description = "Заказ",
-                });
-
-                options.SwaggerDoc("v3", new OpenApiInfo()
-                {
-                    Version = "v3",
-                    Title = "Сервис Catalog.OrderService",
-                    Description = "Структура заказов",
-                });
-
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Введите валидный токен",
-                    Name = "Авторизация",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "Bearer"
-                });
-
-                options.AddSecurityRequirement(
-                    new OpenApiSecurityRequirement
+                    options.SwaggerDoc("v1", new OpenApiInfo()
                     {
-                        {
-                            new OpenApiSecurityScheme()
-                            {
-                                Reference = new OpenApiReference()
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
-                                },
-                                Name = "Bearer",
-                                In = ParameterLocation.Header,
-                            },
-                            Array.Empty<string>()
-                        }
-                    }
-                );
+                        Version = "v1",
+                        Title = "Сервис Catalog.OrderService",
+                        Description = "Авторизация",
+                    });
 
-                var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));
-            });
+                    options.SwaggerDoc("v2", new OpenApiInfo()
+                    {
+                        Version = "v2",
+                        Title = "Сервис Catalog.OrderService",
+                        Description = "Заказ",
+                    });
+
+                    options.SwaggerDoc("v3", new OpenApiInfo()
+                    {
+                        Version = "v3",
+                        Title = "Сервис Catalog.OrderService",
+                        Description = "Структура заказов",
+                    });
+
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                    {
+                        In = ParameterLocation.Header,
+                        Description = "Введите валидный токен",
+                        Name = "Авторизация",
+                        Type = SecuritySchemeType.Http,
+                        BearerFormat = "JWT",
+                        Scheme = "Bearer"
+                    });
+
+                    options.AddSecurityRequirement(
+                        new OpenApiSecurityRequirement
+                        {
+                            {
+                                new OpenApiSecurityScheme()
+                                {
+                                    Reference = new OpenApiReference()
+                                    {
+                                        Type = ReferenceType.SecurityScheme,
+                                        Id = "Bearer"
+                                    },
+                                    Name = "Bearer",
+                                    In = ParameterLocation.Header,
+                                },
+                                Array.Empty<string>()
+                            }
+                        }
+                    );
+
+                    var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));
+                });
 
 
         }

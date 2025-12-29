@@ -2,8 +2,6 @@
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Message;
 using Catalog.Contracts.Entities;
-using Catalog.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.OrderService.Application.Handlers.QueryHandlers
 {

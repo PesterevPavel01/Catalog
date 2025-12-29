@@ -1,8 +1,9 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.ApprovalService.Application.Configurations;
-using Catalog.Contracts.Dto.Approval;
+using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities.Approval;
+using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -20,29 +21,32 @@ namespace Catalog.ApprovalService.Application.Processors
             _applicationConfiguration = applicationConfiguration;
         }
 
-        public async Task<Operation<ApprovalWorkflowDto, string>> ProcessAsync(string workflowCode, string userName, CancellationToken cancellationToken)
+        public async Task<Operation<OrderDto, string>> ProcessAsync(OrderDto model, CancellationToken cancellationToken)
         {
-            var workflowRepository = _unitOfWork.GetRepository<ApprovalWorkflow>();
+            var orderRepository = _unitOfWork.GetRepository<Order>();
 
-            var workflow = await workflowRepository
+            var order = await orderRepository
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.Code == workflowCode,
-                    include: ApprovalWorkflow.IncludeRequiredField(),
+                    predicate: x => x.Code == model.Code && x.Enabled,
+                    include: Order.IncludeRequiredField(),
                     trackingType: TrackingType.Tracking);
 
-            if (workflow is null)
-                return Operation.Error("Workflow not found!");
+            if (order is null)
+                return Operation.Error("Order not found!");
 
-            if (workflow.ActiveStage is null)
-                throw new ArgumentOutOfRangeException("ApprovalWorkflowItems is null!");
+            var workflows = order.OrderItems
+                .Where(item => 
+                    item.ApprovalWorkflow is not null
+                    && item.Module.IsCustom)
+                .Select(x => x.ApprovalWorkflow);
 
-            if (workflow.ActiveStage.Number == 1)
-                return Operation.Error("First stage is active!");
+            if (!workflows.Any())
+                return Operation.Error("Workflows not found!");
 
             var user = await _unitOfWork
                 .GetRepository<ApplicationUser>()
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.UserName == userName,
+                    predicate: x => x.UserName == model.UserName,
                     trackingType: TrackingType.Tracking,
                     include: query => query.Include(x => x.Roles)
                 );
@@ -50,42 +54,52 @@ namespace Catalog.ApprovalService.Application.Processors
             if (user is null)
                 return Operation.Error("User not found!");
 
-            var allowedApproverRoleCodes = _applicationConfiguration.Value.ApprovalWorkflowMap
-                .FirstOrDefault(x =>
-                    x.ApprovalStageCode == workflow.ActiveStage.ApprovalStage.Code
-                    && x.Position == workflow.ActiveStage.Number)?.AllowedApproverRoleCodes;
+            foreach (var workflow in workflows)
+            {
+                if (workflow.ActiveStage is null)
+                    throw new ArgumentOutOfRangeException("ApprovalWorkflowItems is null!");
 
-            if (allowedApproverRoleCodes is null)
-                return Operation.Error("Approval workflow map not found!");
+                if (workflow.ActiveStage.Number == 1)
+                    return Operation.Error("First stage is active!");
 
-            if (user.Roles.FirstOrDefault(x => allowedApproverRoleCodes.Contains(x.Code)) is null)
-                return Operation.Error("Forbidden!");
+                var allowedApproverRoleCodes = _applicationConfiguration.Value.ApprovalWorkflowMap
+                    .FirstOrDefault(x =>
+                        x.ApprovalStageCode == workflow.ActiveStage.ApprovalStage.Code
+                        && x.Position == workflow.ActiveStage.Number)?.AllowedApproverRoleCodes;
 
-            var prevStagePosition = (short)(workflow.ActiveStage.Number - 1);
+                if (allowedApproverRoleCodes is null)
+                    return Operation.Error("Approval workflow map not found!");
 
-            var prevStageCode = _applicationConfiguration.Value.ApprovalWorkflowMap
-                .FirstOrDefault(x => x.Position == prevStagePosition)?.ApprovalStageCode;
+                if (user.Roles.FirstOrDefault(x => allowedApproverRoleCodes.Contains(x.Code)) is null)
+                    return Operation.Error("Forbidden!");
 
-            if (prevStageCode is null)
-                return Operation.Error($"Stage not found! Position: {workflow.ActiveStage.Number - 1}");
+                var prevStagePosition = (short)(workflow.ActiveStage.Number - 1);
 
-            var prevStage = await _unitOfWork.GetRepository<ApprovalStage>()
-                .GetFirstOrDefaultAsync(
-                    predicate: x => x.Code == prevStageCode,
-                    trackingType: TrackingType.Tracking
-                );
+                var prevStageCode = _applicationConfiguration.Value.ApprovalWorkflowMap
+                    .FirstOrDefault(x => x.Position == prevStagePosition)?.ApprovalStageCode;
 
-            if (prevStage is null)
-                return Operation.Error($"Approval Stage: Code = \"{prevStageCode}\" not found");
+                if (prevStageCode is null)
+                    return Operation.Error($"Stage not found! Position: {workflow.ActiveStage.Number - 1}");
 
-            var approveResult = workflow.Approve(user, prevStage, prevStagePosition);
+                var prevStage = await _unitOfWork.GetRepository<ApprovalStage>()
+                    .GetFirstOrDefaultAsync(
+                        predicate: x => x.Code == prevStageCode,
+                        trackingType: TrackingType.Tracking
+                    );
 
-            if (!approveResult.Ok)
-                return Operation.Error(approveResult.Error);
+                if (prevStage is null)
+                    return Operation.Error($"Approval Stage: Code = \"{prevStageCode}\" not found");
 
-            var workflowResult = await _unitOfWork
-                .GetRepository<ApprovalWorkflowItem>()
-                .InsertAsync(approveResult.Result, cancellationToken);
+                var approveResult = workflow.Approve(user, prevStage, prevStagePosition);
+
+                if (!approveResult.Ok)
+                    return Operation.Error(approveResult.Error);
+
+                var workflowResult = await _unitOfWork
+                    .GetRepository<ApprovalWorkflowItem>()
+                    .InsertAsync(approveResult.Result, cancellationToken);
+
+            }
 
             var result = await _unitOfWork.SaveChangesAsync();
 
@@ -94,7 +108,7 @@ namespace Catalog.ApprovalService.Application.Processors
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
 
-            return workflow.ConvertToDto();
+            return order.ConvertToDto();
         }
     }
 }

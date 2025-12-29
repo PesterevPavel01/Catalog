@@ -210,6 +210,7 @@ namespace Catalog.Domain.Entities
                 ModuleCode = Code,
                 ModuleType = ModuleType.Title.Value,
                 ModuleTypeCode = ModuleType.Code,
+                IsCustom = IsCustom,
                 Components = [.. Components
                     .Select(x => x.ConvertToDto())],
                 ModuleNumericParameters = [.. ModuleNumericParameters

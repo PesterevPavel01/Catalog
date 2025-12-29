@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\Catalog.Logging.Middleware\Catalog.Logging.Middleware.csproj" />
     <ProjectReference Include="..\Catalog.ModuleCompositionValidator\Catalog.ModuleCompositionValidator.csproj" />
+    <ProjectReference Include="..\Catalog.Redis\Catalog.Redis.csproj" />
     <ProjectReference Include="..\TelegramService\TelegramService.csproj" />
   </ItemGroup>
 

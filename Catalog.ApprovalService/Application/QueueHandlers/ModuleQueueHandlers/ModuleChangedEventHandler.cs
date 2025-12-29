@@ -7,17 +7,13 @@ using Rebus.Handlers;
 namespace Catalog.ApprovalService.Application.QueueHandlers.ModuleQueueHandlers
 {
     public sealed class ModuleChangedEventHandler : IHandleMessages<ModuleChangedEvent>
-    {
-        private readonly ILogger<ModuleChangedEventHandler> _logger;
-
+    {        
         private readonly ModuleApprovalWorkflowRestartProcessor _processor;
-
         private readonly IBus _bus;
 
-        public ModuleChangedEventHandler( IBus bus, ModuleApprovalWorkflowRestartProcessor processor, ILogger<ModuleChangedEventHandler> logger)
+        public ModuleChangedEventHandler( IBus bus, ModuleApprovalWorkflowRestartProcessor processor)
         {
             _processor = processor;
-            _logger = logger;
             _bus = bus;
         }
 
@@ -31,7 +27,6 @@ namespace Catalog.ApprovalService.Application.QueueHandlers.ModuleQueueHandlers
                     foreach(var item in result.Result.OrderItems)
                         await _bus.Publish(new CustomWorkflowChangedEvent(item.ApprovalWorkflow.Id));
             }
-            //Обработать ошибку!
 
             return;
         }

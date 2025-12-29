@@ -18,7 +18,7 @@ namespace Catalog.ApprovalService.Application.Processors
         {
             var operationResult = await _unitOfWork.GetRepository<ApprovalWorkflow>()
                 .GetAllAsync(
-                    predicate: x => x.OrderItem.Order.Code == code,
+                    predicate: x => x.OrderItem.Order.Code == code && x.Enabled,
                     include: ApprovalWorkflow.IncludeRequiredField()
                 );
 

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Catalog.ComponentService.Application.Processors
 {
     public class CachedComponentLoaderProcessor
-    {
+    {/*
         private readonly IDistributedCache _cache;
         private readonly ILogger<CachedComponentLoaderProcessor> _logger;
         private readonly IOptions<ComponentConfiguration> _configuration;
@@ -128,6 +128,6 @@ namespace Catalog.ComponentService.Application.Processors
 
             parts.Add($"v:1.0");
             return string.Join(":", parts);
-        }
+        }*/
     }
 }

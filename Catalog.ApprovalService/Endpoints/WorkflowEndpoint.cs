@@ -55,13 +55,13 @@ namespace Catalog.ApprovalService.Endpoints
             {
                 var result = await approvalInitiatorService.InitializeAsync(orderCode, new CancellationToken());
 
-                if(result.Ok)
-                    await bus.Publish(new WorkflowCreatedEvent(orderCode));
-
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
-                return Results.Ok(result.Result);
+                if (result.Ok)
+                    await bus.Publish(new WorkflowCreatedEvent(result.Result));
+
+                return Results.Ok(true);
             })
             //.RequireAuthorization("Administrator")
             .Produces(200)

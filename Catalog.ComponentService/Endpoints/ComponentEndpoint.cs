@@ -1,11 +1,11 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Calabonga.UnitOfWork;
-using Catalog.ComponentService.Application.Command;
-using Catalog.ComponentService.Application.Processors;
+using Catalog.ComponentService.Application.Commands;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Domain.Entities;
 using Catalog.ExchangeService.Application.Processors;
+using Catalog.Redis;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
 
@@ -119,14 +119,16 @@ namespace Catalog.Web.Endpoints
             group.MapGet("all", 
                 async (
                     IBus bus,
-                    CachedComponentLoaderProcessor cachedComponentLoaderProcessor,
+                    RedisServiceFactory redisServiceFactory,
                     ComponentLoaderProcessor componentLoaderProcessor,
                     CancellationToken cancellationToken,
                     [FromQuery] bool ascending = false) =>
                 {
-                    var cacheKey = cachedComponentLoaderProcessor.GenerateCacheKey(("entity", "Component"), ("type", "all"), ("ascending", ascending));
+                    var redisService = redisServiceFactory.GetService<ComponentDto>();
 
-                    var cachedComponents = await cachedComponentLoaderProcessor.GetComponentsAsync(cacheKey, cancellationToken);
+                    var cacheKey = redisService.GenerateCacheKey("components",("entity", "Component"), ("type", "all"), ("ascending", ascending));
+
+                    var cachedComponents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 
                     if (cachedComponents.Ok)
                         return Results.Ok(cachedComponents.Result);
@@ -156,14 +158,16 @@ namespace Catalog.Web.Endpoints
                 async (
                     [FromRoute] string typeCode,
                     IBus bus,
-                    CachedComponentLoaderProcessor cachedComponentLoaderProcessor,
+                    RedisServiceFactory redisServiceFactory,
                     ComponentLoaderProcessor componentLoaderProcessor,
                     CancellationToken cancellationToken,
                     [FromQuery] bool ascending = false) =>
                 {
-                    var cacheKey = cachedComponentLoaderProcessor.GenerateCacheKey(("entity", "Component"), ("type", typeCode), ("ascending", ascending));
+                    var redisService = redisServiceFactory.GetService<ComponentDto>();
 
-                    var cachedComponents = await cachedComponentLoaderProcessor.GetComponentsAsync(cacheKey, cancellationToken);
+                    var cacheKey = redisService.GenerateCacheKey("components",("entity", "Component"), ("type", typeCode), ("ascending", ascending));
+
+                    var cachedComponents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 
                     if (cachedComponents.Ok)
                         return Results.Ok(cachedComponents.Result);

@@ -1,6 +1,6 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Order;
-using Catalog.Contracts.Entities.Approval;
+using Catalog.Contracts.Entities;
 using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
@@ -14,10 +14,13 @@ namespace Catalog.Domain.Entities
     {
         private readonly List<OrderItem> _orderItems = [];
 
+        private readonly List<OrderEvent> _orderHistory = [];
+
         protected Order(TitleValue title, string code, Guid id) : base(title, code, id)
         {
         }
 
+        public IReadOnlyCollection<OrderEvent> OrderHistory => _orderHistory.AsReadOnly();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         public ApplicationUser ApplicationUser { get; private set; }
         public Guid ApplicationUserId { get; private set; }
@@ -33,13 +36,6 @@ namespace Catalog.Domain.Entities
                 return Operation.Error(titleValue.Error);
 
             var order = new Order(titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty).SetUser(user);
-
-            //foreach (var item in orderItems) {
-
-            //    var result = order.AddOrderItem(item);
-            //    if (!result.Ok)
-            //        return Operation.Error(result.Error);
-            //}
 
             return order; 
         }

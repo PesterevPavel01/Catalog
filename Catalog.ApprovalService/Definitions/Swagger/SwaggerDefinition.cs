@@ -9,17 +9,20 @@ namespace Catalog.ApprovalService.Definitions.Swagger
     {
         public override void ConfigureApplication(WebApplication app)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
+            if (app.Environment.IsDevelopment())
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1.0");
-                c.SwaggerEndpoint("/swagger/v2/swagger.json", "Api v2.0");
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Api v1.0");
+                    c.SwaggerEndpoint("/swagger/v2/swagger.json", "Api v2.0");
 
-                // Настройка OAuth
-                c.OAuthClientId("swagger-ui");
-                c.OAuthClientSecret("swagger-ui-secret");
-                c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
-            });
+                    // Настройка OAuth
+                    c.OAuthClientId("swagger-ui");
+                    c.OAuthClientSecret("swagger-ui-secret");
+                    c.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+                });
+            }
         }
 
         public override void ConfigureServices(WebApplicationBuilder builder)
@@ -42,56 +45,55 @@ namespace Catalog.ApprovalService.Definitions.Swagger
 
             builder.Services.AddEndpointsApiExplorer();
 
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo()
+            if(builder.Environment.IsDevelopment())
+                builder.Services.AddSwaggerGen(options =>
                 {
-                    Version = "v1",
-                    Title = "Сервис Catalog.ApprovalServise",
-                    Description = "Версия 1.0",
-                });
-
-                options.SwaggerDoc("v2", new OpenApiInfo()
-                {
-                    Version = "v2",
-                    Title = "Сервис Catalog.ApprovalServise",
-                    Description = "Версия 2.0",
-                });
-
-                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Введите валидный токен",
-                    Name = "Авторизация",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "Bearer"
-                });
-
-                options.AddSecurityRequirement(
-                    new OpenApiSecurityRequirement
+                    options.SwaggerDoc("v1", new OpenApiInfo()
                     {
+                        Version = "v1",
+                        Title = "Сервис Catalog.ApprovalServise",
+                        Description = "Версия 1.0",
+                    });
+
+                    options.SwaggerDoc("v2", new OpenApiInfo()
+                    {
+                        Version = "v2",
+                        Title = "Сервис Catalog.ApprovalServise",
+                        Description = "Версия 2.0",
+                    });
+
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                    {
+                        In = ParameterLocation.Header,
+                        Description = "Введите валидный токен",
+                        Name = "Авторизация",
+                        Type = SecuritySchemeType.Http,
+                        BearerFormat = "JWT",
+                        Scheme = "Bearer"
+                    });
+
+                    options.AddSecurityRequirement(
+                        new OpenApiSecurityRequirement
                         {
-                            new OpenApiSecurityScheme()
                             {
-                                Reference = new OpenApiReference()
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
+                                new OpenApiSecurityScheme()
+                                        {
+                                    Reference = new OpenApiReference()
+                                    {
+                                        Type = ReferenceType.SecurityScheme,
+                                        Id = "Bearer"
+                                    },
+                                    Name = "Bearer",
+                                    In = ParameterLocation.Header,
                                 },
-                                Name = "Bearer",
-                                In = ParameterLocation.Header,
-                            },
-                            Array.Empty<string>()
+                                Array.Empty<string>()
+                            }
                         }
-                    }
-                );
+                    );
 
-                var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));
-            });
-
-
+                    var xmlFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFileName));
+                });
         }
     }
 }

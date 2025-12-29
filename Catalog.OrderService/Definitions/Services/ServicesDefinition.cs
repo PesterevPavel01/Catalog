@@ -12,13 +12,16 @@ namespace Catalog.Web.Definitions.Services
         {
             builder.Services.AddScoped<AuthenticationProcessor>();
 
-            builder.Services.AddScoped<OrderCreatorProcessor>();
+            builder.Services.AddScoped<OrderCreateCommandHandler>();
             builder.Services.AddScoped<OrdersQueryHandler>();
             builder.Services.AddScoped<OrderDisableProcessor>();
             builder.Services.AddScoped<OrderItemRemovalProcessor>();
             builder.Services.AddScoped<OrderItemCreatorProcessor>();
             builder.Services.AddScoped<CleanupOldOrderCommandHandler>();
 
+            builder.Services.AddScoped<ConstructorOrderEventQueriesHandler>();
+            builder.Services.AddScoped<ApplicationUserOrderEventQueriesHandler>();
+            
             builder.Services.AddScoped<OrderMessagesQueryHandler>();
             builder.Services.AddScoped<SetOrderItemQuantityCommandHandler>();
             builder.Services.AddScoped<AddMessageCommandHandler>();

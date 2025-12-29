@@ -25,24 +25,34 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
 
         public async Task<Operation<bool, string>> HandleAsync(CancellationToken cancellationToken = default)
         {
-            var orders = await _unitOfWork.GetRepository<Order>()
+            var orders = (await _unitOfWork.GetRepository<Order>()
+                .GetAllAsync(
+                    predicate: x =>
+                    x.Enabled &&
+                    ((x.OrderItems.Any()
+                        && !x.OrderItems.Any(item => item.ApprovalWorkflow == null) 
+                        && !x.OrderItems.Any(item => !item.ApprovalWorkflow.ApprovalWorkflowItems.Any())
+                        && x.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow.ApprovalWorkflowItems.OrderByDescending(oi => oi.Number).First().ApprovalStage.Code != ApprovalWorkflow.CompletedStageCode) == null
+                        && x.OrderItems.Select(item => item.ApprovalWorkflow)
+                            .Select(aw => aw.ApprovalWorkflowItems
+                            .OrderByDescending(aw => aw.Number).First())
+                            .OrderByDescending(oaw => oaw.CreatedAt).First().CreatedAt < DateTime.Now.AddDays(_orderConfiguration.ArchiveStorageDays * -1))
+                        || ((!x.OrderItems.Any() 
+                                || x.OrderItems.Any(item => item.ApprovalWorkflow == null) 
+                                || x.OrderItems.Any(item => !item.ApprovalWorkflow.ApprovalWorkflowItems.Any())) 
+                            && x.CreatedAt < DateTime.Now.AddDays(_orderConfiguration.ArchiveStorageDays * -1))),
+                    include: Order.IncludeRequiredField(),
+                    trackingType: TrackingType.Tracking
+                )).ToList();
+
+            var disabledOrders = await _unitOfWork.GetRepository<Order>()
             .GetAllAsync(
-                predicate: x =>
-                (x.OrderItems.Any()
-                && !x.OrderItems.Any(item => item.ApprovalWorkflow == null) 
-                && !x.OrderItems.Any(item => !item.ApprovalWorkflow.ApprovalWorkflowItems.Any())
-                && x.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow.ApprovalWorkflowItems.OrderByDescending(oi => oi.Number).First().ApprovalStage.Code != ApprovalWorkflow.CompletedStageCode) == null
-                && x.OrderItems.Select(item => item.ApprovalWorkflow)
-                    .Select(aw => aw.ApprovalWorkflowItems
-                    .OrderByDescending(aw => aw.Number).First())
-                    .OrderByDescending(oaw => oaw.CreatedAt).First().CreatedAt < DateTime.Now.AddDays(_orderConfiguration.ArchiveStorageDays * -1))
-                || ((!x.OrderItems.Any() 
-                        || x.OrderItems.Any(item => item.ApprovalWorkflow == null) 
-                        || x.OrderItems.Any(item => !item.ApprovalWorkflow.ApprovalWorkflowItems.Any())) 
-                    && x.CreatedAt < DateTime.Now.AddDays(_orderConfiguration.ArchiveStorageDays * -1)),
+                predicate: x => !x.Enabled && x.CreatedAt < DateTime.Now.AddDays(_orderConfiguration.ArchiveStorageDays * -1),
                 include: Order.IncludeRequiredField(),
-                trackingType: TrackingType.Tracking
-            );
+                trackingType: TrackingType.Tracking);
+
+            if (disabledOrders.Any())
+                orders.AddRange(disabledOrders);
 
             if (!orders.Any())
                 return true;
