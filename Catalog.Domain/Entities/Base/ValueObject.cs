@@ -4,7 +4,7 @@
     {
         protected abstract IEnumerable<object> GetEqualityComponents();
 
-        public static bool operator ==(ValueObject? a, ValueObject? b)
+        public static bool operator == (ValueObject? a, ValueObject? b)
         {
             if (a is null && b is null)
             {

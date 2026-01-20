@@ -24,7 +24,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
 
         public async Task Handle(WorkflowRejectedEvent message)
         {
-            await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{message.Order.Title}\" пользователя: \"{message.Order.UserName}\" не пройден процесс согласования модуля!");
+            await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{message.Order.Title}\" пользователя: \"{message.Order.User}\" не пройден процесс согласования модуля!");
 
             return;
         }

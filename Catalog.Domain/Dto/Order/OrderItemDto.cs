@@ -6,5 +6,6 @@ namespace Catalog.Contracts.Dto.Order
     {
         public required ModuleDto Module { get; set; }
         public short Quantity { get; set; }
+        public bool Messages { get; set; }
     }
 }

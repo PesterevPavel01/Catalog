@@ -9,7 +9,7 @@ using Rebus.Bus;
 
 namespace Catalog.ExchangeService.Endpoints
 {
-    public class UserEndpointt : AppDefinition
+    public class UserEndpoints : AppDefinition
     {
         public override void ConfigureApplication(WebApplication app)
             => app.MapCustomerEndpoints();

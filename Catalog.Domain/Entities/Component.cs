@@ -51,7 +51,7 @@ namespace Catalog.Domain.Entities
             if(componentType is null )
                 return Operation.Error("ComponentType not found");
 
-            var component =new Component(titleValue.Result, code, Guid.Empty)
+            var component = new Component(titleValue.Result, code, Guid.Empty)
                 .SetComponentType(componentType);
 
             if (numericParameters is not null)

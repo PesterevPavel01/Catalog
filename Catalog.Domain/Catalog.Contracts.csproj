@@ -17,4 +17,19 @@
     <ProjectReference Include="..\Interceptors\Interceptors.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Resources\OrderEventTypeTitles.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OrderEventTypeTitles.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\OrderEventTypeTitles.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>OrderEventTypeTitles.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

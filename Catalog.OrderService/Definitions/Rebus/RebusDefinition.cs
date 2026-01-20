@@ -1,10 +1,13 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.ApplicationEvents;
 using Catalog.Contracts.Commands;
 using Catalog.Contracts.Entities.Rabbit;
+using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
+using Catalog.Contracts.Request;
 using Catalog.Contracts.Response;
 using Catalog.OrderService.Application.Commands;
 using Rebus.Config;
@@ -28,7 +31,8 @@ namespace Catalog.OrderService.Definitions.Rebus
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IOrderQueueEvent)))
                 .Routing(r => r.TypeBased()
                     .Map<SetOrderEventsInCacheCommand>(nameof(IOrderQueueEvent))
-                    .Map<ModuleChangePermissionResponse>(nameof(IModuleQueueEvent)))
+                    .Map<ModuleChangePermissionResponse>(nameof(IModuleQueueEvent))
+                    .Map<LatestChangesOrdersResponse>(nameof(IExchangeQueueEvent)))
                 .Options(x =>
                 {
                     x.EnableSynchronousRequestReply();
@@ -46,6 +50,8 @@ namespace Catalog.OrderService.Definitions.Rebus
                 await bus.Subscribe<OrderApprovalWorkflowsRemoveEvent>();
                 await bus.Subscribe<OrderAddMessageEvent>();
                 await bus.Subscribe<OrderDisabledEvent>();
+                await bus.Subscribe<CustomWorkflowChangedEvent>();
+                await bus.Subscribe<EntitiesExportedEvent>();
             }
             );
 

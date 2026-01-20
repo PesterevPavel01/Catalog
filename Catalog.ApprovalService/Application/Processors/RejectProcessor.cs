@@ -46,7 +46,7 @@ namespace Catalog.ApprovalService.Application.Processors
             var user = await _unitOfWork
                 .GetRepository<ApplicationUser>()
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.UserName == model.UserName,
+                    predicate: x => x.UserName == model.User,
                     trackingType: TrackingType.Tracking,
                     include: query => query.Include(x => x.Roles)
                 );

@@ -2,6 +2,7 @@
 using Catalog.Contracts.Commands;
 using Catalog.Contracts.Dto.Events;
 using Catalog.Contracts.Entities;
+using Catalog.Contracts.Enum;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Commands;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
@@ -11,7 +12,7 @@ using Rebus.Bus;
 using Rebus.Handlers;
 using TelegramService.Interfaces;
 
-namespace Catalog.OrderService.Application.QueueHandlers
+namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 {
     public class CreateOrderEventCommandHandler : IHandleMessages<CreateOrderEventCommand>
     {
@@ -45,7 +46,7 @@ namespace Catalog.OrderService.Application.QueueHandlers
             if (order is null)
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.OrderCode}");
 
-            var orderEvent = OrderEvent.Create(order, message.Note, null);
+            var orderEvent = OrderEvent.Create(order, message.Note, message.Type, null);
 
             if (!orderEvent.Ok)
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderEvent.Error} OrderTitle: {order.Title}");

@@ -27,6 +27,8 @@ namespace Catalog.Domain.Entities
 
         public bool IsCompleted() => OrderItems.Any() && OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null;
 
+        public bool IsCustom => CheckCustomization();
+
         public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user)
             //, List<OrderItem> orderItems)
         {
@@ -117,13 +119,16 @@ namespace Catalog.Domain.Entities
                 Title = this.Title.Value,
                 CreatedAt = this.CreatedAt,
                 UpdatedAt = this.UpdatedAt,
-                UserName = ApplicationUser.UserName,
+                User = ApplicationUser.UserName,
                 IsCompleted = this.IsCompleted(),
+                IsCustom = this.IsCustom
             };
 
         public Operation<bool, string> Validate(IOrderValidator validator) 
             => validator.Validate(this);
 
+        private bool CheckCustomization()
+        => OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null;
 
     }
 }

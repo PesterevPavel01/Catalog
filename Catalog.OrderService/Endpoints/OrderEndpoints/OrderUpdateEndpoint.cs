@@ -1,6 +1,5 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Commands;
 using Catalog.Contracts.Dto.Message;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.OrderService.Application.Handlers.CommandHandlers;

@@ -1,6 +1,7 @@
-﻿using Calabonga.UnitOfWork;
-using Catalog.Contracts.Commands;
+﻿using Catalog.Contracts.Commands;
+using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Resources;
 using Rebus.Bus;
 using Rebus.Handlers;
 
@@ -8,12 +9,10 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
 {
     public class WorkflowCreatedEventHandler : IHandleMessages<WorkflowCreatedEvent>
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IBus _bus;
 
-        public WorkflowCreatedEventHandler(IUnitOfWork unitOfWork, IBus bus)
+        public WorkflowCreatedEventHandler(IBus bus)
         {
-            _unitOfWork = unitOfWork;
             _bus = bus;
         }
 
@@ -22,11 +21,8 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             if (message.Order is null)
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found!");
 
-            //only for IsCustom orders
-            if (message.Order.Modules.FirstOrDefault(x => x.Module.IsCustom) is not null)
-            {
-                await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, "Запущен процесс согласования."));
-            }
+            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.CreateApprovalWorkflow, OrderEventTypeTitles.CreateApprovalWorkflow));
+
             return;
         }
     }

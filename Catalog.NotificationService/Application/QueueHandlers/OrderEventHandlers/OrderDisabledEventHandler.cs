@@ -22,7 +22,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
             if (message.Order is null)
                 throw new ArgumentException($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.Order.Code}");
 
-            await _telegramService.SendMessageAsync($"ЗАКАЗ УДАЛЕН: заказ \"{message.Order.Title}\" пользователя: \"{message.Order.UserName}\" был удален!");
+            await _telegramService.SendMessageAsync($"ЗАКАЗ УДАЛЕН: заказ \"{message.Order.Title}\" пользователя: \"{message.Order.User}\" был удален!");
         }
     }
 }

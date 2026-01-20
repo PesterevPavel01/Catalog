@@ -1,5 +1,7 @@
 ﻿using Catalog.Contracts.Commands;
+using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Resources;
 using Rebus.Bus;
 using Rebus.Handlers;
 
@@ -22,7 +24,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             //only for IsCustom orders
             if (message.Order.Modules.FirstOrDefault(x => x.Module.IsCustom) is not null)
             {
-                await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, "Не пройден процесс согласования."));
+                await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.Reject, OrderEventTypeTitles.Reject));
             }
             return;
         }

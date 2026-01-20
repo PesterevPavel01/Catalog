@@ -1,6 +1,7 @@
 ﻿using Catalog.ApprovalService.Application.Processors;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Events.OrderEvents;
 using Rebus.Bus;
 using Rebus.Handlers;
 

@@ -126,7 +126,7 @@ namespace Catalog.Web.Endpoints
                 {
                     var redisService = redisServiceFactory.GetService<ComponentDto>();
 
-                    var cacheKey = redisService.GenerateCacheKey("components",("entity", "Component"), ("type", "all"), ("ascending", ascending));
+                    var cacheKey = redisService.GenerateCacheKey(("type", "all"), ("ascending", ascending));
 
                     var cachedComponents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 
@@ -165,7 +165,7 @@ namespace Catalog.Web.Endpoints
                 {
                     var redisService = redisServiceFactory.GetService<ComponentDto>();
 
-                    var cacheKey = redisService.GenerateCacheKey("components",("entity", "Component"), ("type", typeCode), ("ascending", ascending));
+                    var cacheKey = redisService.GenerateCacheKey(("type", typeCode), ("ascending", ascending));
 
                     var cachedComponents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 

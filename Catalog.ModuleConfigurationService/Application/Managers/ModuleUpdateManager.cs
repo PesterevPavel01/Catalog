@@ -11,7 +11,6 @@ namespace Catalog.ModuleConfigurationService.Application.Managers
 {
     public sealed class ModuleUpdateManager
     {
-
         private readonly ModuleDataPurgeProcessor _dataPurgeProcessor;
         private readonly ModuleUpdaterProcessor _moduleUpdaterProcessor;
         private readonly ModuleComplectationProcessor _complectationProcessor;

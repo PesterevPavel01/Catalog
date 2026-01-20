@@ -2,10 +2,7 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ApprovalService.Application.Configurations;
 using Catalog.ApprovalService.Application.Services;
-using Catalog.Contracts.Dto.Order;
-using Catalog.Contracts.Events.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
-using Catalog.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;

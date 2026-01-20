@@ -71,13 +71,15 @@ namespace Catalog.Domain.Entities
                         .ThenInclude(c => c.ComponentTextParameters)
                             .ThenInclude(tp => tp.ParameterType)
                 .Include(oi => oi.Module)
-                    .ThenInclude(m => m.ModuleType);
+                    .ThenInclude(m => m.ModuleType)
+                .Include(oi => oi.Messages);
 
         public OrderItemDto ConvertToDto()
-        => new() 
-        { 
-            Module = this.Module.ConvertToDto(),
-            Quantity = this.Quantity,
-        };
+            => new() 
+            { 
+                Module = this.Module.ConvertToDto(),
+                Quantity = this.Quantity,
+                Messages = _messages.Any()
+            };
     }
 }

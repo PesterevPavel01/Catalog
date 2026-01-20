@@ -11,14 +11,12 @@ namespace Catalog.OrderService.Application.QueueHandlers.ModuleEventHandlers
     public class ModuleChangePermissionRequestHandler : IHandleMessages<ModuleChangePermissionRequest>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IOrderValidator _orderValidator;
         private readonly IOrderValidator _validator;
         private readonly IBus _bus;
 
-        public ModuleChangePermissionRequestHandler(IUnitOfWork unitOfWork, IOrderValidator orderValidator, IOrderValidator validator, IBus bus)
+        public ModuleChangePermissionRequestHandler(IUnitOfWork unitOfWork, IOrderValidator validator, IBus bus)
         {
             _unitOfWork = unitOfWork;
-            _orderValidator = orderValidator;
             _validator = validator;
             _bus = bus;
         }

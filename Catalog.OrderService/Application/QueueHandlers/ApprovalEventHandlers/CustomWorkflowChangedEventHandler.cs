@@ -1,12 +1,12 @@
 ﻿using Calabonga.UnitOfWork;
 using Catalog.Contracts.Commands;
 using Catalog.Contracts.Entities.Approval;
+using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Resources;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;
-using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.QueueHandlers.ApprovalEventHandlers
 {
@@ -35,7 +35,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.ApprovalEventHandlers
             if (workflow is null)
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. workflow not found! ID: {message.WorkflowId}");
 
-            await _bus.Publish(new CreateOrderEventCommand(workflow.OrderItem.Order.Code, "Изменен нестандартный модуль."));
+            await _bus.Publish(new CreateOrderEventCommand(workflow.OrderItem.Order.Code, OrderEventTypes.CustomModuleModified, OrderEventTypeTitles.CustomModuleModified));
 
             return;
         }

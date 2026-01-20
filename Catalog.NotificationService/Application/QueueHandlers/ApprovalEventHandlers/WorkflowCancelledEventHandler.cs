@@ -22,7 +22,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             if (message.Order is null)
                 throw new ArgumentException($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. order not found! Code: {message.Order.Code}");
 
-            await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{message.Order.Title}\" пользователя: \"{message.Order.UserName}\" завершен процесс согласования модуля!");
+            await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{message.Order.Title}\" пользователя: \"{message.Order.User}\" завершен процесс согласования модуля!");
 
             return;
         }

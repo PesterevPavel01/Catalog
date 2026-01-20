@@ -29,8 +29,6 @@ namespace Catalog.ApprovalService.Definitions.Services
             builder.Services.AddScoped<ModuleApprovalWorkflowRestartProcessor>();
 
             builder.Services.AddScoped<OrderItemApprovalWorkflowCreatorProcessor>();
-
-            builder.Services.AddScoped<OrderItemApprovalInitiatorService>();
         }
     }
 }

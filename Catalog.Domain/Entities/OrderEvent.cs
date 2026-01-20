@@ -5,19 +5,22 @@ using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore;
+using Catalog.Contracts.Enum;
 
 namespace Catalog.Contracts.Entities
 {
     public class OrderEvent: SimpleEntity
     {
-        protected OrderEvent(TitleValue title, string code, Guid id) : base(title, code, id)
+        protected OrderEvent(Int32 type, TitleValue title, string code, Guid id) : base(title, code, id)
         {
+            Type = type;
         }
 
         public Order Order { get; private set; } = null!;
         public Guid OrderId { get; private set; }
+        public Int32 Type { get; private set; }
 
-        public static Operation<OrderEvent, string> Create(Order order, string title, string? code)
+        public static Operation<OrderEvent, string> Create(Order order, string title, OrderEventTypes type, string? code)
         {
             var titleValue = TitleValue.Create(title);
 
@@ -27,7 +30,7 @@ namespace Catalog.Contracts.Entities
             if (order is null)
                 return Operation.Error("Order is null");
 
-            var orderEvent = new OrderEvent(titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty)
+            var orderEvent = new OrderEvent((Int32)type, titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty)
             {
                 Order = order
             };

@@ -1,5 +1,4 @@
 ﻿using Catalog.Contracts.Dto.Module;
-using Catalog.Contracts.Interfaces;
 
 namespace Catalog.Contracts.Request
 {

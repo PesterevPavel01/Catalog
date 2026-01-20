@@ -1,10 +1,10 @@
-﻿using System.Reflection;
-using Calabonga.AspNetCore.AppDefinitions;
+﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
-using Catalog.Domain.Entities;
+using Catalog.Contracts.Request;
 using Rebus.Config;
+using Rebus.Routing.TypeBased;
 using Rebus.Serialization.Json;
 using Serilog;
 
@@ -22,8 +22,11 @@ namespace Catalog.ExchangeService.Definitions.Rebus
                 .Logging(x => x.Serilog(Log.Logger))
                 .Serialization(x => x.UseSystemTextJson())
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IExchangeQueueEvent)))
+                .Routing(r => r.TypeBased()
+                    .Map<LatestChangesOrdersRequest>(nameof(IOrderQueueEvent)))
                 .Options(x =>
                 {
+                    x.EnableSynchronousRequestReply();
                     x.SetNumberOfWorkers(3);//кол-во потоков
                     x.SetBusName("ExchangeService");
                 });

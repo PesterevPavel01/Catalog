@@ -2,7 +2,6 @@
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Entities.Approval;
-using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using Microsoft.Extensions.Options;

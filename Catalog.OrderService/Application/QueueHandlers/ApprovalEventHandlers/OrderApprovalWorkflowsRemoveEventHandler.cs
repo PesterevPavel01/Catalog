@@ -1,5 +1,7 @@
 ﻿using Catalog.Contracts.Commands;
+using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Resources;
 using Rebus.Bus;
 using Rebus.Handlers;
 
@@ -16,7 +18,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
 
         public async Task Handle(OrderApprovalWorkflowsRemoveEvent message)
         {
-            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, "Заказ отменен."));
+            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.Cancelled, OrderEventTypeTitles.Cancelled));
 
             return;
         }

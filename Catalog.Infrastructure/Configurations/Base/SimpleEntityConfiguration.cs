@@ -30,6 +30,7 @@ namespace Catalog.Infrastructure.Configurations.Base
                 .HasMaxLength(50);
 
             builder.HasIndex(x => x.Title);
+
             builder
                 .HasIndex(x => x.Code)
                 .IsUnique();

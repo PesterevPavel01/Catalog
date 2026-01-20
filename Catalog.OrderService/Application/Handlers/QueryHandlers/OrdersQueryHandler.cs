@@ -1,4 +1,5 @@
-﻿using Calabonga.OperationResults;
+﻿using System.Text.Json;
+using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto;
 using Catalog.Contracts.Entities.Approval;
@@ -33,6 +34,13 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
                     pageSize: pageSize,
                     pageIndex: pageIndex,
                     trackingType: TrackingType.NoTracking);
+
+            /*var stringResult = JsonSerializer.Serialize(
+                pagedResult.Items.Select(order => order.ConvertToDto()),
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });*/
 
             return
                     new PagedResponseDto<Order>(

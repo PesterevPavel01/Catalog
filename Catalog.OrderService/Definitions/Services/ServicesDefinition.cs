@@ -10,6 +10,7 @@ namespace Catalog.Web.Definitions.Services
     {
         public override void ConfigureServices(WebApplicationBuilder builder)
         {
+
             builder.Services.AddScoped<AuthenticationProcessor>();
 
             builder.Services.AddScoped<OrderCreateCommandHandler>();
@@ -18,10 +19,11 @@ namespace Catalog.Web.Definitions.Services
             builder.Services.AddScoped<OrderItemRemovalProcessor>();
             builder.Services.AddScoped<OrderItemCreatorProcessor>();
             builder.Services.AddScoped<CleanupOldOrderCommandHandler>();
+            builder.Services.AddScoped<LatestChangesOrdersQueryHandler>();
 
             builder.Services.AddScoped<ConstructorOrderEventQueriesHandler>();
             builder.Services.AddScoped<ApplicationUserOrderEventQueriesHandler>();
-            
+
             builder.Services.AddScoped<OrderMessagesQueryHandler>();
             builder.Services.AddScoped<SetOrderItemQuantityCommandHandler>();
             builder.Services.AddScoped<AddMessageCommandHandler>();

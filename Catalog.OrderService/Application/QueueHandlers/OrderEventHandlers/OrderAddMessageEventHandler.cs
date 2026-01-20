@@ -1,5 +1,7 @@
 ﻿using Catalog.Contracts.Commands;
+using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.OrderEvents;
+using Catalog.Contracts.Resources;
 using Rebus.Bus;
 using Rebus.Handlers;
 
@@ -19,7 +21,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
             if (message.Order is null)
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found!");
 
-            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, "Добавлен новый комментарий."));
+            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.MessageAdded, OrderEventTypeTitles.MessageAdded));
         }
     }
 }

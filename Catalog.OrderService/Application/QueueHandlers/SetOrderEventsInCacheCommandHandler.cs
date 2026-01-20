@@ -23,7 +23,7 @@ namespace Catalog.OrderService.Application.QueueHandlers
 
             if (!sendToCacheResult.Ok)
             {
-                _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: {sendToCacheResult.Error}").GetAwaiter().GetResult();
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: {sendToCacheResult.Error}");
             }
         }
     }

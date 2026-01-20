@@ -25,7 +25,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
 
             if (message.Order.Modules.FirstOrDefault(x => x.Module.IsCustom) is not null)
             {
-                await _telegramService.SendMessageAsync($"НОВЫЙ КОММЕНТАРИЙ: к заказу \"{message.Order.Title}\" пользователя: \"{message.Order.UserName}\" добавлен новый комментарий!");
+                await _telegramService.SendMessageAsync($"НОВЫЙ КОММЕНТАРИЙ: к заказу \"{message.Order.Title}\" пользователя: \"{message.Order.User}\" добавлен новый комментарий!");
             }
             return;
         }

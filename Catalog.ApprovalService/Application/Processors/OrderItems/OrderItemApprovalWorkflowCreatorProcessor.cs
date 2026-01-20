@@ -4,9 +4,11 @@ using Catalog.ApprovalService.Application.Configurations;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Contracts.Entities.Configurations;
+using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Authorization;
 using Microsoft.Extensions.Options;
+using Rebus.Bus;
 
 namespace Catalog.ApprovalService.Application.Processors.OrderItems
 {
@@ -14,11 +16,13 @@ namespace Catalog.ApprovalService.Application.Processors.OrderItems
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEnumerable<ApprovalWorkflowMapItem> _workflowMap;
+        private readonly IBus _bus;
 
-        public OrderItemApprovalWorkflowCreatorProcessor(IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public OrderItemApprovalWorkflowCreatorProcessor(IBus bus, IUnitOfWork unitOfWork, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             _unitOfWork = unitOfWork;
             _workflowMap = applicationConfiguration.Value.ApprovalWorkflowMap;
+            _bus = bus;
         }
 
         /// <summary>

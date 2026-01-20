@@ -59,7 +59,7 @@ namespace Catalog.ApprovalService.Endpoints
                 ApproveProcessor processor,
                 CancellationToken cancellationToken) =>
             {
-                var result = await processor.ProcessAsync(model.Code, model.UserName, cancellationToken);
+                var result = await processor.ProcessAsync(model.Code, model.User, cancellationToken);
 
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
@@ -109,7 +109,7 @@ namespace Catalog.ApprovalService.Endpoints
                 RemoveOrderWorkflowsProcessor processor,
                 CancellationToken cancellationToken) =>
             {
-                var result = await processor.ProcessAsync(model.Code, model.UserName, cancellationToken);
+                var result = await processor.ProcessAsync(model.Code, model.User, cancellationToken);
 
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);

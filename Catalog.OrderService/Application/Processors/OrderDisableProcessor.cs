@@ -40,7 +40,7 @@ namespace Catalog.OrderService.Application.Processors
             {
                 Code = order.Code,
                 Title = order.Title.Value,
-                UserName = order.ApplicationUser.UserName,
+                User = order.ApplicationUser.UserName,
                 IsCompleted = false
             };
         }
