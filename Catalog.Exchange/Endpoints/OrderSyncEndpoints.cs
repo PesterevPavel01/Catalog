@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Dto.Exchange;
 using Catalog.ExchangeService.Application.Handlers.Orders;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,7 +39,7 @@ namespace Catalog.ExchangeService.Endpoints
 
                         return Results.Ok(orders.Result);
                     })
-                //.RequireAuthorization("Administrator")
+                .RequireAuthorization("Administrator")
                 .Produces(200)
                 .ProducesProblem(401)
                 .WithName("OrderSyncEndpoint")
@@ -50,18 +51,18 @@ namespace Catalog.ExchangeService.Endpoints
             group
                 .MapPost("confirm",
                     async (
-                        [FromBody] string ExchangeEventCode,
+                        [FromBody] SyncConfirmationDto syncResult,
                         ConfirmOrderSyncCommandHandler handler, 
                         CancellationToken cancellationToken) =>
                     {
-                        var orders = await handler.HandleAsync(ExchangeEventCode, cancellationToken);
+                        var result = await handler.HandleAsync(syncResult, cancellationToken);
 
-                        if (!orders.Ok)
-                            Results.BadRequest(orders.Error);
+                        if (!result.Ok)
+                            return Results.BadRequest(result.Error);
 
-                        return Results.Ok(orders.Result);
+                        return Results.Ok(result.Result);
                     })
-                //.RequireAuthorization("Administrator")
+                .RequireAuthorization("Administrator")
                 .Produces(200)
                 .ProducesProblem(401)
                 .WithName("ConfirmOrderSyncEndpoint")

@@ -60,6 +60,12 @@ namespace Catalog.Domain.Entities
             return validator.Validate(this);
         }
 
+        public Order UpdateCode(string newCode) 
+        {
+            Code = newCode;
+            return this;
+        }
+
         public void RemoveOrderItem(OrderItem orderItem)
         {
             var exists = _orderItems.Find(x => x.Id == orderItem.Id);

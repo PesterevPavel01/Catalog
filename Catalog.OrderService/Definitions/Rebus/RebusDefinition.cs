@@ -44,6 +44,7 @@ namespace Catalog.OrderService.Definitions.Rebus
             }
             , onCreated: async bus =>{
                 await bus.Subscribe<CreateOrderEventCommand>();
+                await bus.Subscribe<UpdateOrderCodeCommand>();
                 await bus.Subscribe<WorkflowCreatedEvent>();
                 await bus.Subscribe<WorkflowsCancelledEvent>();
                 await bus.Subscribe<WorkflowRejectedEvent>();
@@ -52,6 +53,7 @@ namespace Catalog.OrderService.Definitions.Rebus
                 await bus.Subscribe<OrderDisabledEvent>();
                 await bus.Subscribe<CustomWorkflowChangedEvent>();
                 await bus.Subscribe<EntitiesExportedEvent>();
+                await bus.Subscribe<RejectedEntitiesEvent>();
             }
             );
 

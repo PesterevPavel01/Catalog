@@ -5,6 +5,7 @@ using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Request;
 using Catalog.Contracts.Response;
 using Catalog.Domain.Entities;
+using Catalog.ExchangeService.Application.Commands;
 using Rebus;
 using Rebus.Bus;
 
@@ -63,6 +64,8 @@ namespace Catalog.ExchangeService.Application.Handlers.Orders
             {
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
+
+            await _bus.DeferLocal(TimeSpan.FromMinutes(5), new CheckOrderSyncCompletionCommand(currentExchangeEvent.Result.Id));
 
             orders.Result.Code = currentExchangeEvent.Result.Code;
 

@@ -11,6 +11,6 @@ namespace Catalog.Domain.Entities.Base
         }
         public TitleValue Title { get; private set; }
 
-        public string Code { get; private set; }
+        public string Code { get; protected set; }
     }
 }

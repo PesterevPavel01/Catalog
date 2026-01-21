@@ -4,6 +4,7 @@ using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Request;
 using Rebus.Config;
+using Rebus.Persistence.InMem;
 using Rebus.Routing.TypeBased;
 using Rebus.Serialization.Json;
 using Serilog;
@@ -22,6 +23,7 @@ namespace Catalog.ExchangeService.Definitions.Rebus
                 .Logging(x => x.Serilog(Log.Logger))
                 .Serialization(x => x.UseSystemTextJson())
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IExchangeQueueEvent)))
+                .Timeouts(x => x.StoreInMemory())
                 .Routing(r => r.TypeBased()
                     .Map<LatestChangesOrdersRequest>(nameof(IOrderQueueEvent)))
                 .Options(x =>

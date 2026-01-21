@@ -3,6 +3,7 @@ using Calabonga.UnitOfWork;
 using Catalog.Contracts.ApplicationEvents;
 using Catalog.Contracts.Dto.Exchange;
 using Catalog.Domain.Entities;
+using Catalog.ExchangeService.Application.Events;
 using Rebus.Bus;
 
 namespace Catalog.ExchangeService.Application.Handlers.Orders
@@ -18,17 +19,17 @@ namespace Catalog.ExchangeService.Application.Handlers.Orders
             _bus = bus;
         }
 
-        public async Task<Operation<bool, string>> HandleAsync(string exchangeCode, CancellationToken cancellationToken = default) 
+        public async Task<Operation<bool, string>> HandleAsync(SyncConfirmationDto syncResult, CancellationToken cancellationToken = default) 
         {
             var exchangeEventRepository = _unitOfWork.GetRepository<ExchangeEvent>();
 
             var exchangeEvent = await exchangeEventRepository
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.Code == exchangeCode,
+                    predicate: x => x.Code == syncResult.SyncSessionCode,
                     trackingType: TrackingType.Tracking);
 
             if (exchangeEvent is null)
-                return Operation.Error("Exchange event not found");
+                return Operation.Error("Session not found!");
 
             exchangeEvent.Confirm();
 
@@ -46,7 +47,20 @@ namespace Catalog.ExchangeService.Application.Handlers.Orders
                     selector: x => x.Code
                 );
 
-            await _bus.Publish(new EntitiesExportedEvent(new ExportedEntitiesDto(typeof(Order).Name, exportedOrderCodes)));
+            var successfullySyncedCodes = exportedOrderCodes.Where(x => !syncResult.RejectedCodes.Contains(x));
+
+            if (successfullySyncedCodes.Any())
+            {
+
+                await _bus.Publish(new EntitiesExportedEvent(new ExportedEntitiesDto(typeof(Order).Name, successfullySyncedCodes)));
+
+                if(syncResult.SuccessfullySynced.Any())
+                    await _bus.DeferLocal(TimeSpan.FromMinutes(1), new SuccessfullySyncedEntitiesEvent(syncResult.SuccessfullySynced));
+
+            }
+
+            if(syncResult.RejectedCodes.Any())
+                await _bus.Publish(new RejectedEntitiesEvent(new ExportedEntitiesDto(typeof(Order).Name, syncResult.RejectedCodes)));
 
             return true;
         }

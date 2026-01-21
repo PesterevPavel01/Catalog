@@ -124,11 +124,20 @@ namespace Catalog.Contracts.Resources {
         }
 
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Заказ передан в работу!.
+        ///   Ищет локализованную строку, похожую на Заказ передан в производство!.
         /// </summary>
         public static string Exported {
             get {
                 return ResourceManager.GetString("Exported", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Заказ не принят в производство!.
+        /// </summary>
+        public static string ExternallyReject {
+            get {
+                return ResourceManager.GetString("ExternallyReject", resourceCulture);
             }
         }
 

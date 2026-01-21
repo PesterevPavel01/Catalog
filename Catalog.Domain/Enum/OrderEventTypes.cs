@@ -13,5 +13,6 @@
         MessageAdded = 8,
         Reject = 9,
         Exported = 10,
+        ExternallyRejected = 11,
     }
 }

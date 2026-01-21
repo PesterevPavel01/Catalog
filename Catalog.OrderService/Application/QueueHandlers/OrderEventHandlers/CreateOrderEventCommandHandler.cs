@@ -2,7 +2,6 @@
 using Catalog.Contracts.Commands;
 using Catalog.Contracts.Dto.Events;
 using Catalog.Contracts.Entities;
-using Catalog.Contracts.Enum;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Commands;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
@@ -14,7 +13,7 @@ using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 {
-    public class CreateOrderEventCommandHandler : IHandleMessages<CreateOrderEventCommand>
+    public sealed class CreateOrderEventCommandHandler : IHandleMessages<CreateOrderEventCommand>
     {
         private readonly ConstructorOrderEventQueriesHandler _constructorCommandHandler;
         private readonly ApplicationUserOrderEventQueriesHandler _customerCommandHandler;

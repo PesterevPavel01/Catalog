@@ -6,7 +6,7 @@ using Catalog.Domain.Entities;
 using Rebus.Bus;
 using Rebus.Handlers;
 
-namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
+namespace Catalog.OrderService.Application.QueueHandlers.ExportEventHandlers
 {
     public class EntitiesExportedEventHandler : IHandleMessages<EntitiesExportedEvent>
     {

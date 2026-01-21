@@ -3,5 +3,5 @@ using Catalog.Contracts.Interfaces;
 
 namespace Catalog.Contracts.ApplicationEvents
 {
-    public sealed record EntitiesExportedEvent(ExportedEntitiesDto Entities) : IExchangeQueueEvent;
+    public sealed record RejectedEntitiesEvent(ExportedEntitiesDto Entities) : IExchangeQueueEvent;
 }

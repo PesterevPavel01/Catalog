@@ -145,6 +145,9 @@
     <value>Изменен нестандартный модуль!</value>
   </data>
   <data name="Exported" xml:space="preserve">
-    <value>Заказ передан в работу!</value>
+    <value>Заказ передан в производство!</value>
+  </data>
+  <data name="ExternallyReject" xml:space="preserve">
+    <value>Заказ не принят в производство!</value>
   </data>
 </root>
