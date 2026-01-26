@@ -30,7 +30,7 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
             return
                 new LatestChangesOrderDto()
                 { 
-                    CreatedOrders = createdOrders.Select(x => x.ConvertToDto().SetUser(x.ApplicationUser.ExternalId)),
+                    Orders = createdOrders.Select(x => x.ConvertToDto().SetUser(x.ApplicationUser.ExternalId)),
                 };
         }
     }

@@ -36,9 +36,7 @@ namespace Catalog.ExchangeService.Definitions.Rebus
 
                 return config;
             }, onCreated: async bus =>
-                {
-                    await bus.Subscribe<OrderCreatedEvent>();
-                }
+                { }
             );
 
             builder.Services.AutoRegisterHandlersFromAssemblyOf<ExchangeAssemblyReference>();

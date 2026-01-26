@@ -3,7 +3,5 @@ using Catalog.Contracts.Interfaces;
 
 namespace Catalog.Contracts.Events.OrderEvents
 { 
-    public sealed record OrderDisabledEvent(OrderDto Order) : IOrderQueueEvent
-    {
-    }
+    public sealed record OrderDisabledEvent(OrderDto Order) : IOrderQueueEvent{}
 }

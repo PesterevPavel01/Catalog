@@ -4,6 +4,6 @@
     {
         public string Code { get; set; } = default(Guid).ToString();
 
-        public IEnumerable<OrderDto> CreatedOrders { get; set; } = [];
+        public IEnumerable<OrderDto> Orders { get; set; } = [];
     }
 }

@@ -52,7 +52,7 @@ namespace Catalog.ExchangeService.Application.Handlers.Orders
             if(!orders.Ok)
                 return Operation.Error(orders.Error);
 
-            var exportedOrders = orders.Result.CreatedOrders.Select(x => ExportedEntity.Create(currentExchangeEvent.Result, typeof(Order).Name, x.Code));
+            var exportedOrders = orders.Result.Orders.Select(x => ExportedEntity.Create(currentExchangeEvent.Result, typeof(Order).Name, x.Code));
 
             await _unitOfWork.GetRepository<ExportedEntity>().InsertAsync(exportedOrders, cancellationToken);
 

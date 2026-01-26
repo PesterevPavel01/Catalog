@@ -1,17 +1,16 @@
-﻿using System.Reflection;
-using Interceptors;
+﻿using Interceptors;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.Design;
+using System.Reflection;
 
 namespace Catalog.Infrastructure
 {
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(
-            DbContextOptions<ApplicationDbContext> options,
-            IConfiguration configuration) : base(options)
+            DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-            Database.EnsureCreated();
+            Database.Migrate();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
@@ -24,6 +23,18 @@ namespace Catalog.Infrastructure
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        }
+    }
+    public class ApplicationDbContextContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+    {
+        public ApplicationDbContext CreateDbContext(string[] args)
+        {
+            var connectionString = "server=localhost;port=3366;database=catalog;User=root;Password=Pesterev1234!;";
+
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+
+            return new ApplicationDbContext(optionsBuilder.Options);
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.FacadeOrderTitleValidator;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Application.Handlers.CommandHandlers
 {
@@ -11,11 +13,13 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITitleValidator _titleValidator;
+        private readonly IBus _bus;
 
-        public OrderCreateCommandHandler(IUnitOfWork unitOfWork, ITitleValidator titleValidator)
+        public OrderCreateCommandHandler(IBus bus, IUnitOfWork unitOfWork, ITitleValidator titleValidator)
         {
             _unitOfWork = unitOfWork;
             _titleValidator = titleValidator;
+            _bus = bus;
         }
 
         public async Task<Operation<OrderDto, string>> HandleAsync(CreateOrderDto model, CancellationToken cancellationToken) 
@@ -61,6 +65,8 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
             }
 
             await transaction.CommitAsync(cancellationToken);
+
+            await _bus.Publish(new OrderCreatedEvent(orderResult.Result.Code));
 
             return orderResult.Result.ConvertToDto();
         }

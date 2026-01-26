@@ -1,5 +1,4 @@
-﻿using Calabonga.UnitOfWork;
-using Catalog.Contracts.Events.OrderEvents;
+﻿using Catalog.Contracts.Events.OrderEvents;
 using Catalog.NotificationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
@@ -7,11 +6,11 @@ using TelegramService.Interfaces;
 
 namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandlers
 {
-    public class OrderAddMesaageEventHandler : IHandleMessages<OrderAddMessageEvent>
+    public class OrderAddMessageEventHandler : IHandleMessages<OrderAddMessageEvent>
     {
         private readonly ITelegramService _telegramService;
 
-        public OrderAddMesaageEventHandler(ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public OrderAddMessageEventHandler(ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
         {
             _telegramService = telegramService;
             var approvalBotConfiguration = applicationConfiguration.Value.ApprovalNotificationBot;

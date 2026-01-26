@@ -48,6 +48,7 @@ namespace Catalog.OrderService.Definitions.Rebus
                 await bus.Subscribe<WorkflowCreatedEvent>();
                 await bus.Subscribe<WorkflowsCancelledEvent>();
                 await bus.Subscribe<WorkflowRejectedEvent>();
+                await bus.Subscribe<OrderCreatedEvent>();
                 await bus.Subscribe<OrderApprovalWorkflowsRemoveEvent>();
                 await bus.Subscribe<OrderAddMessageEvent>();
                 await bus.Subscribe<OrderDisabledEvent>();

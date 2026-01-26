@@ -1,9 +1,11 @@
-﻿using System.Text.Json;
-using Calabonga.OperationResults;
+﻿using Calabonga.OperationResults;
+using Calabonga.PagedListCore;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Catalog.OrderService.Application.Handlers.QueryHandlers
 {
@@ -16,11 +18,11 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Operation<PagedResponseDto<Order>, string>> HandleAsync(int days, string? code = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
+        public async Task<Operation<PagedResponseDto<Order>, string>> HandleAsync(int days, string? titlePattern = null, string? code = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
         {
-            var pagedResult = await _unitOfWork
+            var orders = await _unitOfWork
                 .GetRepository<Order>()
-                .GetPagedListAsync(
+                .GetAllAsync(
                     predicate: x => 
                         (code == null || x.Code == code)
                         && (userLogin == null || x.ApplicationUser.UserName == userLogin)
@@ -31,23 +33,19 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
                     orderBy: orders => 
                         ascending ? orders.OrderBy(x => x.CreatedAt) : orders.OrderByDescending(x => x.CreatedAt),
                     include: Order.IncludeRequiredField(),
-                    pageSize: pageSize,
-                    pageIndex: pageIndex,
                     trackingType: TrackingType.NoTracking);
 
-            /*var stringResult = JsonSerializer.Serialize(
-                pagedResult.Items.Select(order => order.ConvertToDto()),
-                new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });*/
+            if (!string.IsNullOrWhiteSpace(titlePattern))
+                orders = orders.Where(x => x.Title.Value.Contains(titlePattern)).ToList();
+
+            var pagedResult = PagedList.Create(orders, pageIndex, pageSize, 0);
 
             return
-                    new PagedResponseDto<Order>(
-                        items: pagedResult.Items,
-                        totalCount: pagedResult.TotalCount,
-                        pageIndex: pagedResult.PageIndex,
-                        pageSize: pagedResult.PageSize);
+                new PagedResponseDto<Order>(
+                    items: pagedResult.Items,
+                    totalCount: pagedResult.TotalCount,
+                    pageIndex: pagedResult.PageIndex,
+                    pageSize: pagedResult.PageSize);
         }
     }
 }

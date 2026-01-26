@@ -31,6 +31,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromRoute] int days,
                     OrdersQueryHandler queryHandler,
                     CancellationToken cancellationToken,
+                    [FromQuery] string? titlePattern = null,
                     [FromQuery] bool ascending = false,
                     [FromQuery] bool incompleteOnly = false,
                     [FromQuery] bool customOnly = false,
@@ -39,6 +40,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 {
                     var result = await queryHandler.HandleAsync(
                          days: days,
+                         titlePattern: titlePattern,
                          ascending: ascending,
                          incompleteOnly: incompleteOnly,
                          customOnly: customOnly,
@@ -106,7 +108,8 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromRoute] string userLogin,
                     [FromRoute] int days,
                     OrdersQueryHandler queryHandler,
-                    CancellationToken cancellationToken, 
+                    CancellationToken cancellationToken,
+                    [FromQuery] string? titlePattern = null,
                     [FromQuery] bool ascending = false,
                     [FromQuery] bool incompleteOnly = false,
                     [FromQuery] bool customOnly = false,
@@ -115,6 +118,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 {
                     var result = await queryHandler.HandleAsync(
                         days: days, 
+                        titlePattern: titlePattern,
                         userLogin: userLogin,
                         ascending: ascending,
                         incompleteOnly: incompleteOnly,

@@ -30,7 +30,6 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
             group.MapPost("order-item/create",
                 async (
                     [FromBody] IEnumerable<CreateOrderItemDto> models,
-                    IBus bus,
                     OrderItemCreatorProcessor orderProcessor,
                     CancellationToken cancellationToken) =>
                 {
@@ -38,8 +37,6 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
-                    //В последних версиях заблокированна возможность добавлять новые элементы в заказ, который уже отправлен на согласование!!!
-                    //await bus.Publish(new OrderItemsIncludedEvent(result.Result));
 
                     return Results.Ok(result.Result);
                 })

@@ -4,6 +4,7 @@ using Catalog.Contracts.Dto.Message;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
 using Catalog.Domain.Entities;
+using Catalog.Domain.Entities.Authorization;
 
 namespace Catalog.OrderService.Application.Handlers.CommandHandlers
 {
@@ -33,7 +34,11 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
             if (orderItem is null)
                 return Operation.Error("OrderItem not found!");
 
-            var user = order.ApplicationUser;
+            var user  = await _unitOfWork
+                .GetRepository<ApplicationUser>()
+                .GetFirstOrDefaultAsync(
+                    predicate: x => x.UserName == model.SenderName,
+                    trackingType: TrackingType.Tracking);
 
             if (user is null)
                 return Operation.Error("ApplicationUser not found!");

@@ -30,7 +30,6 @@ namespace Catalog.Domain.Entities
         public bool IsCustom => CheckCustomization();
 
         public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user)
-            //, List<OrderItem> orderItems)
         {
             var titleValue = TitleValue.Create(title ?? Guid.NewGuid().ToString());
 
