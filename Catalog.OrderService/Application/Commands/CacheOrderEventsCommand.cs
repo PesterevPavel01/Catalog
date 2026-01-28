@@ -3,5 +3,5 @@ using Catalog.Contracts.Interfaces;
 
 namespace Catalog.OrderService.Application.Commands
 {
-    public sealed record SetOrderEventsInCacheCommand(string CacheKey, IEnumerable<OrderEventDto> Events) : IOrderQueueEvent;
+    public sealed record CacheOrderEventsCommand(string CacheKey, IEnumerable<OrderEventDto> Events) : IOrderQueueEvent;
 }

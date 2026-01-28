@@ -1,8 +1,7 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Dto;
-using Catalog.Contracts.Dto.Order;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
+using Catalog.OrderService.Application.Managers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.OrderService.Endpoints.OrderEndpoints
@@ -29,7 +28,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             group.MapGet("by-period/{days:int:min(1):max(365)}",
                 async (
                     [FromRoute] int days,
-                    OrdersQueryHandler queryHandler,
+                    OrderQueriesManager orderQueriesManager,
                     CancellationToken cancellationToken,
                     [FromQuery] string? titlePattern = null,
                     [FromQuery] bool ascending = false,
@@ -38,8 +37,9 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromQuery] int pageSize = 20,
                     [FromQuery] int pageIndex = 0) =>
                 {
-                    var result = await queryHandler.HandleAsync(
+                    var result = await orderQueriesManager.HandleAsync(
                          days: days,
+                         cacheKeyType: "constructor",
                          titlePattern: titlePattern,
                          ascending: ascending,
                          incompleteOnly: incompleteOnly,
@@ -51,24 +51,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    return Results.Ok(new PagedResponseDto<CommonOrderDto>
-                    (
-                        items: result.Result.Items.Select(x =>
-                            new CommonOrderDto()
-                            {
-                                Code = x.Code,
-                                Title = x.Title.Value,
-                                UserName = x.ApplicationUser.UserName,
-                                IsCompleted = x.IsCompleted(),
-                                IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
-                                CreatedAt = x.CreatedAt,
-                                UpdatedAt = x.UpdatedAt
-                            }
-                        ),
-                        pageSize: result.Result.PageSize,
-                        pageIndex: result.Result.PageIndex,
-                        totalCount: result.Result.TotalCount
-                    ));
+                    return Results.Ok(result.Result);
                 })
             .Produces(200)
             .ProducesProblem(401)
@@ -87,13 +70,12 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     var ordersResult = await queryHandler
                         .HandleAsync(
                             code: orderCode,
-                            days: -1,
                             cancellationToken: cancellationToken);
 
                     if (!ordersResult.Ok)
                         return Results.BadRequest(ordersResult.Error);
 
-                    return Results.Ok(ordersResult.Result.Items.Select(x => x.ConvertToDto()));
+                    return Results.Ok(ordersResult.Result.Select(x => x.ConvertToDto()));
                 })
             .Produces(200)
             .ProducesProblem(401)
@@ -107,7 +89,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 async (
                     [FromRoute] string userLogin,
                     [FromRoute] int days,
-                    OrdersQueryHandler queryHandler,
+                    OrderQueriesManager orderQueriesManager,
                     CancellationToken cancellationToken,
                     [FromQuery] string? titlePattern = null,
                     [FromQuery] bool ascending = false,
@@ -116,8 +98,9 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromQuery] int pageSize = 20,
                     [FromQuery] int pageIndex = 0) =>
                 {
-                    var result = await queryHandler.HandleAsync(
+                    var result = await orderQueriesManager.HandleAsync(
                         days: days, 
+                        cacheKeyType: userLogin,
                         titlePattern: titlePattern,
                         userLogin: userLogin,
                         ascending: ascending,
@@ -130,24 +113,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    return Results.Ok(new PagedResponseDto<CommonOrderDto>
-                    (
-                        items: result.Result.Items.Select(x =>
-                            new CommonOrderDto()
-                            {
-                                Code = x.Code,
-                                Title = x.Title.Value,
-                                UserName = x.ApplicationUser.UserName,
-                                IsCompleted = x.IsCompleted(),
-                                IsCustom = x.OrderItems.FirstOrDefault(item => item.Module.IsCustom == true) is not null,
-                                CreatedAt = x.CreatedAt,
-                                UpdatedAt = x.UpdatedAt
-                            }
-                        ),
-                        pageSize: result.Result.PageSize,
-                        pageIndex: result.Result.PageIndex,
-                        totalCount: result.Result.TotalCount
-                    ));
+                    return Results.Ok(result.Result);
                 })
             //.RequireAuthorization("Administrator")
             .Produces(200)

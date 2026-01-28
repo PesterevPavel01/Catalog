@@ -58,7 +58,7 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Send(new SetOrderEventsInCacheCommand(cacheKey, result.Result.Items));
+                    await bus.Send(new CacheOrderEventsCommand(cacheKey, result.Result.Items));
 
                     return Results.Ok(result.Result);
                 })
@@ -101,7 +101,7 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Send(new SetOrderEventsInCacheCommand(cacheKey, result.Result.Items));
+                    await bus.Send(new CacheOrderEventsCommand(cacheKey, result.Result.Items));
 
                     return Results.Ok(result.Result);
                 })

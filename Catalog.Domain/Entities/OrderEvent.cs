@@ -20,20 +20,22 @@ namespace Catalog.Contracts.Entities
         public Guid OrderId { get; private set; }
         public Int32 Type { get; private set; }
 
-        public static Operation<OrderEvent, string> Create(Order order, string title, OrderEventTypes type, string? code)
+        public static Operation<OrderEvent, string> Create(
+            //Order order, 
+            string title, OrderEventTypes type, string? code)
         {
             var titleValue = TitleValue.Create(title);
 
             if (!titleValue.Ok)
                 return Operation.Error(titleValue.Error);
 
-            if (order is null)
-                return Operation.Error("Order is null");
+            /*if (order is null)
+                return Operation.Error("Order is null");*/
 
-            var orderEvent = new OrderEvent((Int32)type, titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty)
-            {
+            var orderEvent = new OrderEvent((Int32)type, titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty);
+            /*{
                 Order = order
-            };
+            };*/
 
             return orderEvent;
         }

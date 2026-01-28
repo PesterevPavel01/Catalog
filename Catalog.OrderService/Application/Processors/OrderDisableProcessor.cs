@@ -41,7 +41,7 @@ namespace Catalog.OrderService.Application.Processors
                 Code = order.Code,
                 Title = order.Title.Value,
                 User = order.ApplicationUser.UserName,
-                IsCompleted = false
+                IsApprovalCompleted = false
             };
         }
     }

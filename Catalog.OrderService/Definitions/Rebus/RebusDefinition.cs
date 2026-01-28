@@ -30,7 +30,8 @@ namespace Catalog.OrderService.Definitions.Rebus
                 .Serialization(x => x.UseSystemTextJson())
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IOrderQueueEvent)))
                 .Routing(r => r.TypeBased()
-                    .Map<SetOrderEventsInCacheCommand>(nameof(IOrderQueueEvent))
+                    .Map<CacheOrderEventsCommand>(nameof(IOrderQueueEvent))
+                    .Map<CacheOrdersCommand>(nameof(IOrderQueueEvent))
                     .Map<ModuleChangePermissionResponse>(nameof(IModuleQueueEvent))
                     .Map<LatestChangesOrdersResponse>(nameof(IExchangeQueueEvent)))
                 .Options(x =>

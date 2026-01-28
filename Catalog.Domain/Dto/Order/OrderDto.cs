@@ -8,8 +8,10 @@
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public List<OrderItemDto> Modules { get; set; } = [];
-        public required bool IsCompleted { get; set; }
+        public bool IsApprovalCompleted { get; set; }
+        public bool IsCompleted { get; set; }
         public bool IsCustom { get; set; }
+        public string? Status { get; set; }
 
         public OrderDto SetUser(string user)
         { 

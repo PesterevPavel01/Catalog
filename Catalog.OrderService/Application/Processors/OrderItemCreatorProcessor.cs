@@ -31,7 +31,7 @@ namespace Catalog.OrderService.Application.Processors
             if (order is null)
                 return Operation.Error("Order not found!");
 
-            if(order.IsCompleted())
+            if(order.IsApprovalCompleted())
                 return Operation.Error("Order is completed!");
 
             if (order.OrderItems.Where(x => x.ApprovalWorkflow is not null).Any())

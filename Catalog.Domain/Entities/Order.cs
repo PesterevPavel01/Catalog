@@ -1,6 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
+using Catalog.Contracts.Enum;
 using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
@@ -12,6 +13,8 @@ namespace Catalog.Domain.Entities
 {
     public class Order : SimpleEntity
     {
+        public static Int16 CacheDays = 60;
+
         private readonly List<OrderItem> _orderItems = [];
 
         private readonly List<OrderEvent> _orderHistory = [];
@@ -20,12 +23,16 @@ namespace Catalog.Domain.Entities
         {
         }
 
+        public OrderStatus Status { get; private set; } = OrderStatus.Draft;
+
         public IReadOnlyCollection<OrderEvent> OrderHistory => _orderHistory.AsReadOnly();
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
         public ApplicationUser ApplicationUser { get; private set; }
         public Guid ApplicationUserId { get; private set; }
 
-        public bool IsCompleted() => OrderItems.Any() && OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null;
+        public bool IsCompleted() => Status == OrderStatus.Completed;
+
+        public bool IsApprovalCompleted() => OrderItems.Any() && OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null;
 
         public bool IsCustom => CheckCustomization();
 
@@ -41,9 +48,27 @@ namespace Catalog.Domain.Entities
             return order; 
         }
 
+        public Order SetStatus(OrderStatus status)
+        {
+            Status = status;
+            return this;
+        }
+
         private Order SetUser(ApplicationUser user) 
         {
             ApplicationUser = user;
+            return this;
+        }
+
+        public Order AddOrderEvent(OrderEvent orderEvent) 
+        {
+            _orderHistory.Add(orderEvent);
+
+            var newStatus = DetermineStatusFromEvent((OrderEventTypes)orderEvent.Type);
+
+            if (newStatus is not null)
+                SetStatus((OrderStatus)newStatus);
+
             return this;
         }
 
@@ -125,8 +150,10 @@ namespace Catalog.Domain.Entities
                 CreatedAt = this.CreatedAt,
                 UpdatedAt = this.UpdatedAt,
                 User = ApplicationUser.UserName,
+                IsApprovalCompleted = this.IsApprovalCompleted(),
                 IsCompleted = this.IsCompleted(),
-                IsCustom = this.IsCustom
+                IsCustom = this.IsCustom,
+                Status = this.Status.ToRussianString()
             };
 
         public Operation<bool, string> Validate(IOrderValidator validator) 
@@ -134,6 +161,30 @@ namespace Catalog.Domain.Entities
 
         private bool CheckCustomization()
         => OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null;
+
+        private OrderStatus? DetermineStatusFromEvent(OrderEventTypes eventType)
+        {
+            return eventType switch
+            {
+                OrderEventTypes.Created => OrderStatus.Draft,
+
+                OrderEventTypes.CreateApprovalWorkflow => OrderStatus.PendingApproval,
+
+                OrderEventTypes.Cancelled => OrderStatus.Draft,
+
+                OrderEventTypes.ApprovalCompleted => OrderStatus.ApprovalCompleted,
+
+                OrderEventTypes.Exported => OrderStatus.InProduction,
+
+                OrderEventTypes.ExternallyRejected => OrderStatus.RejectedFromProduction,
+
+                OrderEventTypes.Produced => OrderStatus.Produced,
+
+                OrderEventTypes.Completed => OrderStatus.Completed,
+
+                _ => null
+            };
+        }
 
     }
 }

@@ -10,7 +10,7 @@ namespace Catalog.Infrastructure
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-            Database.Migrate();
+            //Database.Migrate();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)

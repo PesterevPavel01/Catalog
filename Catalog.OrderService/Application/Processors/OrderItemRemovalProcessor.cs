@@ -25,7 +25,7 @@ namespace Catalog.OrderService.Application.Processors
             if (order is null)
                 return Operation.Error("Order not found!");
 
-            if (order.IsCompleted())
+            if (order.IsApprovalCompleted())
                 return Operation.Error("Order is completed!");
 
             var orderItem = await _unitOfWork.GetRepository<OrderItem>()

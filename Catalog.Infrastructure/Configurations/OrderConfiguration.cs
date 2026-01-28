@@ -10,6 +10,14 @@ namespace Catalog.Infrastructure.Configurations
         protected override void AddBuilder(EntityTypeBuilder<Order> builder)
         {
             builder
+                .Property(x => x.Status)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            builder
+                .HasIndex(x => x.Status);
+
+            builder
                 .HasMany(x => x.OrderItems)
                 .WithOne(x => x.Order)
                 .HasForeignKey(x => x.OrderId)

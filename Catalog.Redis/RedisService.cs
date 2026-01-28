@@ -127,7 +127,7 @@ namespace Catalog.Redis
             return true;
         }
 
-        private async Task<Operation<bool, string>> InvalidateCacheAsync(string cacheKey, CancellationToken cancellationToken)
+        public async Task<Operation<bool, string>> InvalidateCacheAsync(string cacheKey, CancellationToken cancellationToken)
         {
             try
             {

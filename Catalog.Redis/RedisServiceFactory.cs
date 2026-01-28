@@ -1,6 +1,5 @@
 ﻿using Catalog.Redis.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Catalog.Redis

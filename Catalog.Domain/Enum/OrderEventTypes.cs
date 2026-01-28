@@ -14,5 +14,8 @@
         Reject = 9,
         Exported = 10,
         ExternallyRejected = 11,
+        Produced = 12,
+        Completed = 13,
+
     }
 }
