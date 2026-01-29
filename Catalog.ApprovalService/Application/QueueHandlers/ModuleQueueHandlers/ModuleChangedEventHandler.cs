@@ -1,7 +1,6 @@
 ﻿using Catalog.ApprovalService.Application.Processors;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.ApprovalEvents;
-using Catalog.Contracts.Events.OrderEvents;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;
@@ -28,8 +27,11 @@ namespace Catalog.ApprovalService.Application.QueueHandlers.ModuleQueueHandlers
         {
             var result = await _processor.ProcessAsync(message.ModuleId, new CancellationToken());
 
-            if(!result.Ok)
+            if (!result.Ok)
+            {
                 await _telegramService.SendMessageAsync(result.Error);
+                return;
+            }
 
             if(result.Result.IsCustom)
                 foreach(var item in result.Result.OrderItems)

@@ -1,6 +1,5 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Infrastructure;
-using Interceptors;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.ExchangeService.Definitions.DbContext
@@ -11,7 +10,7 @@ namespace Catalog.ExchangeService.Definitions.DbContext
         {
             var connectionString = builder.Configuration.GetConnectionString("AppDbConnectionString");
             
-            builder.Services.AddSingleton<DateInterceptors>();
+            //builder.Services.AddSingleton<DateInterceptors>();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {

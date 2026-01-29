@@ -43,7 +43,7 @@ namespace Catalog.ApprovalService.Application.Processors
 
             //Если нет OrderItems, у которых запущен Workflow, то ничего не делаем
             if (!module.OrderItems.Where(x => x.Enabled && x.ApprovalWorkflow is not null).Select(x => x.ApprovalWorkflow).Any())
-                return Operation.Error("Active ApprovalWorkflows not found!");
+                return Operation.Error("Information: Active ApprovalWorkflows not found!");
 
             if (_workflowMap is null)
                 return Operation.Error("WorkflowMap cannot be null!");

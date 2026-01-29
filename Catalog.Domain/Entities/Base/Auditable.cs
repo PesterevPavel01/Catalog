@@ -1,5 +1,5 @@
 ﻿
-using Interceptors;
+using Catalog.Contracts.Interfaces;
 
 namespace Catalog.Domain.Entities.Base
 {

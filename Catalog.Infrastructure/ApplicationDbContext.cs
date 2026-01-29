@@ -1,22 +1,14 @@
-﻿using Interceptors;
+﻿using Catalog.Infrastructure.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using System.Reflection;
 
 namespace Catalog.Infrastructure
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContextBase
     {
-        public ApplicationDbContext(
-            DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-            //Database.Migrate();
-        }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionBuilder)
-        {
-            optionBuilder.AddInterceptors(new DateInterceptors());
-        }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options): base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
