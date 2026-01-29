@@ -34,11 +34,15 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromQuery] bool ascending = false,
                     [FromQuery] bool incompleteOnly = false,
                     [FromQuery] bool customOnly = false,
+                    [FromQuery] string[] ? customers = null,
+                    [FromQuery] string[]? statuses = null,
                     [FromQuery] int pageSize = 20,
                     [FromQuery] int pageIndex = 0) =>
                 {
                     var result = await orderQueriesManager.HandleAsync(
                          days: days,
+                         customers: customers,
+                         statuses: statuses,
                          cacheKeyType: "constructor",
                          titlePattern: titlePattern,
                          ascending: ascending,

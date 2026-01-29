@@ -14,23 +14,24 @@ namespace Catalog.ApprovalService.Definitions.Rebus
         public override void ConfigureServices(WebApplicationBuilder builder)
         {
             var rabbitSettings = builder.Configuration.GetSection("RabbitMq").Get<RabbitSettings>();
+            var connectionString = builder.Configuration.GetConnectionString("AppDbConnectionString");
 
             builder.Services.AddRebus(configure: config =>
             {
                 config
                 .Logging(x => x.Serilog(Log.Logger))
                 .Serialization(x => x.UseSystemTextJson())
+                .Timeouts(x => x.StoreInMySql(connectionString, $"{nameof(IApprovalQueueEvent)}_rebus_timeouts"))
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IApprovalQueueEvent)))
                 .Options(x =>
                 {
-                    x.SetNumberOfWorkers(5);//кол-во потоков
+                    x.SetNumberOfWorkers(3);//кол-во потоков
                     x.SetBusName("ApprovalService");
                 });
 
                 return config;
             }, onCreated: async bus =>
                 {
-                    //await bus.Subscribe<OrderItemsIncludedEvent>();
                     await bus.Subscribe<WorkflowCreatedEvent>();
                     await bus.Subscribe<ModuleChangedEvent>();
                 }

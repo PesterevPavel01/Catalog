@@ -2,7 +2,9 @@
 using Catalog.Contracts.Dto.Order;
 using Catalog.OrderService.Application.Commands;
 using Catalog.Redis;
+using Microsoft.Extensions.Options;
 using Rebus.Handlers;
+using TelegramService.Configurations;
 using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.QueueHandlers
@@ -12,10 +14,12 @@ namespace Catalog.OrderService.Application.QueueHandlers
         private readonly ITelegramService _telegramService;
         private readonly RedisService<OrderDto> _redisService;
 
-        public CacheOrdersCommandHandler(RedisServiceFactory redisServiceFactory, ILogger<CacheOrderEventsCommandHandler> logger, ITelegramService telegramService)
+        public CacheOrdersCommandHandler(RedisServiceFactory redisServiceFactory, ITelegramService telegramService,
+            IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _redisService = redisServiceFactory.GetService<OrderDto>();
             _telegramService = telegramService;
+            _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
         }
 
         public async Task Handle(CacheOrdersCommand message)

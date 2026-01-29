@@ -25,7 +25,7 @@ namespace Catalog.ExchangeService.Definitions.Rebus
                     .Map<SetComponentsInCacheCommand>(nameof(IComponentQueueEvent)))
                 .Options(x =>
                 {
-                    x.SetNumberOfWorkers(3);//кол-во потоков
+                    x.SetNumberOfWorkers(1);//кол-во потоков
                     x.SetBusName("ComponentService");
                 });
 

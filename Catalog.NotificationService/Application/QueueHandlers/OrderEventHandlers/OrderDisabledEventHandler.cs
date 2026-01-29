@@ -2,6 +2,7 @@
 using Catalog.NotificationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
+using TelegramService.Configurations;
 using TelegramService.Interfaces;
 
 namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandlers
@@ -9,18 +10,29 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
     public class OrderDisabledEventHandler : IHandleMessages<OrderDisabledEvent>
     {
         private readonly ITelegramService _telegramService;
+        private readonly TelegramBotConfiguration _approvalNotificationBot;
+        private readonly TelegramBotConfiguration _exceptionNotificationBot;
 
-        public OrderDisabledEventHandler(ITelegramService telegramService, IOptions<ApplicationConfiguration> applicationConfiguration)
+        public OrderDisabledEventHandler(ITelegramService telegramService,
+            IOptions<ApplicationConfiguration> applicationConfiguration, IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _telegramService = telegramService;
-            var approvalBotConfiguration = applicationConfiguration.Value.ApprovalNotificationBot;
-            _telegramService.Initialize(token: approvalBotConfiguration.Token, chatId: approvalBotConfiguration.ChatId);
+            _approvalNotificationBot = applicationConfiguration.Value.ApprovalNotificationBot;
+            _exceptionNotificationBot = exceptionNotificationBot.Value;
         }
 
         public async Task Handle(OrderDisabledEvent message)
         {
             if (message.Order is null)
-                throw new ArgumentException($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.Order.Code}");
+            {
+                _telegramService.Initialize(token: _exceptionNotificationBot.Token, chatId: _exceptionNotificationBot.ChatId);
+
+                await _telegramService.SendMessageAsync($"{"NotificationService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.Order.Code}");
+
+                return;
+            }
+
+            _telegramService.Initialize(token: _approvalNotificationBot.Token, chatId: _approvalNotificationBot.ChatId);
 
             await _telegramService.SendMessageAsync($"ЗАКАЗ УДАЛЕН: заказ \"{message.Order.Title}\" пользователя: \"{message.Order.User}\" был удален!");
         }

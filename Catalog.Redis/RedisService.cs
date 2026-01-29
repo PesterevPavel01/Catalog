@@ -1,11 +1,9 @@
-﻿using System.Reflection.Metadata;
-using System.Text.Json;
-using Calabonga.OperationResults;
-using Calabonga.PagedListCore;
+﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto;
 using Catalog.Redis.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Catalog.Redis
 {
@@ -105,7 +103,7 @@ namespace Catalog.Redis
             }
 
             var cacheDuration = TimeSpan.FromMinutes(
-                _configuration.Value?.CacheDurationMinutes ?? 2);
+                _configuration.Value?.CacheDurationMinutes ?? 15);
 
             var options = new DistributedCacheEntryOptions
             {
@@ -161,6 +159,7 @@ namespace Catalog.Redis
                     }
                 }
             }
+
             return string.Join(":", parts);
         }
     }

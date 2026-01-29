@@ -32,8 +32,8 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
             {
                 var component = module.Components.FirstOrDefault(x => x.Code == item.ComponentCode);
 
-                if (module is null)
-                    return Operation.Error("Internal server error.");
+                if (component is null)
+                    return Operation.Error("Component not found!");
 
                 var operationResult = module.RemoveComponent(component);
 
@@ -48,7 +48,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 var parameter = module.ModuleNumericParameters.FirstOrDefault(x => x.Id == item.GetId());
 
                 if (parameter is null)
-                    return Operation.Error("Internal server error.");
+                    return Operation.Error("ModuleNumericParameter not found!");
 
                 var operationResult = module.RemoveNumericParameter(parameter);
                 
@@ -63,7 +63,7 @@ namespace Catalog.ModuleConfigurationService.Application.Processors
                 var parameter = module.ModuleTextParameters.FirstOrDefault(x => x.Id == item.GetId());
 
                 if (parameter is null)
-                    return Operation.Error("Internal server error.");
+                    return Operation.Error("ModuleTextParameter not found!");
 
                 var operationResult = module.RemoveTextParameter(parameter);
 

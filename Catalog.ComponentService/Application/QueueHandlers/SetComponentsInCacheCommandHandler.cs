@@ -1,7 +1,9 @@
 ﻿using Catalog.ComponentService.Application.Commands;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Redis;
+using Microsoft.Extensions.Options;
 using Rebus.Handlers;
+using TelegramService.Configurations;
 using TelegramService.Interfaces;
 
 namespace Catalog.ComponentService.Application.QueueHandlers
@@ -12,11 +14,13 @@ namespace Catalog.ComponentService.Application.QueueHandlers
         private readonly ITelegramService _telegramService;
         private readonly RedisService<ComponentDto> _redisService;
 
-        public SetComponentsInCacheCommandHandler(RedisServiceFactory redisServiceFactory, ILogger<SetComponentsInCacheCommandHandler> logger, ITelegramService telegramService)
+        public SetComponentsInCacheCommandHandler(RedisServiceFactory redisServiceFactory, ILogger<SetComponentsInCacheCommandHandler> logger, ITelegramService telegramService,
+             IOptions<TelegramBotConfiguration> telegramBotConfiguration)
         {
             _redisService = redisServiceFactory.GetService<ComponentDto>();
             _logger = logger;
             _telegramService = telegramService;
+            _telegramService.Initialize(token: telegramBotConfiguration.Value.Token, chatId: telegramBotConfiguration.Value.ChatId);
         }
 
         public async Task Handle(SetComponentsInCacheCommand message)

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Serilog;
 using TelegramService.Configurations;
@@ -10,14 +11,13 @@ namespace Catalog.Logging.Middleware
     {
         private readonly RequestDelegate _next = null!;
         private readonly LogService _logService = null!;
-        private readonly ITelegramService _telegramService;
+        private readonly TelegramBotConfiguration _botConfiguration;
 
-        public RequestLoggingMiddleware(RequestDelegate next, ITelegramService telegramService, ILogger logger, IOptions<TelegramBotConfiguration> telegramBotConfiguration)
+        public RequestLoggingMiddleware(RequestDelegate next, ILogger logger, IOptions<TelegramBotConfiguration> telegramBotConfiguration)
         {
             _next = next;
             _logService = new LogService(logger);
-            _telegramService = telegramService;
-            _telegramService.Initialize(token: telegramBotConfiguration.Value.Token, chatId: telegramBotConfiguration.Value.ChatId);
+            _botConfiguration = telegramBotConfiguration.Value;
         }
 
         public async Task InvokeAsync(HttpContext httpContext)
@@ -37,7 +37,9 @@ namespace Catalog.Logging.Middleware
             }
             catch (Exception exception)
             {
-                await _telegramService.SendMessageAsync(exception.Message);
+                var telegramService = httpContext.RequestServices.GetRequiredService<ITelegramService>();
+                telegramService.Initialize(token: _botConfiguration.Token, chatId: _botConfiguration.ChatId);
+                await telegramService.SendMessageAsync(exception.Message);
             }
 
             await _next(httpContext);

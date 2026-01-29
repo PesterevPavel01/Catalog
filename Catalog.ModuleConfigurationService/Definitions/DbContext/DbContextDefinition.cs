@@ -11,10 +11,11 @@ namespace Catalog.ModuleConfigurationService.Definitions.DbContext
         {
             var connectionString = builder.Configuration.GetConnectionString("AppDbConnectionString");
 
-            builder.Services.AddScoped<DateInterceptors>();
+            builder.Services.AddSingleton<DateInterceptors>();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
+
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
                     .LogTo(Console.WriteLine, LogLevel.Information);
             });

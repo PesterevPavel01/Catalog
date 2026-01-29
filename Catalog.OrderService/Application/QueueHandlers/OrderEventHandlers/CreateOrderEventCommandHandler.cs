@@ -9,8 +9,10 @@ using Catalog.OrderService.Application.Commands;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
 using Catalog.Redis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;
+using TelegramService.Configurations;
 using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
@@ -18,6 +20,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
     public sealed class CreateOrderEventCommandHandler : IHandleMessages<CreateOrderEventCommand>
     {
         private readonly ConstructorOrderEventQueriesHandler _constructorCommandHandler;
+        private readonly ITelegramService _telegramService;
         private readonly ApplicationUserOrderEventQueriesHandler _customerCommandHandler;
         private readonly CachedOrdersQueryHandler _cachedOrdersQueryHandler;
         private readonly IUnitOfWork _unitOfWork;
@@ -27,8 +30,12 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
         public CreateOrderEventCommandHandler(
             CachedOrdersQueryHandler ordersQueryHandler,
-            ConstructorOrderEventQueriesHandler constructorCommandHandler, ApplicationUserOrderEventQueriesHandler customerCommandHandler,
-            RedisServiceFactory redisServiceFactory, ITelegramService telegramService, IUnitOfWork unitOfWork, IBus bus)
+            ConstructorOrderEventQueriesHandler constructorCommandHandler,
+            ApplicationUserOrderEventQueriesHandler customerCommandHandler,
+            RedisServiceFactory redisServiceFactory,
+            ITelegramService telegramService,
+            IUnitOfWork unitOfWork, IBus bus,
+            IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _constructorCommandHandler = constructorCommandHandler;
             _customerCommandHandler = customerCommandHandler;
@@ -37,6 +44,8 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             _orderEventRedisService = redisServiceFactory.GetService<OrderEventDto>();
             _orderRedisService = redisServiceFactory.GetService<OrderDto>();
             _cachedOrdersQueryHandler = ordersQueryHandler;
+            _telegramService = telegramService;
+            _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
         }
 
         public async Task Handle(CreateOrderEventCommand message)
@@ -51,12 +60,20 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     predicate: x => x.Code == message.OrderCode);
 
             if (order is null)
+            {
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.OrderCode}");
+
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.OrderCode}");
+            }
 
             var orderEvent = OrderEvent.Create(message.Note, message.Type, null);
 
             if (!orderEvent.Ok)
+            {
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderEvent.Error} OrderTitle: {order.Title}");
+
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderEvent.Error} OrderTitle: {order.Title}");
+            }
 
             order.AddOrderEvent(orderEvent.Result);
 
@@ -66,21 +83,32 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
             if (_unitOfWork.Result.Exception is not null)
             {
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
+
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
             }
 
             var queryResult = await _constructorCommandHandler.HandleAsync(default);
 
             if (!queryResult.Ok)
+            {
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {queryResult.Error} OrderTitle: {order.Title}");
+
                 throw new ArgumentException(queryResult.Error);
+            }
 
             await _bus.Send(new CacheOrderEventsCommand(_orderEventRedisService.GenerateCacheKey(("type", "constructor")), queryResult.Result.Items));
 
             if (order.ApplicationUser.Roles.Any(x => x.Code == "customer")) {
 
                 queryResult = await _customerCommandHandler.HandleAsync(order.ApplicationUser.UserName);
-                    if (!queryResult.Ok)
-                        throw new ArgumentException(queryResult.Error);
+
+                if (!queryResult.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {queryResult.Error} OrderTitle: {order.Title}");
+
+                    throw new ArgumentException(queryResult.Error);
+                }
 
                 await _bus.Send(new CacheOrderEventsCommand(_orderEventRedisService.GenerateCacheKey(("type", order.ApplicationUser.UserName)), queryResult.Result.Items));
             }
@@ -93,13 +121,41 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
                 var customerInvalidateResult = await _orderRedisService.InvalidateCacheAsync(customerCacheKey, default);
 
+                if (!customerInvalidateResult.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {customerInvalidateResult.Error}");
+
+                    throw new ArgumentException(customerInvalidateResult.Error);
+                }
+
                 var customerOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKeyType:order.ApplicationUser.UserName, userLogin: order.ApplicationUser.UserName, default);
+
+                if (!customerOrdersResult.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {customerOrdersResult.Error}");
+
+                    throw new ArgumentException(customerOrdersResult.Error);
+                }
 
                 var constructorCacheKey = _orderRedisService.GenerateCacheKey(("type", "constructor"), ("days", Order.CacheDays));
 
                 var constructorInvalidateResult = await _orderRedisService.InvalidateCacheAsync(constructorCacheKey, default);
 
+                if (!constructorInvalidateResult.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {constructorInvalidateResult.Error}");
+
+                    throw new ArgumentException(constructorInvalidateResult.Error);
+                }
+
                 var constructorOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKeyType: "constructor", default);
+
+                if (!constructorOrdersResult.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {constructorOrdersResult.Error}");
+
+                    throw new ArgumentException(constructorOrdersResult.Error);
+                }
             }
 
         }

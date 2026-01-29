@@ -18,7 +18,7 @@ namespace Catalog.OrderService.Application.Managers
             _cachedOrdersHandler = cachedOrdersHandler;
         }
 
-        public async Task<Operation<PagedResponseDto<CommonOrderDto>, string>> HandleAsync(int days, string? cacheKeyType = null, string? titlePattern = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
+        public async Task<Operation<PagedResponseDto<CommonOrderDto>, string>> HandleAsync(int days, string[]? customers = null, string[]? statuses = null, string? cacheKeyType = null, string? titlePattern = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
         {
             Operation<List<OrderDto>,string> ordersResult;
 
@@ -43,16 +43,31 @@ namespace Catalog.OrderService.Application.Managers
 
             var orders = ordersResult.Result;
 
-            orders = orders
-                .Where(x =>
-                    (x.CreatedAt > DateTime.Now.AddDays(-1 * days))
-                    && (!incompleteOnly || !x.IsCompleted)
-                    && (!customOnly || x.IsCustom)).ToList();
+            if (orders.Any())
+            {
+                if (customers is not null && customers.Any())
+                {
+                    var usersSet = new HashSet<string>(customers, StringComparer.OrdinalIgnoreCase);
+                    orders = orders.Where(x => usersSet.Contains(x.User)).ToList();
+                }
 
-            orders = ascending ? orders
-                .OrderBy(x => x.CreatedAt).ToList()
-                : orders
-                .OrderByDescending(x => x.CreatedAt).ToList();
+                if (statuses is not null && statuses.Any())
+                {
+                    var statusesSet = new HashSet<string>(statuses, StringComparer.OrdinalIgnoreCase);
+                    orders = orders.Where(x => statusesSet.Contains(x.Status)).ToList();
+                }
+
+                orders = orders
+                    .Where(x =>
+                        (x.CreatedAt > DateTime.Now.AddDays(-1 * days))
+                        && (!incompleteOnly || !x.IsCompleted)
+                        && (!customOnly || x.IsCustom)).ToList();
+
+                orders = ascending ? orders
+                    .OrderBy(x => x.CreatedAt).ToList()
+                    : orders
+                    .OrderByDescending(x => x.CreatedAt).ToList();
+            }
 
             var pagedResult = PagedList
                 .Create(orders

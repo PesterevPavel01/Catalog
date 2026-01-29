@@ -27,7 +27,7 @@ namespace Catalog.ModuleConfigurationService.Definitions.Rebus
                 .Options(x =>
                 {
                     x.EnableSynchronousRequestReply();
-                    x.SetNumberOfWorkers(5);//кол-во потоков
+                    x.SetNumberOfWorkers(3);//кол-во потоков
                     x.SetBusName("ModuleConfigurationService");
                 });
 
