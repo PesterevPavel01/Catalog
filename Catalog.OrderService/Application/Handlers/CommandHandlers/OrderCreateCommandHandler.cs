@@ -66,7 +66,7 @@ namespace Catalog.OrderService.Application.Handlers.CommandHandlers
 
             await transaction.CommitAsync(cancellationToken);
 
-            await _bus.Publish(new OrderCreatedEvent(orderResult.Result.Code));
+            await _bus.Send(new OrderCreatedEvent(orderResult.Result.Code));
 
             return orderResult.Result.ConvertToDto();
         }

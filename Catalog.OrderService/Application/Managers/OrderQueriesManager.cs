@@ -2,6 +2,7 @@
 using Calabonga.PagedListCore;
 using Catalog.Contracts.Dto;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Enum;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
 
@@ -18,7 +19,7 @@ namespace Catalog.OrderService.Application.Managers
             _cachedOrdersHandler = cachedOrdersHandler;
         }
 
-        public async Task<Operation<PagedResponseDto<CommonOrderDto>, string>> HandleAsync(int days, string[]? customers = null, string[]? statuses = null, string? cacheKeyType = null, string? titlePattern = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
+        public async Task<Operation<PagedResponseDto<CommonOrderDto>, string>> HandleAsync(int days, string[]? customers = null, short[]? statuses = null, string? cacheKeyType = null, string? titlePattern = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
         {
             Operation<List<OrderDto>,string> ordersResult;
 
@@ -32,7 +33,6 @@ namespace Catalog.OrderService.Application.Managers
                 ordersResult = await _ordersHandler
                     .HandleAsync(
                         days: days, 
-                        cacheKeyType: cacheKeyType, 
                         titlePattern: titlePattern,
                         userLogin: userLogin
                     );
@@ -53,7 +53,10 @@ namespace Catalog.OrderService.Application.Managers
 
                 if (statuses is not null && statuses.Any())
                 {
-                    var statusesSet = new HashSet<string>(statuses, StringComparer.OrdinalIgnoreCase);
+                    var orderStatuses = statuses.Select(x => (OrderStatus)Convert.ToInt16(x)).Select(x => x.ToRussianString());
+
+                    var statusesSet = new HashSet<string>(orderStatuses, StringComparer.OrdinalIgnoreCase);
+
                     orders = orders.Where(x => statusesSet.Contains(x.Status)).ToList();
                 }
 

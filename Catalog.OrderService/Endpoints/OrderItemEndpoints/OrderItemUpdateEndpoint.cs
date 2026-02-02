@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 {
-    public class OrderItemQueryEndpoint : AppDefinition
+    public class OrderItemUpdateEndpoint : AppDefinition
     {
         public override void ConfigureApplication(WebApplication app)
-            => app.MapOrderItemQueryEndpoints();
+            => app.MapOrderItemUpdateEndpoints();
     }
 
-    internal static class OrderItemQueryEndpointDefinitionExtensions
+    internal static class OrderItemUpdateEndpointDefinitionExtensions
     {
-        public static async Task MapOrderItemQueryEndpoints(this IEndpointRouteBuilder routes)
+        public static async Task MapOrderItemUpdateEndpoints(this IEndpointRouteBuilder routes)
         {
             var versionSet = routes.NewApiVersionSet()
                 .HasApiVersion(new ApiVersion(3, 0))

@@ -1,17 +1,24 @@
 ﻿using Calabonga.UnitOfWork;
 using Catalog.Contracts.Commands;
 using Catalog.Domain.Entities;
+using Microsoft.Extensions.Options;
 using Rebus.Handlers;
+using TelegramService.Configurations;
+using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 {
     public class UpdateOrderCodeCommandHandler : IHandleMessages<UpdateOrderCodeCommand>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ITelegramService _telegramService;
 
-        public UpdateOrderCodeCommandHandler(IUnitOfWork unitOfWork)
+        public UpdateOrderCodeCommandHandler(IUnitOfWork unitOfWork, ITelegramService telegramService,
+            IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _unitOfWork = unitOfWork;
+            _telegramService = telegramService;
+            _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
         }
 
         public async Task Handle(UpdateOrderCodeCommand message)
@@ -23,7 +30,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     predicate: x => x.Code == message.Code);
 
             if(order is null)
-                throw new InvalidOperationException("Order not found!");
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: Order not found!");
 
             order.UpdateCode(message.NewCode);
 
@@ -31,7 +38,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
             if (_unitOfWork.Result.Exception is not null)
             {
-                throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
             }
         }
     }

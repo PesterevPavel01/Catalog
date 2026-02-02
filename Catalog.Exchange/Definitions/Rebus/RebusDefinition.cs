@@ -2,6 +2,8 @@
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Request;
+using Catalog.Contracts.Response;
+using Catalog.ExchangeService.Application.Commands.Cache;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
 using Rebus.Serialization.Json;
@@ -24,7 +26,8 @@ namespace Catalog.ExchangeService.Definitions.Rebus
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IExchangeQueueEvent)))
                 .Timeouts(x => x.StoreInMySql(connectionString, $"{nameof(IExchangeQueueEvent)}_rebus_timeouts"))
                 .Routing(r => r.TypeBased()
-                    .Map<LatestChangesOrdersRequest>(nameof(IOrderQueueEvent)))
+                    .Map<LatestChangesOrdersRequest>(nameof(IOrderQueueEvent))
+                    .Map<CacheUsersCommand>(nameof(IExchangeQueueEvent)))
                 .Options(x =>
                 {
                     x.EnableSynchronousRequestReply();

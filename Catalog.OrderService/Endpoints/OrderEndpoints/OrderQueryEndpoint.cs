@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Dto.Order;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
 using Catalog.OrderService.Application.Managers;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromQuery] bool incompleteOnly = false,
                     [FromQuery] bool customOnly = false,
                     [FromQuery] string[] ? customers = null,
-                    [FromQuery] string[]? statuses = null,
+                    [FromQuery] short[]? statuses = null,
                     [FromQuery] int pageSize = 20,
                     [FromQuery] int pageIndex = 0) =>
                 {
@@ -68,18 +69,20 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             group.MapGet("by-code/{orderCode}", 
                 async (
                     [FromRoute] string orderCode,
-                    OrdersQueryHandler queryHandler,
-                    CancellationToken cancellationToken) =>
+                    OrderQueryHandler queryHandler,
+                    CancellationToken cancellationToken,
+                    [FromQuery] bool cache = false) =>
                 {
                     var ordersResult = await queryHandler
                         .HandleAsync(
                             code: orderCode,
+                            cache: cache,
                             cancellationToken: cancellationToken);
 
                     if (!ordersResult.Ok)
                         return Results.BadRequest(ordersResult.Error);
 
-                    return Results.Ok(ordersResult.Result.Select(x => x.ConvertToDto()));
+                    return Results.Ok(new List<OrderDto>() { ordersResult.Result });
                 })
             .Produces(200)
             .ProducesProblem(401)

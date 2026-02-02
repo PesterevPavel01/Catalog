@@ -20,6 +20,7 @@ namespace Catalog.OrderService.Application
                 OrderEventTypes.ExternallyRejected => true,
                 OrderEventTypes.Reject =>  true,
                 OrderEventTypes.Produced => true,
+                OrderEventTypes.MessageAdded => true,
                 _ => false
             };
         }

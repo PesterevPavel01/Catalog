@@ -16,6 +16,8 @@ namespace Catalog.Web.Definitions.Services
 
             builder.Services.AddScoped<OrderCreateCommandHandler>();
             builder.Services.AddScoped<OrdersQueryHandler>();
+            builder.Services.AddScoped<OrderQueryHandler>();
+            
             builder.Services.AddScoped<CachedOrdersQueryHandler>();
 
             builder.Services.AddScoped<OrderQueriesManager>();

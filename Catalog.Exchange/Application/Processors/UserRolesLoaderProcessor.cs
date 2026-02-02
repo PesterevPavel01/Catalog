@@ -1,33 +1,37 @@
 ﻿using Calabonga.OperationResults;
-using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Authorization;
-using Catalog.Domain.Entities.Authorization;
-using Microsoft.EntityFrameworkCore;
+using Catalog.ExchangeService.Application.Handlers.Users;
 
 namespace Catalog.ExchangeService.Application.Processors
 {
-    public class UserRolesLoaderProcessor
+    public sealed class UserRolesLoaderProcessor
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly UsersQueryHandler _queryHandler;
 
-        public UserRolesLoaderProcessor(IUnitOfWork unitOfWork)
+        public UserRolesLoaderProcessor(UsersQueryHandler queryHandler)
         {
-            _unitOfWork = unitOfWork;
+            _queryHandler = queryHandler;
         }
 
         public async Task<Operation<UserDto, string>> ProcessAsync(string userName, CancellationToken cancellationToken)
         {
-            var user = await _unitOfWork.GetRepository<ApplicationUser>()
-                .GetFirstOrDefaultAsync(
-                    predicate: x => x.UserName == userName && x.Enabled,
-                    trackingType: TrackingType.NoTracking,
-                    include: query => query.Include(x => x.Roles)
+            var usersResult = await _queryHandler.HandleAsync(cancellationToken);
+
+            if (!usersResult.Ok)
+                return Operation.Error(usersResult.Error);
+
+            if (!usersResult.Result.Any())
+                return Operation.Error("Users not found!");
+
+            var user = usersResult.Result
+                .FirstOrDefault(
+                    predicate: x => x.UserName == userName
                 );
 
             if (user is null)
                 return Operation.Error("User not found!");
 
-            return new UserDto() { ExternalId = user.ExternalId ?? "none", UserName = user.UserName, Roles = user.Roles.Select(x => x.Code)};
+            return user;
         }
     }
 }

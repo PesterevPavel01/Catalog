@@ -7,7 +7,6 @@ using Catalog.Contracts.Events.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
-using Catalog.Contracts.Request;
 using Catalog.Contracts.Response;
 using Catalog.OrderService.Application.Commands;
 using Rebus.Config;
@@ -31,13 +30,15 @@ namespace Catalog.OrderService.Definitions.Rebus
                 .Transport(x => x.UseRabbitMq(rabbitSettings.RabbitUrl, nameof(IOrderQueueEvent)))
                 .Routing(r => r.TypeBased()
                     .Map<CacheOrderEventsCommand>(nameof(IOrderQueueEvent))
+                    .Map<OrderCreatedEvent>(nameof(IOrderQueueEvent))
+                    .Map<OrderChangedEvent>(nameof(IOrderQueueEvent))
                     .Map<CacheOrdersCommand>(nameof(IOrderQueueEvent))
                     .Map<ModuleChangePermissionResponse>(nameof(IModuleQueueEvent))
                     .Map<LatestChangesOrdersResponse>(nameof(IExchangeQueueEvent)))
                 .Options(x =>
                 {
                     x.EnableSynchronousRequestReply();
-                    x.SetNumberOfWorkers(5);//кол-во потоков
+                    x.SetNumberOfWorkers(5);
                     x.SetBusName("OrderService");
                 });
 
@@ -49,13 +50,13 @@ namespace Catalog.OrderService.Definitions.Rebus
                 await bus.Subscribe<WorkflowCreatedEvent>();
                 await bus.Subscribe<WorkflowsCancelledEvent>();
                 await bus.Subscribe<WorkflowRejectedEvent>();
-                await bus.Subscribe<OrderCreatedEvent>();
                 await bus.Subscribe<OrderApprovalWorkflowsRemoveEvent>();
                 await bus.Subscribe<OrderAddMessageEvent>();
                 await bus.Subscribe<OrderDisabledEvent>();
                 await bus.Subscribe<CustomWorkflowChangedEvent>();
                 await bus.Subscribe<EntitiesExportedEvent>();
                 await bus.Subscribe<RejectedEntitiesEvent>();
+                await bus.Subscribe<ModuleChangedEvent>();
             }
             );
 

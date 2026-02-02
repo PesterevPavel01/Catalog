@@ -1,8 +1,10 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentParametersValidator.Extensions;
 using Catalog.ExchangeService.Definitions.Configurations;
-using Catalog.Logging.Middleware;
 using Catalog.Infrastructure;
+using Catalog.Logging.Middleware;
+using Catalog.Redis.Extension;
+using Rebus.Config;
 using Serilog;
 using TelegramService.DependencyInjection;
 
@@ -20,6 +22,8 @@ try
         configuration.ReadFrom.Configuration(context.Configuration));
 
     builder.AddDefinitions(typeof(Program));
+
+    builder.Services.AddRedis();
 
     var app = builder.Build();
 

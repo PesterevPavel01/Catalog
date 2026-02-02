@@ -27,8 +27,10 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
         private readonly IBus _bus;
         private readonly RedisService<OrderEventDto> _orderEventRedisService;
         private readonly RedisService<OrderDto> _orderRedisService;
+        private readonly OrderQueryHandler _orderQueryHandler;
 
         public CreateOrderEventCommandHandler(
+            OrderQueryHandler orderQueryHandler,
             CachedOrdersQueryHandler ordersQueryHandler,
             ConstructorOrderEventQueriesHandler constructorCommandHandler,
             ApplicationUserOrderEventQueriesHandler customerCommandHandler,
@@ -37,6 +39,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             IUnitOfWork unitOfWork, IBus bus,
             IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
+            _orderQueryHandler = orderQueryHandler;
             _constructorCommandHandler = constructorCommandHandler;
             _customerCommandHandler = customerCommandHandler;
             _unitOfWork = unitOfWork;
@@ -63,7 +66,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             {
                 await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.OrderCode}");
 
-                throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found! Code: {message.OrderCode}");
+                return;
             }
 
             var orderEvent = OrderEvent.Create(message.Note, message.Type, null);
@@ -72,7 +75,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             {
                 await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderEvent.Error} OrderTitle: {order.Title}");
 
-                throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderEvent.Error} OrderTitle: {order.Title}");
+                return;
             }
 
             order.AddOrderEvent(orderEvent.Result);
@@ -94,7 +97,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             {
                 await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {queryResult.Error} OrderTitle: {order.Title}");
 
-                throw new ArgumentException(queryResult.Error);
+                return;
             }
 
             await _bus.Send(new CacheOrderEventsCommand(_orderEventRedisService.GenerateCacheKey(("type", "constructor")), queryResult.Result.Items));
@@ -107,7 +110,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 {
                     await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {queryResult.Error} OrderTitle: {order.Title}");
 
-                    throw new ArgumentException(queryResult.Error);
+                    return;
                 }
 
                 await _bus.Send(new CacheOrderEventsCommand(_orderEventRedisService.GenerateCacheKey(("type", order.ApplicationUser.UserName)), queryResult.Result.Items));
@@ -125,7 +128,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 {
                     await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {customerInvalidateResult.Error}");
 
-                    throw new ArgumentException(customerInvalidateResult.Error);
+                    return;
                 }
 
                 var customerOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKeyType:order.ApplicationUser.UserName, userLogin: order.ApplicationUser.UserName, default);
@@ -134,7 +137,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 {
                     await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {customerOrdersResult.Error}");
 
-                    throw new ArgumentException(customerOrdersResult.Error);
+                    return;
                 }
 
                 var constructorCacheKey = _orderRedisService.GenerateCacheKey(("type", "constructor"), ("days", Order.CacheDays));
@@ -145,7 +148,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 {
                     await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {constructorInvalidateResult.Error}");
 
-                    throw new ArgumentException(constructorInvalidateResult.Error);
+                    return;
                 }
 
                 var constructorOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKeyType: "constructor", default);
@@ -154,7 +157,27 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 {
                     await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {constructorOrdersResult.Error}");
 
-                    throw new ArgumentException(constructorOrdersResult.Error);
+                    return;
+                }
+
+                var orderCacheKey = _orderRedisService.GenerateCacheKey(("type", "order"), ("code", message.OrderCode));
+
+                var orderInvalidateResult = await _orderRedisService.InvalidateCacheAsync(orderCacheKey, default);
+
+                if (!orderInvalidateResult.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderInvalidateResult.Error}");
+
+                    return;
+                }
+
+                var orderQueryResult = await _orderQueryHandler.HandleAsync(message.OrderCode);
+
+                if (!orderQueryResult.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderQueryResult.Error}");
+
+                    return;
                 }
             }
 
