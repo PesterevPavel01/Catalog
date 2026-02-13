@@ -1,8 +1,9 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.Dto.Exchange;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 
-namespace Catalog.Contracts.ApplicationEvents
+namespace Catalog.Contracts.Entities.Exchange
 {
     public sealed class ExchangeEvent : SimpleEntity
     {
@@ -14,7 +15,7 @@ namespace Catalog.Contracts.ApplicationEvents
 
         public DateTime ExecutedAt { get; private set; }
         public string Type { get; private set; }
-        public string? Message { get; set; }
+        public string? Message { get; private set; }
 
         public IReadOnlyCollection<ExportedEntity> Entities => _entities.AsReadOnly();
 
@@ -49,5 +50,25 @@ namespace Catalog.Contracts.ApplicationEvents
         { 
             Enabled  = true;
         }
+
+        public Operation<ExchangeEvent, string> SetMessage(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return Operation.Error("Message is null or empty.");
+
+            Message = message;
+
+            return this;
+        }
+
+        public SyncConfirmationDto ConvertToDto() 
+            => new()
+            {
+                SyncSessionCode = Code,
+                Title = Title.Value,
+                Type = Type,
+                Message = Message,
+                RejectedEntities = Entities.Where(x => x.Error is not null).Select(x => new RejectedEntity(x.Code, x.Error))
+            };
     }
 }

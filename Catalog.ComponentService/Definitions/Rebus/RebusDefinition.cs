@@ -1,5 +1,6 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentService.Application.Commands;
+using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Interfaces;
 using Rebus.Config;
@@ -30,8 +31,10 @@ namespace Catalog.ExchangeService.Definitions.Rebus
                 });
 
                 return config;
-            }, onCreated: async bus => {}
-            );
+            }, onCreated: async bus => 
+            {
+                await bus.Subscribe<ComponentSyncCommand>();
+            });
 
             builder.Services.AutoRegisterHandlersFromAssemblyOf<ExchangeAssemblyReference>();
         }

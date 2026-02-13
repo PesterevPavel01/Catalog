@@ -1,10 +1,10 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.ApplicationEvents;
 using Catalog.Contracts.Commands;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Response;

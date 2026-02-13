@@ -1,5 +1,9 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Commands;
+using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Entities.Rabbit;
+using Catalog.Contracts.Events.CustomerEvents;
+using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Request;
 using Catalog.Contracts.Response;
@@ -37,7 +41,10 @@ namespace Catalog.ExchangeService.Definitions.Rebus
 
                 return config;
             }, onCreated: async bus =>
-                { }
+                {
+                    await bus.Subscribe<CustomerCreatedEvent>();
+                    await bus.Subscribe<ComponentSyncCompletedEvent>();
+                }
             );
 
             builder.Services.AutoRegisterHandlersFromAssemblyOf<ExchangeAssemblyReference>();

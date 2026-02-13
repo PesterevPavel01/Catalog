@@ -1,7 +1,8 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
-using Catalog.Contracts.ApplicationEvents;
 using Catalog.Contracts.Dto.Exchange;
+using Catalog.Contracts.Entities.Exchange;
+using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Domain.Entities;
 using Catalog.ExchangeService.Application.Events;
 using Rebus.Bus;
@@ -47,7 +48,7 @@ namespace Catalog.ExchangeService.Application.Handlers.Orders
                     selector: x => x.Code
                 );
 
-            var successfullySyncedCodes = exportedOrderCodes.Where(x => !syncResult.RejectedCodes.Contains(x));
+            var successfullySyncedCodes = exportedOrderCodes.Where(x => !syncResult.RejectedEntities.Select(e => e.Code).Contains(x));
 
             if (successfullySyncedCodes.Any())
             {
@@ -59,8 +60,8 @@ namespace Catalog.ExchangeService.Application.Handlers.Orders
 
             }
 
-            if(syncResult.RejectedCodes.Any())
-                await _bus.Publish(new RejectedEntitiesEvent(new ExportedEntitiesDto(typeof(Order).Name, syncResult.RejectedCodes)));
+            if(syncResult.RejectedEntities.Any())
+                await _bus.Publish(new RejectedEntitiesEvent(new ExportedEntitiesDto(typeof(Order).Name, syncResult.RejectedEntities.Select(e => e.Code))));
 
             return true;
         }

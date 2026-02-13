@@ -88,10 +88,10 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             {
                 await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
 
-                throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
+                return;
             }
 
-            var queryResult = await _constructorCommandHandler.HandleAsync(default);
+            var queryResult = await _constructorCommandHandler.HandleAsync(default, 0, OrderEvent.cacheEntriesCount);
 
             if (!queryResult.Ok)
             {
@@ -104,7 +104,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
             if (order.ApplicationUser.Roles.Any(x => x.Code == "customer")) {
 
-                queryResult = await _customerCommandHandler.HandleAsync(order.ApplicationUser.UserName);
+                queryResult = await _customerCommandHandler.HandleAsync(order.ApplicationUser.UserName, default, 0, OrderEvent.cacheEntriesCount);
 
                 if (!queryResult.Ok)
                 {

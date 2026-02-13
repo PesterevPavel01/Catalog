@@ -4,6 +4,7 @@ using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.Approval;
 using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Contracts.Events.CustomerEvents;
+using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.NotificationService.Definitions;
@@ -42,6 +43,8 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                     await bus.Subscribe<CustomWorkflowChangedEvent>();
                     await bus.Subscribe<OrderAddMessageEvent>();
                     await bus.Subscribe<OrderDisabledEvent>();
+                    await bus.Subscribe<SyncFailedEvent>();
+                    
                 }
             );
             builder.Services.AutoRegisterHandlersFromAssemblyOf<NotificationAssemblyReference>();

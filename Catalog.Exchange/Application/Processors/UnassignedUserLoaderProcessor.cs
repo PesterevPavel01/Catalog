@@ -6,9 +6,9 @@ namespace Catalog.ExchangeService.Application.Processors
 {
     public sealed class UnassignedUserLoaderProcessor
     {
-        private readonly UsersQueryHandler _queryHandler;
+        private readonly CachedUsersQueryHandler _queryHandler;
 
-        public UnassignedUserLoaderProcessor(UsersQueryHandler queryHandler)
+        public UnassignedUserLoaderProcessor(CachedUsersQueryHandler queryHandler)
         {
             _queryHandler = queryHandler;
         }
@@ -21,7 +21,7 @@ namespace Catalog.ExchangeService.Application.Processors
                 return Operation.Error(usersResult.Error);
 
             var users = usersResult.Result
-                .Where(x => !x.Roles.Any() && x.ExternalId != "none");
+                .Where(x => !x.Roles.Any() && x.ExternalId == "none");
 
             if (!users.Any())
                 return Operation.Error("Users not found!");

@@ -9,13 +9,13 @@ using Rebus.Bus;
 
 namespace Catalog.ExchangeService.Application.Handlers.Users
 {
-    public sealed class UsersQueryHandler
+    public sealed class CachedUsersQueryHandler
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly RedisService<UserDto> _redisService;
         private readonly IBus _bus;
 
-        public UsersQueryHandler(IUnitOfWork unitOfWork, RedisServiceFactory redisServiceFactory, IBus bus)
+        public CachedUsersQueryHandler(IUnitOfWork unitOfWork, RedisServiceFactory redisServiceFactory, IBus bus)
         {
             _unitOfWork = unitOfWork;
             _redisService = redisServiceFactory.GetService<UserDto>(); ;

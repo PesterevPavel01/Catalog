@@ -1,4 +1,4 @@
-﻿using Catalog.Contracts.ApplicationEvents;
+﻿using Catalog.Contracts.Entities.Exchange;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -25,6 +25,9 @@ namespace Catalog.Infrastructure.Configurations.Exchange
                 .Property(x => x.Code)
                 .IsRequired()
                 .HasMaxLength(50);
+
+            builder.Property(x => x.Error)
+                .HasMaxLength(ExportedEntity.ErrorMaxLength);
 
             builder
                 .HasOne(x => x.ExchangeEvent)

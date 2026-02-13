@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Calabonga.OperationResults;
+﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Contracts.Entities.Parameters;
 using Catalog.Contracts.Interfaces;
@@ -82,6 +81,59 @@ namespace Catalog.Domain.Entities
                 return Operation.Error(checkResult.Error);
 
             return component;
+        }
+
+        public Operation<Component, string> Update(
+            string title,
+            ComponentType componentType,
+            List<String> componentMultiplyParameters,
+            IComponentParametersValidator componentParametersValidator,
+            List<ComponentTextParameter>? textParameters = null,
+            List<ComponentNumericParameter>? numericParameters = null)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                return Operation.Error("Value is empty or null");
+
+            var titleValue = TitleValue.Create(title);
+
+            if (!titleValue.Ok)
+                return Operation.Error(titleValue.Error);
+
+            Title = titleValue.Result;
+
+            if (componentType is null)
+                return Operation.Error("ComponentType not found");
+
+            SetComponentType(componentType);
+
+            _componentTextParameters.Clear();
+
+            _componentNumericParameters.Clear();
+
+            if (numericParameters is not null)
+            {
+                var result = AddNumericParameters( numericParameters, componentMultiplyParameters);
+
+                if (!result.Ok)
+                    return Operation.Error(result.Error);
+            }
+
+            if (textParameters is not null)
+            {
+                var result = AddTextParameters( textParameters, componentMultiplyParameters);
+
+                if (!result.Ok)
+                    return Operation.Error(result.Error);
+            }
+
+            var checkResult = componentParametersValidator.Validate(this);
+
+            if (!checkResult.Ok)
+                return Operation.Error(checkResult.Error);
+
+            Enabled = true;
+
+            return this;
         }
 
         public bool IsCustom => CheckCustomization();

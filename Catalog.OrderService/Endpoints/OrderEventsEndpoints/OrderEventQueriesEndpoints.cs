@@ -2,6 +2,7 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto;
 using Catalog.Contracts.Dto.Events;
+using Catalog.Contracts.Entities;
 using Catalog.OrderService.Application.Commands;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
 using Catalog.Redis;
@@ -38,27 +39,31 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                     ConstructorOrderEventQueriesHandler commandHandler,
                     CancellationToken cancellationToken) =>
                 {
-                    var redisService = redisServiceFactory.GetService<OrderEventDto>();
+                    string? cacheKey = null;
 
-                    var cacheKey = redisService.GenerateCacheKey(("type", "constructor"));
+                    if (pageIndex == 0 && pageSize == OrderEvent.cacheEntriesCount)
+                    {
+                        var redisService = redisServiceFactory.GetService<OrderEventDto>();
 
-                    var cachedEvents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
+                        cacheKey = redisService.GenerateCacheKey(("type", "constructor"), ("pageIndex", pageIndex), ("pageSize", pageSize));
 
-                    if (cachedEvents.Ok)
-                        return Results.Ok(new PagedResponseDto<OrderEventDto>(
-                            cachedEvents.Result
-                                .Skip(pageIndex * pageSize)
-                                .Take(pageSize),
-                            cachedEvents.Result.Count(),
-                            pageIndex,
-                            pageSize));
+                        var cachedEvents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 
-                    var result = await commandHandler.HandleAsync(cancellationToken);
+                        if (cachedEvents.Ok)
+                            return Results.Ok(new PagedResponseDto<OrderEventDto>(
+                                cachedEvents.Result,
+                                cachedEvents.Result.Count(),
+                                pageIndex,
+                                pageSize));
+                    }
+
+                    var result = await commandHandler.HandleAsync(cancellationToken, pageIndex, pageSize);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Send(new CacheOrderEventsCommand(cacheKey, result.Result.Items));
+                    if (cacheKey is not null)
+                        await bus.Send(new CacheOrderEventsCommand(cacheKey, result.Result.Items));
 
                     return Results.Ok(result.Result);
                 })
@@ -81,27 +86,31 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                     ApplicationUserOrderEventQueriesHandler commandHandler,
                     CancellationToken cancellationToken) =>
                 {
-                    var redisService = redisServiceFactory.GetService<OrderEventDto>();
+                    string? cacheKey = null;
 
-                    var cacheKey = redisService.GenerateCacheKey(("type", userName));
+                    if (pageIndex == 0 && pageSize == OrderEvent.cacheEntriesCount)
+                    {
+                        var redisService = redisServiceFactory.GetService<OrderEventDto>();
 
-                    var cachedEvents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
+                        cacheKey = redisService.GenerateCacheKey(("type", userName));
 
-                    if (cachedEvents.Ok)
-                        return Results.Ok(new PagedResponseDto<OrderEventDto>(
-                            cachedEvents.Result
-                                .Skip(pageIndex * pageSize)
-                                .Take(pageSize),
-                            cachedEvents.Result.Count(),
-                            pageIndex,
-                            pageSize));
+                        var cachedEvents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
+
+                        if (cachedEvents.Ok)
+                            return Results.Ok(new PagedResponseDto<OrderEventDto>(
+                                cachedEvents.Result,
+                                cachedEvents.Result.Count(),
+                                pageIndex,
+                                pageSize));
+                    }
 
                     var result = await commandHandler.HandleAsync(userName, cancellationToken, pageIndex, pageSize);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Send(new CacheOrderEventsCommand(cacheKey, result.Result.Items));
+                    if(cacheKey is not null)
+                        await bus.Send(new CacheOrderEventsCommand(cacheKey, result.Result.Items));
 
                     return Results.Ok(result.Result);
                 })

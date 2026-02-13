@@ -3,16 +3,21 @@ using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Authorization;
 using Catalog.Contracts.Entities.Authorization;
 using Catalog.Domain.Entities.Authorization;
+using Catalog.ExchangeService.Application.Handlers.Users;
+using Rebus.Bus;
 
 namespace Catalog.ExchangeService.Application.Processors
 {
-    public class UserSetRoleProcessor
+    public sealed class UserSetRoleProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly RefrashCacheUsersCommandHandler _refrashCacheUsersCommandHandler;
 
-        public UserSetRoleProcessor(IUnitOfWork unitOfWork)
+
+        public UserSetRoleProcessor(IUnitOfWork unitOfWork, RefrashCacheUsersCommandHandler refrashCacheUsersCommandHandler, IBus bus)
         {
             _unitOfWork = unitOfWork;
+            _refrashCacheUsersCommandHandler = refrashCacheUsersCommandHandler;
         }
 
         public async Task<Operation<UserDto, string>> ProcessAsync(UserDto model, CancellationToken cancellationToken)
@@ -51,6 +56,11 @@ namespace Catalog.ExchangeService.Application.Processors
             {
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
+
+            var refreshCacheResult = await _refrashCacheUsersCommandHandler.HandleAsync(cancellationToken);
+
+            if(!refreshCacheResult.Ok)
+                return Operation.Error(refreshCacheResult.Error);
 
             return new UserDto() { ExternalId = user.ExternalId, UserName = user.UserName };
         }

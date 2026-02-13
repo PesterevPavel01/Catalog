@@ -37,7 +37,7 @@ namespace Catalog.Infrastructure.Migrations
                     b.ToTable("user_role_items", (string)null);
                 });
 
-            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.ExchangeEvent", b =>
+            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.Entities.ExchangeEvent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -84,7 +84,7 @@ namespace Catalog.Infrastructure.Migrations
                     b.ToTable("exchange_events", (string)null);
                 });
 
-            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.ExportedEntity", b =>
+            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.Entities.ExportedEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -99,6 +99,10 @@ namespace Catalog.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<Guid>("ExchangeEventId")
                         .HasColumnType("char(36)");
@@ -843,9 +847,9 @@ namespace Catalog.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.ExportedEntity", b =>
+            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.Entities.ExportedEntity", b =>
                 {
-                    b.HasOne("Catalog.Contracts.ApplicationEvents.ExchangeEvent", "ExchangeEvent")
+                    b.HasOne("Catalog.Contracts.ApplicationEvents.Entities.ExchangeEvent", "ExchangeEvent")
                         .WithMany("Entities")
                         .HasForeignKey("ExchangeEventId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1068,7 +1072,7 @@ namespace Catalog.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.ExchangeEvent", b =>
+            modelBuilder.Entity("Catalog.Contracts.ApplicationEvents.Entities.ExchangeEvent", b =>
                 {
                     b.Navigation("Entities");
                 });

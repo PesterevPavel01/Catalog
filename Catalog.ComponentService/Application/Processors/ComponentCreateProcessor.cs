@@ -11,12 +11,12 @@ using Microsoft.Extensions.Options;
 
 namespace Catalog.ExchangeService.Application.Processors
 {
-    public class ComponentCreatorProcessor
+    public class ComponentCreateProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly List<String> _componentMultipleParameters;
         private readonly IComponentParametersValidator _parametersValidator;
-        public ComponentCreatorProcessor(IUnitOfWork unitOfWork, IOptions<ComponentConfiguration> applicationConfiguration, IComponentParametersValidator parametersValidator)
+        public ComponentCreateProcessor(IUnitOfWork unitOfWork, IOptions<ComponentConfiguration> applicationConfiguration, IComponentParametersValidator parametersValidator)
         {
             _unitOfWork = unitOfWork;
 

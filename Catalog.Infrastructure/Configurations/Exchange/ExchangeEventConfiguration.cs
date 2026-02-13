@@ -1,4 +1,4 @@
-﻿using Catalog.Contracts.ApplicationEvents;
+﻿using Catalog.Contracts.Entities.Exchange;
 using Catalog.Infrastructure.Configurations.Base;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

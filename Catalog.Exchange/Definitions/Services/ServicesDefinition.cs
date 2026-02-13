@@ -13,7 +13,8 @@ namespace Catalog.ExchangeService.Definitions.Services
             builder.Services.AddScoped<RegistrationProcessor>();
             builder.Services.AddScoped<AuthenticationProcessor>();
 
-            builder.Services.AddScoped<UsersQueryHandler>();
+            builder.Services.AddScoped<CachedUsersQueryHandler>();
+            builder.Services.AddScoped<RefrashCacheUsersCommandHandler>();
 
             builder.Services.AddScoped<UserGetExternalIdProcessor>();
             builder.Services.AddScoped<UserSetRoleProcessor>();

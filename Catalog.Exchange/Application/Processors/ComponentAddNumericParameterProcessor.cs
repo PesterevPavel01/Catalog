@@ -64,8 +64,7 @@ namespace Catalog.ExchangeService.Application.Processors
                     .GetFirstOrDefaultAsync(
                         predicate: x => x.Code == model.ComponentCode,
                         trackingType: TrackingType.Tracking,
-                        include: Component.IncludeRequiredField()
-                        );
+                        include: Component.IncludeRequiredField());
 
             if (component is null)
                 return Operation.Error($"Component not found! Code: {model.ComponentCode}");

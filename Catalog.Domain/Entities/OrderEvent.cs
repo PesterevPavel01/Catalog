@@ -11,6 +11,8 @@ namespace Catalog.Contracts.Entities
 {
     public class OrderEvent: SimpleEntity
     {
+        public static Int16 cacheEntriesCount = 20;
+
         protected OrderEvent(Int32 type, TitleValue title, string code, Guid id) : base(title, code, id)
         {
             Type = type;

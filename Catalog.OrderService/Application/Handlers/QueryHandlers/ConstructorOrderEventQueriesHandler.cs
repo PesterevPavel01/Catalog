@@ -15,7 +15,7 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Operation<PagedResponseDto<OrderEventDto>, string>> HandleAsync(CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 10)
+        public async Task<Operation<PagedResponseDto<OrderEventDto>, string>> HandleAsync(CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
         {
             var pagedResult = await _unitOfWork
                 .GetRepository<OrderEvent>()

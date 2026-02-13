@@ -7,8 +7,10 @@ namespace Catalog.Infrastructure
 {
     public class ApplicationDbContext : DbContextBase
     {
-
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options): base(options) { }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options): base(options) 
+        {
+            //Database.Migrate();
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -17,6 +19,7 @@ namespace Catalog.Infrastructure
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         }
     }
+
     public class ApplicationDbContextContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
         public ApplicationDbContext CreateDbContext(string[] args)

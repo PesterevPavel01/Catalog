@@ -6,9 +6,9 @@ namespace Catalog.ExchangeService.Application.Processors
 {
     public sealed class UserRolesLoaderProcessor
     {
-        private readonly UsersQueryHandler _queryHandler;
+        private readonly CachedUsersQueryHandler _queryHandler;
 
-        public UserRolesLoaderProcessor(UsersQueryHandler queryHandler)
+        public UserRolesLoaderProcessor(CachedUsersQueryHandler queryHandler)
         {
             _queryHandler = queryHandler;
         }

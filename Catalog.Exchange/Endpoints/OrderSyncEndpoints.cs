@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Exchange;
+using Catalog.Domain.Entities;
 using Catalog.ExchangeService.Application.Handlers.Orders;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +25,8 @@ namespace Catalog.ExchangeService.Endpoints
             var group = routes
                 .MapGroup("/api/v{version:apiVersion}/orders/sync/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(3, 0));
+                .HasApiVersion(new ApiVersion(3, 0))
+                .WithTags(nameof(Order)); ;
 
             group
                 .MapGet("", 
@@ -32,7 +34,7 @@ namespace Catalog.ExchangeService.Endpoints
                         GetLatestChangesOrdersCommandHandler handler,
                         CancellationToken cancellationToken) =>
                     {
-                        var orders = await handler.HandleAsync("Обмен с 1с", cancellationToken);
+                        var orders = await handler.HandleAsync("Обмен заказами с 1с", cancellationToken);
 
                         if (!orders.Ok)
                             Results.BadRequest(orders.Error);

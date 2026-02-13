@@ -17,14 +17,10 @@ namespace Catalog.Domain.ValueObjects
         public static Operation<TitleValue, string> Create(string title)
         {
             if (string.IsNullOrWhiteSpace(title))
-            {
                 return Operation.Error("Value is null or empty.");
-            }
 
             if (title.Length > MaxTitleLength)
-            {
                 return Operation.Error("Value length is greater than Max value.");
-            }
 
             return new TitleValue(title);
         }

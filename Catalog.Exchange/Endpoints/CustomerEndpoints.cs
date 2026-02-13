@@ -3,6 +3,7 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Application.Processors.AuthorizationProcessor;
 using Catalog.Contracts.Dto.Authorization;
 using Catalog.Contracts.Events.CustomerEvents;
+using Catalog.Domain.Entities.Authorization;
 using Catalog.ExchangeService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
@@ -14,6 +15,7 @@ namespace Catalog.ExchangeService.Endpoints
         public override void ConfigureApplication(WebApplication app)
             => app.MapCustomerEndpoints();
     }
+
     internal static class UserEndpointDefinitionExtensions
     {
         public static async Task MapCustomerEndpoints(this IEndpointRouteBuilder routes)
@@ -25,7 +27,8 @@ namespace Catalog.ExchangeService.Endpoints
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/user/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(2, 0));
+                .HasApiVersion(new ApiVersion(2, 0))
+                .WithTags(nameof(ApplicationUser));
 
             group.MapPost("set-customer-role", async (
                 [FromBody] UserDto model,

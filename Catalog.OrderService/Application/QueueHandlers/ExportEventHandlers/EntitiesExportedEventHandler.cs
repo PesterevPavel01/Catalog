@@ -1,6 +1,6 @@
-﻿using Catalog.Contracts.ApplicationEvents;
-using Catalog.Contracts.Commands;
+﻿using Catalog.Contracts.Commands;
 using Catalog.Contracts.Enum;
+using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
 using Rebus.Bus;

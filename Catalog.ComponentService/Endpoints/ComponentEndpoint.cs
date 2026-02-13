@@ -32,7 +32,7 @@ namespace Catalog.Web.Endpoints
             group.MapPost("create", async (
                 [FromBody] ComponentDto model,
                 IBus bus,
-                ComponentCreatorProcessor componentCreatorProcessor,
+                ComponentCreateProcessor componentCreatorProcessor,
                 CancellationToken cancellationToken) =>
             {
                 var result = await componentCreatorProcessor.ProcessAsync(model, cancellationToken);

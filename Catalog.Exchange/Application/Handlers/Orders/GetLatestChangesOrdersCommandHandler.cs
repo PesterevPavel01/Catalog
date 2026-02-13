@@ -1,7 +1,7 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
-using Catalog.Contracts.ApplicationEvents;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Entities.Exchange;
 using Catalog.Contracts.Request;
 using Catalog.Contracts.Response;
 using Catalog.Domain.Entities;

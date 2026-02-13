@@ -31,8 +31,7 @@ namespace Catalog.OrderService.Application.QueueHandlers
             if (!result.Ok)
             {
                 await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: {result.Error}");
-      
-                throw new InvalidOperationException(result.Error);
+                return;
             }
 
             var response = LatestChangesOrdersResponse.Create(result.Result);
@@ -40,8 +39,7 @@ namespace Catalog.OrderService.Application.QueueHandlers
             if (!response.Ok)
             {
                 await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: {response.Error}");
-
-                throw new InvalidOperationException(response.Error);
+                return;
             }
 
             await _bus.Reply(response.Result);

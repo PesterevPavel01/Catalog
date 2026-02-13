@@ -12,7 +12,6 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
 {
     public class CustomWorkflowChangedEventHandler : IHandleMessages<CustomWorkflowChangedEvent>
     {
-        //private readonly ILogger<ComponentCreatedEventHandler> _logger;
         private readonly ITelegramService _telegramService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly TelegramBotConfiguration _approvalNotificationBot;

@@ -3,7 +3,7 @@ using Catalog.Contracts.Interfaces;
 
 namespace Catalog.Contracts.Events.CustomerEvents
 {
-    public sealed record CustomerCreatedEvent(RegistrationUserDto UserDto) : IComponentQueueEvent
+    public sealed record CustomerCreatedEvent(RegistrationUserDto UserDto) : IExchangeQueueEvent
     {
     }
 }

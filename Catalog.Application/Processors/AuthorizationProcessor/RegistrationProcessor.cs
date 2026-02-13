@@ -1,7 +1,6 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Authorization;
-using Catalog.Domain.Dto.Authorization;
 using Catalog.Domain.Entities.Authorization;
 using Microsoft.EntityFrameworkCore;
 

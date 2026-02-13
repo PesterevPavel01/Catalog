@@ -1,5 +1,5 @@
 ﻿using Calabonga.UnitOfWork;
-using Catalog.Contracts.ApplicationEvents;
+using Catalog.Contracts.Entities.Exchange;
 using Catalog.ExchangeService.Application.Commands;
 using Rebus.Handlers;
 
