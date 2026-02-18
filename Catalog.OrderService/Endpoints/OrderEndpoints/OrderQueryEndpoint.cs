@@ -3,8 +3,10 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
-using Catalog.OrderService.Application.Managers;
+using Catalog.OrderService.Application.Messages.OrderMessages;
 using Catalog.Redis;
+using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.OrderService.Endpoints.OrderEndpoints
@@ -26,14 +28,15 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(2, 0));
+                .HasApiVersion(new ApiVersion(2, 0))
+                .WithTags($"{nameof(Order)} queries");
 
             group.MapGet("by-period/{days:int:min(1):max(365)}",
                 async (
                     [FromRoute] int days,
-                    OrderQueriesManager orderQueriesManager,
+                    IMediator mediator,
+                    HttpContext context,
                     RedisServiceFactory redisServiceFactory,
-                    CancellationToken cancellationToken,
                     [FromQuery] string? titlePattern = null,
                     [FromQuery] bool ascending = false,
                     [FromQuery] bool incompleteOnly = false,
@@ -43,20 +46,21 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromQuery] int pageSize = 20,
                     [FromQuery] int pageIndex = 0) =>
                 {
-                    var result = await orderQueriesManager.HandleAsync(
-                         days: days,
-                         customers: customers,
-                         statuses: statuses,
-                         cacheKey: Order.GenerateConstructorCommonCacheKey(redisServiceFactory
+                    var request = new GetOrders.Request(
+                         Days: days,
+                         Customers: customers,
+                         Statuses: statuses,
+                         CacheKey: Order.GenerateConstructorCommonCacheKey(redisServiceFactory
                             .GetService<OrderDto>()
                             .GenerateCacheKey),
-                         titlePattern: titlePattern,
-                         ascending: ascending,
-                         incompleteOnly: incompleteOnly,
-                         customOnly: customOnly,
-                         pageSize: pageSize,
-                         pageIndex: pageIndex,
-                         cancellationToken: cancellationToken);
+                         TitlePattern: titlePattern,
+                         Ascending: ascending,
+                         IncompleteOnly: incompleteOnly,
+                         CustomOnly: customOnly,
+                         PageSize: pageSize,
+                         PageIndex: pageIndex);
+
+                    var result = await mediator.Send(request, context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
@@ -101,9 +105,9 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                 async (
                     [FromRoute] string userLogin,
                     [FromRoute] int days,
-                    OrderQueriesManager orderQueriesManager,
+                    IMediator mediator,
+                    HttpContext context,
                     RedisServiceFactory redisServiceFactory,
-                    CancellationToken cancellationToken,
                     [FromQuery] string? titlePattern = null,
                     [FromQuery] bool ascending = false,
                     [FromQuery] bool incompleteOnly = false,
@@ -111,19 +115,20 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     [FromQuery] int pageSize = 20,
                     [FromQuery] int pageIndex = 0) =>
                 {
-                    var result = await orderQueriesManager.HandleAsync(
-                        days: days, 
-                        cacheKey: Order.GenerateUserCommonCacheKey(redisServiceFactory
+                    var request = new GetOrders.Request(
+                        Days: days,
+                        CacheKey: Order.GenerateUserCommonCacheKey(redisServiceFactory
                             .GetService<OrderDto>()
                             .GenerateCacheKey, userLogin),
-                        titlePattern: titlePattern,
-                        userLogin: userLogin,
-                        ascending: ascending,
-                        incompleteOnly: incompleteOnly,
-                        customOnly: customOnly,
-                        pageSize: pageSize,
-                        pageIndex: pageIndex,
-                        cancellationToken: cancellationToken);
+                        TitlePattern: titlePattern,
+                        UserLogin: userLogin,
+                        Ascending: ascending,
+                        IncompleteOnly: incompleteOnly,
+                        CustomOnly: customOnly,
+                        PageSize: pageSize,
+                        PageIndex: pageIndex);
+
+                    var result = await mediator.Send(request, context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
@@ -142,10 +147,10 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             group.MapGet("{orderCode}/messages",
                 async (
                     [FromRoute] string orderCode,
-                    OrderMessagesQueryHandler queryHandler,
-                    CancellationToken cancellationToken) =>
+                    IMediator mediator,
+                    HttpContext context) =>
                 {
-                    var result = await queryHandler.HandleAsync(orderCode, cancellationToken);
+                    var result = await mediator.Send(new GetMessages.Request(orderCode), context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);

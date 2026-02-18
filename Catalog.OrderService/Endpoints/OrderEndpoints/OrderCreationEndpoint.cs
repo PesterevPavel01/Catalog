@@ -1,11 +1,13 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
-using Catalog.OrderService.Application.Configurations;
-using Catalog.OrderService.Application.Handlers.CommandHandlers;
-using Catalog.OrderService.Application.Processors;
+using Catalog.Contracts.Events.OrderEvents;
+using Catalog.Domain.Entities;
+using Catalog.OrderService.Application.Messages.OrderItemMessages;
+using Catalog.OrderService.Application.Messages.OrderMessages;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Endpoints.OrderEndpoints
 {
@@ -26,24 +28,26 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(2, 0));
+                .HasApiVersion(new ApiVersion(2, 0))
+                .WithTags($"{nameof(Order)} commands");
 
             group.MapPost("create",
                 async (
                     [FromBody] CreateOrderDto model,
-                    IOptions <ApplicationConfiguration> applicationConfiguration,
-                    OrderCreateCommandHandler createCommandHandler,
-                    OrderItemCreatorProcessor orderItemCreatorProcessor,
-                    CancellationToken cancellationToken) =>
+                    IMediator mediator,
+                    IBus bus,
+                    HttpContext context) =>
                 {
-                    var result = await createCommandHandler.HandleAsync(model, cancellationToken);
+                    var result = await mediator.Send(new CreateOrder.Request(model), context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
+                    await bus.Send(new OrderCreatedEvent(result.Result.Code));
+
                     if (model.OrderItems.Any())
                     {
-                        var operationResult = await orderItemCreatorProcessor.ProcessAsync(model.OrderItems, cancellationToken);
+                        var operationResult = await mediator.Send(new CreateOrderItems.Request(model.OrderItems), context.RequestAborted);
 
                         if (!operationResult.Ok)
                             return Results.BadRequest(operationResult.Error);

@@ -23,7 +23,8 @@ namespace Catalog.Exchange.Endpoints.Authorization
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/authorize/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(1, 0));
+                .HasApiVersion(new ApiVersion(1, 0))
+                .WithTags("Authorization");
 
             group.MapPost("authenticate", async (
                 [FromBody] LoginDto model,

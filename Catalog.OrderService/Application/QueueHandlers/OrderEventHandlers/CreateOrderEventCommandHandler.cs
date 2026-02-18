@@ -174,13 +174,16 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     return;
                 }
 
-                var orderQueryResult = await _orderQueryHandler.HandleAsync(message.OrderCode);
-
-                if (!orderQueryResult.Ok)
+                if (message.Type != OrderEventTypes.Disabled && message.Type != OrderEventTypes.Deleted)
                 {
-                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderQueryResult.Error}");
+                    var orderQueryResult = await _orderQueryHandler.HandleAsync(message.OrderCode);
 
-                    return;
+                    if (!orderQueryResult.Ok)
+                    {
+                        await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderQueryResult.Error}");
+
+                        return;
+                    }
                 }
             }
 

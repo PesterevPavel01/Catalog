@@ -6,7 +6,8 @@ using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
-using Catalog.OrderService.Application.Handlers.CommandHandlers;
+using Catalog.OrderService.Application.Messages.OrderMessages;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
 
@@ -30,16 +31,16 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
                 .WithApiVersionSet(versionSet)
                 .HasApiVersion(new ApiVersion(2, 0))
-                .WithTags("Update");
+                .WithTags($"{nameof(Order)} commands");
 
             group.MapPatch("add-message",
                     async (
                         [FromBody] CreateMessageDto model,
-                        AddMessageCommandHandler commandHandler,
+                        IMediator mediator,
                         IBus bus,
-                        CancellationToken cancellationToken) =>
+                        HttpContext context) =>
                     {
-                        var result = await commandHandler.HandleAsync(model, cancellationToken);
+                        var result = await mediator.Send(new AddMessage.Request(model), context.RequestAborted);
 
                         if (!result.Ok)
                             return Results.BadRequest(result.Error);
@@ -60,11 +61,8 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             group.MapPatch("produced",
                     async (
                         [FromBody] IEnumerable<string> codes,
-                        AddMessageCommandHandler commandHandler,
-                        IBus bus,
-                        CancellationToken cancellationToken) =>
+                        IBus bus) =>
                     {
-
                         foreach(var code in codes)
                             await bus.Publish(new CreateOrderEventCommand(code, OrderEventTypes.Produced, OrderEventTypeTitles.Produced));
 

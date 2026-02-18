@@ -2,7 +2,6 @@
 using Catalog.Application.Processors.AuthorizationProcessor;
 using Catalog.OrderService.Application.Handlers.CommandHandlers;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
-using Catalog.OrderService.Application.Managers;
 using Catalog.OrderService.Application.Processors;
 
 namespace Catalog.Web.Definitions.Services
@@ -14,26 +13,18 @@ namespace Catalog.Web.Definitions.Services
 
             builder.Services.AddScoped<AuthenticationProcessor>();
 
-            builder.Services.AddScoped<OrderCreateCommandHandler>();
             builder.Services.AddScoped<OrdersQueryHandler>();
             builder.Services.AddScoped<OrderQueryHandler>();
             
             builder.Services.AddScoped<CachedOrdersQueryHandler>();
 
-            builder.Services.AddScoped<OrderQueriesManager>();
-
-            builder.Services.AddScoped<OrderDisableProcessor>();
             builder.Services.AddScoped<OrderItemRemovalProcessor>();
-            builder.Services.AddScoped<OrderItemCreatorProcessor>();
-            builder.Services.AddScoped<CleanupOldOrderCommandHandler>();
             builder.Services.AddScoped<LatestChangesOrdersQueryHandler>();
 
             builder.Services.AddScoped<ConstructorOrderEventQueriesHandler>();
             builder.Services.AddScoped<ApplicationUserOrderEventQueriesHandler>();
 
-            builder.Services.AddScoped<OrderMessagesQueryHandler>();
             builder.Services.AddScoped<SetOrderItemQuantityCommandHandler>();
-            builder.Services.AddScoped<AddMessageCommandHandler>();
         }
     }
 }

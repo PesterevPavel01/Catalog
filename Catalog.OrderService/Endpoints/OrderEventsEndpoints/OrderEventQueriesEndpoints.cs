@@ -28,7 +28,8 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/events/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(2, 0));
+                .HasApiVersion(new ApiVersion(2, 0))
+                .WithTags($"{nameof(OrderEvent)} queries"); ;
 
             group.MapGet("constructor/{pageIndex}/{pageSize}",
                 async (
