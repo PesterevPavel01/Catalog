@@ -11,7 +11,7 @@ namespace Catalog.Contracts.Entities
 {
     public class OrderEvent: SimpleEntity
     {
-        public static Int16 cacheEntriesCount = 20;
+        public readonly static Int16 CacheEntriesCount = 20;
 
         protected OrderEvent(Int32 type, TitleValue title, string code, Guid id) : base(title, code, id)
         {
@@ -49,5 +49,11 @@ namespace Catalog.Contracts.Entities
             => query => query
                 .Include(x => x.Order)
                     .ThenInclude(o => o.ApplicationUser);
+
+        public static string GenerateUserCommonCacheKey(Func<(string Key, object Value)[], string> generateCacheKey, string userName)
+            => generateCacheKey([("type", userName)]);
+
+        public static string GenerateConstructorCommonCacheKey(Func<(string Key, object Value)[], string> generateCacheKey)
+            => generateCacheKey([("type", "constructor")]);
     }
 }

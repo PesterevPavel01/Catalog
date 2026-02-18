@@ -1,4 +1,5 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.Approval;
@@ -35,6 +36,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                 return config;
             }, onCreated: async bus =>
                 {
+                    await bus.Subscribe<MarkOrdersAsProducedEvent>();
                     await bus.Subscribe<CustomerCreatedEvent>();
                     await bus.Subscribe<WorkflowCreatedEvent>();
                     await bus.Subscribe<WorkflowsCancelledEvent>();

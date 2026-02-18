@@ -25,7 +25,7 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
         {
             OrderDto? order = null;
 
-            var orderCacheKey = _orderRedisService.GenerateCacheKey(("type", "order"), ("code", code));
+            var orderCacheKey = Order.GenerateOrderCacheKey(_orderRedisService.GenerateCacheKey, code);
 
             if (string.IsNullOrWhiteSpace(code))
                 return Operation.Error("Parameter OrderCode not found!");

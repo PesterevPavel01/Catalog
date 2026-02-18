@@ -86,5 +86,8 @@ namespace Catalog.Domain.Entities.Authorization
 
             return this;
         }
+
+        public static string GenerateCommonCacheKey(Func<(string Key, object Value)[], string> generateCacheKey)
+            => generateCacheKey([]);
     }
 }

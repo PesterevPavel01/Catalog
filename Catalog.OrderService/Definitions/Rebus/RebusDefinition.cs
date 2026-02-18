@@ -1,5 +1,6 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Commands;
+using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.Approval;
@@ -44,9 +45,14 @@ namespace Catalog.OrderService.Definitions.Rebus
 
                 return config;
             }
-            , onCreated: async bus =>{
+            , onCreated: async bus 
+            =>
+            {
+
                 await bus.Subscribe<CreateOrderEventCommand>();
                 await bus.Subscribe<UpdateOrderCodeCommand>();
+                await bus.Subscribe<MarkOrdersAsProducedCommand>();
+
                 await bus.Subscribe<WorkflowCreatedEvent>();
                 await bus.Subscribe<WorkflowsCancelledEvent>();
                 await bus.Subscribe<WorkflowRejectedEvent>();
@@ -56,7 +62,7 @@ namespace Catalog.OrderService.Definitions.Rebus
                 await bus.Subscribe<CustomWorkflowChangedEvent>();
                 await bus.Subscribe<EntitiesExportedEvent>();
                 await bus.Subscribe<RejectedEntitiesEvent>();
-                await bus.Subscribe<ModuleChangedEvent>();
+                await bus.Subscribe<ModuleChangedEvent>();                
             }
             );
 

@@ -21,13 +21,11 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
             _bus = bus;
         }
 
-        public async Task<Operation<List<OrderDto>, string>> HandleAsync(string cacheKeyType, string? userLogin = null, CancellationToken cancellationToken = default)
+        public async Task<Operation<List<OrderDto>, string>> HandleAsync(string cacheKey, string? userLogin = null, CancellationToken cancellationToken = default)
         {
             IEnumerable<OrderDto> orders = [];
 
             var redisService = _redisServiceFactory.GetService<OrderDto>();
-
-            var cacheKey = redisService.GenerateCacheKey(("type", cacheKeyType), ("days", Order.CacheDays));
 
             var cachedOrders = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 

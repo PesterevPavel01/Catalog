@@ -1,9 +1,11 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Dto.Exchange;
 using Catalog.Domain.Entities;
 using Catalog.ExchangeService.Application.Handlers.Orders;
 using Microsoft.AspNetCore.Mvc;
+using Rebus.Bus;
 
 namespace Catalog.ExchangeService.Endpoints
 {
@@ -72,6 +74,25 @@ namespace Catalog.ExchangeService.Endpoints
                 {
                     Summary = "Подтвердить успешный обмен"
                 });
+
+            group.MapPatch("produced",
+                async (
+                    [FromBody] IEnumerable<string> codes,
+                    IBus bus,
+                    CancellationToken cancellationToken) =>
+                {
+                    await bus.Publish(new MarkOrdersAsProducedCommand(codes));
+
+                    return Results.Ok();
+                })
+            //.RequireAuthorization("Constructor")
+            .Produces(200)
+            .ProducesProblem(401)
+            .WithName("ProducedOrdersEndpoint")
+            .WithOpenApi(operation => new(operation)
+            {
+                Summary = "Установить заказам статус \"Производство завершено\"."
+            });
         }
     }
 

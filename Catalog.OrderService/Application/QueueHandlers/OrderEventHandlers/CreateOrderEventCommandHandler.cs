@@ -91,7 +91,9 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 return;
             }
 
-            var queryResult = await _constructorCommandHandler.HandleAsync(default, 0, OrderEvent.cacheEntriesCount);
+            /*CACHING*/
+            /*ORDER EVENTS*/
+            var queryResult = await _constructorCommandHandler.HandleAsync(default, 0, OrderEvent.CacheEntriesCount);
 
             if (!queryResult.Ok)
             {
@@ -100,11 +102,11 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 return;
             }
 
-            await _bus.Send(new CacheOrderEventsCommand(_orderEventRedisService.GenerateCacheKey(("type", "constructor")), queryResult.Result.Items));
+            await _bus.Send(new CacheOrderEventsCommand(OrderEvent.GenerateConstructorCommonCacheKey(_orderEventRedisService.GenerateCacheKey), queryResult.Result.Items));
 
             if (order.ApplicationUser.Roles.Any(x => x.Code == "customer")) {
 
-                queryResult = await _customerCommandHandler.HandleAsync(order.ApplicationUser.UserName, default, 0, OrderEvent.cacheEntriesCount);
+                queryResult = await _customerCommandHandler.HandleAsync(order.ApplicationUser.UserName, default, 0, OrderEvent.CacheEntriesCount);
 
                 if (!queryResult.Ok)
                 {
@@ -113,16 +115,17 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     return;
                 }
 
-                await _bus.Send(new CacheOrderEventsCommand(_orderEventRedisService.GenerateCacheKey(("type", order.ApplicationUser.UserName)), queryResult.Result.Items));
+                await _bus.Send(new CacheOrderEventsCommand(OrderEvent.GenerateUserCommonCacheKey(_orderEventRedisService.GenerateCacheKey, order.ApplicationUser.UserName), queryResult.Result.Items));
             }
 
+            /*ORDERS*/
             var eventType = (OrderEventTypes)orderEvent.Result.Type;
 
             if (eventType.IsCaching())
             {
-                var customerCacheKey = _orderRedisService.GenerateCacheKey(("type", order.ApplicationUser.UserName), ("days", Order.CacheDays));
+                var customerOrdersCacheKey = Order.GenerateUserCommonCacheKey(_orderRedisService.GenerateCacheKey, order.ApplicationUser.UserName);
 
-                var customerInvalidateResult = await _orderRedisService.InvalidateCacheAsync(customerCacheKey, default);
+                var customerInvalidateResult = await _orderRedisService.InvalidateCacheAsync(customerOrdersCacheKey, default);
 
                 if (!customerInvalidateResult.Ok)
                 {
@@ -130,8 +133,8 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
                     return;
                 }
-
-                var customerOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKeyType:order.ApplicationUser.UserName, userLogin: order.ApplicationUser.UserName, default);
+                
+                var customerOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKey: customerOrdersCacheKey, userLogin: order.ApplicationUser.UserName, default);
 
                 if (!customerOrdersResult.Ok)
                 {
@@ -140,7 +143,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     return;
                 }
 
-                var constructorCacheKey = _orderRedisService.GenerateCacheKey(("type", "constructor"), ("days", Order.CacheDays));
+                var constructorCacheKey = Order.GenerateConstructorCommonCacheKey(_orderRedisService.GenerateCacheKey);
 
                 var constructorInvalidateResult = await _orderRedisService.InvalidateCacheAsync(constructorCacheKey, default);
 
@@ -151,7 +154,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     return;
                 }
 
-                var constructorOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKeyType: "constructor", default);
+                var constructorOrdersResult = await _cachedOrdersQueryHandler.HandleAsync(cacheKey: constructorCacheKey, default);
 
                 if (!constructorOrdersResult.Ok)
                 {
@@ -160,9 +163,9 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     return;
                 }
 
-                var orderCacheKey = _orderRedisService.GenerateCacheKey(("type", "order"), ("code", message.OrderCode));
+                var orderCacheKey = _orderRedisService.GenerateCacheKey;
 
-                var orderInvalidateResult = await _orderRedisService.InvalidateCacheAsync(orderCacheKey, default);
+                var orderInvalidateResult = await _orderRedisService.InvalidateCacheAsync(Order.GenerateOrderCacheKey(_orderRedisService.GenerateCacheKey, message.OrderCode), default);
 
                 if (!orderInvalidateResult.Ok)
                 {

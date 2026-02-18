@@ -150,4 +150,7 @@
   <data name="ExternallyReject" xml:space="preserve">
     <value>Заказ не принят в производство!</value>
   </data>
+  <data name="Produced" xml:space="preserve">
+    <value>Завершено производство.</value>
+  </data>
 </root>

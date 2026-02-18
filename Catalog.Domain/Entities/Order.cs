@@ -48,7 +48,7 @@ namespace Catalog.Domain.Entities
             return order; 
         }
 
-        public Order SetStatus(OrderStatus status)
+        private Order SetStatus(OrderStatus status)
         {
             Status = status;
             return this;
@@ -185,6 +185,15 @@ namespace Catalog.Domain.Entities
                 _ => null
             };
         }
+
+        public static string GenerateUserCommonCacheKey(Func<(string Key, object Value)[], string> generateCacheKey, string userName) 
+            => generateCacheKey([("type", userName), ("days", CacheDays)]);
+
+        public static string GenerateConstructorCommonCacheKey(Func<(string Key, object Value)[], string> generateCacheKey)
+            => generateCacheKey([("type", "constructor"), ("days", CacheDays)]); 
+
+        public static string GenerateOrderCacheKey(Func<(string Key, object Value)[], string> generateCacheKey, string orderCode)
+            => generateCacheKey([("type", "order"), ("code", orderCode)]); 
 
     }
 }

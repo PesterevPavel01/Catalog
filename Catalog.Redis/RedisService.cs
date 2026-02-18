@@ -1,5 +1,6 @@
 ﻿using Calabonga.OperationResults;
 using Catalog.Contracts.Dto;
+using Catalog.Contracts.Interfaces;
 using Catalog.Redis.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -7,7 +8,7 @@ using System.Text.Json;
 
 namespace Catalog.Redis
 {
-    public class RedisService<TDto>
+    public class RedisService<TDto> : ICacheService<TDto>
         where TDto : class
     {
         private readonly IDistributedCache _cache;

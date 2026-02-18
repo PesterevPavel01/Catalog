@@ -19,14 +19,14 @@ namespace Catalog.OrderService.Application.Managers
             _cachedOrdersHandler = cachedOrdersHandler;
         }
 
-        public async Task<Operation<PagedResponseDto<CommonOrderDto>, string>> HandleAsync(int days, string[]? customers = null, short[]? statuses = null, string? cacheKeyType = null, string? titlePattern = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
+        public async Task<Operation<PagedResponseDto<CommonOrderDto>, string>> HandleAsync(int days, string[]? customers = null, short[]? statuses = null, string? cacheKey = null, string? titlePattern = null, string? userLogin = null, bool ascending = false, bool incompleteOnly = false, bool customOnly = false, CancellationToken cancellationToken = default, int pageIndex = 0, int pageSize = 20)
         {
             Operation<List<OrderDto>,string> ordersResult;
 
-            if (cacheKeyType is not null && days <= Order.CacheDays)
+            if (cacheKey is not null && days <= Order.CacheDays)
             {
                 ordersResult = await _cachedOrdersHandler
-                    .HandleAsync(cacheKeyType, userLogin, cancellationToken);
+                    .HandleAsync(cacheKey, userLogin, cancellationToken);
             }
             else
             {
@@ -48,7 +48,7 @@ namespace Catalog.OrderService.Application.Managers
                 if (customers is not null && customers.Any())
                 {
                     var usersSet = new HashSet<string>(customers, StringComparer.OrdinalIgnoreCase);
-                    orders = orders.Where(x => usersSet.Contains(x.User)).ToList();
+                    orders = [.. orders.Where(x => usersSet.Contains(x.User))];
                 }
 
                 if (statuses is not null && statuses.Any())
@@ -57,7 +57,7 @@ namespace Catalog.OrderService.Application.Managers
 
                     var statusesSet = new HashSet<string>(orderStatuses, StringComparer.OrdinalIgnoreCase);
 
-                    orders = orders.Where(x => statusesSet.Contains(x.Status)).ToList();
+                    orders = [.. orders.Where(x => statusesSet.Contains(x.Status))];
                 }
 
                 orders = orders
@@ -66,10 +66,8 @@ namespace Catalog.OrderService.Application.Managers
                         && (!incompleteOnly || !x.IsCompleted)
                         && (!customOnly || x.IsCustom)).ToList();
 
-                orders = ascending ? orders
-                    .OrderBy(x => x.CreatedAt).ToList()
-                    : orders
-                    .OrderByDescending(x => x.CreatedAt).ToList();
+                orders = ascending ? [.. orders.OrderBy(x => x.CreatedAt)]
+                    : [.. orders.OrderByDescending(x => x.CreatedAt)];
             }
 
             var pagedResult = PagedList

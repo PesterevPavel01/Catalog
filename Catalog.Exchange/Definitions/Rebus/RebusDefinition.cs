@@ -1,12 +1,9 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Commands;
-using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Contracts.Events.CustomerEvents;
 using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Request;
-using Catalog.Contracts.Response;
 using Catalog.ExchangeService.Application.Commands.Cache;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
@@ -35,7 +32,7 @@ namespace Catalog.ExchangeService.Definitions.Rebus
                 .Options(x =>
                 {
                     x.EnableSynchronousRequestReply();
-                    x.SetNumberOfWorkers(1);
+                    x.SetNumberOfWorkers(3);
                     x.SetBusName("ExchangeService");
                 });
 

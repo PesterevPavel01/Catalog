@@ -41,11 +41,11 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                 {
                     string? cacheKey = null;
 
-                    if (pageIndex == 0 && pageSize == OrderEvent.cacheEntriesCount)
+                    if (pageIndex == 0 && pageSize == OrderEvent.CacheEntriesCount)
                     {
                         var redisService = redisServiceFactory.GetService<OrderEventDto>();
 
-                        cacheKey = redisService.GenerateCacheKey(("type", "constructor"), ("pageIndex", pageIndex), ("pageSize", pageSize));
+                        cacheKey = OrderEvent.GenerateConstructorCommonCacheKey(redisService.GenerateCacheKey);
 
                         var cachedEvents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 
@@ -88,11 +88,11 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                 {
                     string? cacheKey = null;
 
-                    if (pageIndex == 0 && pageSize == OrderEvent.cacheEntriesCount)
+                    if (pageIndex == 0 && pageSize == OrderEvent.CacheEntriesCount)
                     {
                         var redisService = redisServiceFactory.GetService<OrderEventDto>();
 
-                        cacheKey = redisService.GenerateCacheKey(("type", userName));
+                        cacheKey = OrderEvent.GenerateUserCommonCacheKey(redisService.GenerateCacheKey, userName);
 
                         var cachedEvents = await redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 

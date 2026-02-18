@@ -1,7 +1,11 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
+using Catalog.Contracts.Commands;
 using Catalog.Contracts.Dto.Message;
+using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.OrderEvents;
+using Catalog.Contracts.Resources;
+using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Handlers.CommandHandlers;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
@@ -25,32 +29,55 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(2, 0));
+                .HasApiVersion(new ApiVersion(2, 0))
+                .WithTags("Update");
 
             group.MapPatch("add-message",
-                async (
-                    [FromBody] CreateMessageDto model,
-                    AddMessageCommandHandler commandHandler,
-                    IBus bus,
-                    CancellationToken cancellationToken) =>
+                    async (
+                        [FromBody] CreateMessageDto model,
+                        AddMessageCommandHandler commandHandler,
+                        IBus bus,
+                        CancellationToken cancellationToken) =>
+                    {
+                        var result = await commandHandler.HandleAsync(model, cancellationToken);
+
+                        if (!result.Ok)
+                            return Results.BadRequest(result.Error);
+
+                        await bus.Publish(new OrderAddMessageEvent(result.Result));
+
+                        return Results.Ok(result.Result);
+                    })
+                //.RequireAuthorization("Constructor")
+                .Produces(200)
+                .ProducesProblem(401)
+                .WithName("OrderAddMessageEndpoint")
+                .WithOpenApi(operation => new(operation)
                 {
-                    var result = await commandHandler.HandleAsync(model, cancellationToken);
+                    Summary = "Добавить комментарий к элементу заказа."
+                });
 
-                    if (!result.Ok)
-                        return Results.BadRequest(result.Error);
+            group.MapPatch("produced",
+                    async (
+                        [FromBody] IEnumerable<string> codes,
+                        AddMessageCommandHandler commandHandler,
+                        IBus bus,
+                        CancellationToken cancellationToken) =>
+                    {
 
-                    await bus.Publish(new OrderAddMessageEvent(result.Result));
+                        foreach(var code in codes)
+                            await bus.Publish(new CreateOrderEventCommand(code, OrderEventTypes.Produced, OrderEventTypeTitles.Produced));
 
-                    return Results.Ok(result.Result);
-                })
-            //.RequireAuthorization("Constructor")
-            .Produces(200)
-            .ProducesProblem(401)
-            .WithName("OrderAddMessageEndpoint")
-            .WithOpenApi(operation => new(operation)
-            {
-                Summary = "Добавить комментарий к элементу заказа."
-            });
+                        return Results.Ok();
+                    })
+                //.RequireAuthorization("Constructor")
+                .Produces(200)
+                .ProducesProblem(401)
+                .WithName("ProducedOrdersEndpoint")
+                .WithOpenApi(operation => new(operation)
+                {
+                    Summary = "Установить заказам статус \"Производство завершено\"."
+                });
         }
     }
 

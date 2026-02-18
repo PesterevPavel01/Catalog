@@ -6,6 +6,7 @@ using Catalog.Domain.Entities.Authorization;
 using Catalog.ExchangeService.Application.Commands.Cache;
 using Catalog.Redis;
 using Rebus.Bus;
+using Catalog.Contracts.Entities;
 
 namespace Catalog.ExchangeService.Application.Handlers.Users
 {
@@ -26,12 +27,12 @@ namespace Catalog.ExchangeService.Application.Handlers.Users
         {
             IEnumerable<UserDto> users = [];
 
-            var cacheKey = _redisService.GenerateCacheKey();
+            var cacheKey = ApplicationUser.GenerateCommonCacheKey(_redisService.GenerateCacheKey);
 
             var cachedUsers = await _redisService.GetFromCacheAsync(cacheKey, cancellationToken);
 
             if (cachedUsers.Ok)
-                users = cachedUsers.Result.ToList();
+                users = [.. cachedUsers.Result];
             else
             {
                 var usersResult = await _unitOfWork.GetRepository<ApplicationUser>()
