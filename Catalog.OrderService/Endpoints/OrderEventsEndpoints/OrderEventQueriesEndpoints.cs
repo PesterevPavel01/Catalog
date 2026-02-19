@@ -4,8 +4,9 @@ using Catalog.Contracts.Dto;
 using Catalog.Contracts.Dto.Events;
 using Catalog.Contracts.Entities;
 using Catalog.OrderService.Application.Commands;
-using Catalog.OrderService.Application.Handlers.QueryHandlers;
+using Catalog.OrderService.Application.Messages.OrderEventMessages;
 using Catalog.Redis;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
 
@@ -36,8 +37,9 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                     [FromRoute] Int16 pageIndex,
                     [FromRoute] Int16 pageSize,
                     IBus bus,
+                    IMediator mediator,
+                    HttpContext context,
                     RedisServiceFactory redisServiceFactory,
-                    ConstructorOrderEventQueriesHandler commandHandler,
                     CancellationToken cancellationToken) =>
                 {
                     string? cacheKey = null;
@@ -58,7 +60,7 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                                 pageSize));
                     }
 
-                    var result = await commandHandler.HandleAsync(cancellationToken, pageIndex, pageSize);
+                    var result = await mediator.Send(new GetOrderEvents.Request(pageIndex, pageSize), context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
@@ -84,7 +86,8 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                     [FromRoute] Int16 pageSize,
                     IBus bus,
                     RedisServiceFactory redisServiceFactory,
-                    ApplicationUserOrderEventQueriesHandler commandHandler,
+                    IMediator mediator,
+                    HttpContext context,
                     CancellationToken cancellationToken) =>
                 {
                     string? cacheKey = null;
@@ -105,7 +108,7 @@ namespace Catalog.OrderService.Endpoints.EventsEndpoints
                                 pageSize));
                     }
 
-                    var result = await commandHandler.HandleAsync(userName, cancellationToken, pageIndex, pageSize);
+                    var result = await mediator.Send(new GetUserOrderEvents.Request(userName, pageIndex, pageSize), context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);

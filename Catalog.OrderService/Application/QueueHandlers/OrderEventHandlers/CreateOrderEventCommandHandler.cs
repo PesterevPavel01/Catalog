@@ -7,7 +7,9 @@ using Catalog.Contracts.Enum;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Commands;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
+using Catalog.OrderService.Application.Messages.OrderEventMessages;
 using Catalog.Redis;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
@@ -19,9 +21,8 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 {
     public sealed class CreateOrderEventCommandHandler : IHandleMessages<CreateOrderEventCommand>
     {
-        private readonly ConstructorOrderEventQueriesHandler _constructorCommandHandler;
+        private readonly IMediator _mediator;
         private readonly ITelegramService _telegramService;
-        private readonly ApplicationUserOrderEventQueriesHandler _customerCommandHandler;
         private readonly CachedOrdersQueryHandler _cachedOrdersQueryHandler;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBus _bus;
@@ -32,16 +33,14 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
         public CreateOrderEventCommandHandler(
             OrderQueryHandler orderQueryHandler,
             CachedOrdersQueryHandler ordersQueryHandler,
-            ConstructorOrderEventQueriesHandler constructorCommandHandler,
-            ApplicationUserOrderEventQueriesHandler customerCommandHandler,
+            IMediator mediator,
             RedisServiceFactory redisServiceFactory,
             ITelegramService telegramService,
             IUnitOfWork unitOfWork, IBus bus,
             IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
+            _mediator = mediator;
             _orderQueryHandler = orderQueryHandler;
-            _constructorCommandHandler = constructorCommandHandler;
-            _customerCommandHandler = customerCommandHandler;
             _unitOfWork = unitOfWork;
             _bus = bus;
             _orderEventRedisService = redisServiceFactory.GetService<OrderEventDto>();
@@ -93,7 +92,8 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
             /*CACHING*/
             /*ORDER EVENTS*/
-            var queryResult = await _constructorCommandHandler.HandleAsync(default, 0, OrderEvent.CacheEntriesCount);
+
+            var queryResult = await _mediator.Send(new GetOrderEvents.Request(0, OrderEvent.CacheEntriesCount), default);
 
             if (!queryResult.Ok)
             {
@@ -106,7 +106,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 
             if (order.ApplicationUser.Roles.Any(x => x.Code == "customer")) {
 
-                queryResult = await _customerCommandHandler.HandleAsync(order.ApplicationUser.UserName, default, 0, OrderEvent.CacheEntriesCount);
+                queryResult = await _mediator.Send(new GetUserOrderEvents.Request(order.ApplicationUser.UserName, 0, OrderEvent.CacheEntriesCount), default);
 
                 if (!queryResult.Ok)
                 {

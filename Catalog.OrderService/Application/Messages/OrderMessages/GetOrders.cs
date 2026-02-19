@@ -11,6 +11,20 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
 {
     public sealed class GetOrders
     {
+        /// <summary>
+        /// Handles a request
+        /// </summary>
+        /// <param name="Days"></param>
+        /// <param name="Customers"></param>
+        /// <param name="Statuses"></param>
+        /// <param name="CacheKey"></param>
+        /// <param name="TitlePattern"></param>
+        /// <param name="UserLogin"></param>
+        /// <param name="Ascending"></param>
+        /// <param name="IncompleteOnly"></param>
+        /// <param name="CustomOnly"></param>
+        /// <param name="PageIndex"></param>
+        /// <param name="PageSize"></param>
         public record Request(
             int Days,
             string[]? Customers = null,
