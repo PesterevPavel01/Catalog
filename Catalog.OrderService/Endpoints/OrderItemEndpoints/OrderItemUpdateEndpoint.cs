@@ -1,8 +1,12 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
-using Catalog.OrderService.Application.Handlers.CommandHandlers;
+using Catalog.Contracts.Events.OrderEvents;
+using Catalog.Domain.Entities;
+using Catalog.OrderService.Application.Messages.OrderItemMessages;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 {
@@ -23,18 +27,22 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(3, 0));
+                .HasApiVersion(new ApiVersion(3, 0))
+                .WithTags($"{nameof(OrderItem)} commands");
 
             group.MapPatch("set-quantity",
                 async (
-                    [FromBody] CreateOrderItemDto orderCode,
-                    SetOrderItemQuantityCommandHandler commandHandler,
-                    CancellationToken cancellationToken) =>
+                    [FromBody] CreateOrderItemDto orderItem,
+                    IMediator mediator,
+                    IBus bus,
+                    HttpContext context) =>
                 {
-                    var result = await commandHandler.HandleAsync(orderCode, cancellationToken);
+                    var result = await mediator.Send(new SetQuantity.Request(orderItem), context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
+
+                    await bus.Send(new OrderChangedEvent(orderItem.OrderCode));
 
                     return Results.Ok(result.Result);
                 })

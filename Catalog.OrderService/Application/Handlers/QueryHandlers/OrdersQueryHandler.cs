@@ -3,9 +3,6 @@ using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities.Approval;
 using Catalog.Domain.Entities;
-using Catalog.OrderService.Application.Commands;
-using Catalog.Redis;
-using Rebus.Bus;
 
 namespace Catalog.OrderService.Application.Handlers.QueryHandlers
 {
@@ -35,7 +32,7 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
                     trackingType: TrackingType.NoTracking);
 
             if (!string.IsNullOrWhiteSpace(titlePattern))
-                orders = orders.Where(x => x.Title.Contains(titlePattern)).ToList();
+                orders = [.. orders.Where(x => x.Title.Contains(titlePattern))];
 
             return orders.ToList();
         }

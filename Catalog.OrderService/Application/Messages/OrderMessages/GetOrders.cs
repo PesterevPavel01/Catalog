@@ -30,34 +30,44 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
         {
             public async Task<Operation<PagedResponseDto<CommonOrderDto>, string>> Handle(Request request, CancellationToken cancellationToken)
             {
-                Operation<List<OrderDto>, string> ordersResult;
+                IQueryable<OrderDto> queriableOrder;
 
                 if (request.CacheKey is not null && request.Days <= Order.CacheDays)
                 {
-                    ordersResult = await cachedOrdersHandler
+                    var ordersResult = await cachedOrdersHandler
                         .HandleAsync(request.CacheKey, request.UserLogin, cancellationToken);
+
+                    if (!ordersResult.Ok)
+                        return Operation.Error(ordersResult.Error);
+
+                    queriableOrder = ordersResult.Result.AsQueryable();
+
+                    queriableOrder = queriableOrder
+                        .Where(x => string.IsNullOrWhiteSpace(request.TitlePattern) || x.Title.Contains(request.TitlePattern));
                 }
                 else
                 {
-                    ordersResult = await ordersHandler
+                    var ordersResult = await ordersHandler
                         .HandleAsync(
                             days: request.Days,
                             titlePattern: request.TitlePattern,
                             userLogin: request.UserLogin
                         );
+
+                    if (!ordersResult.Ok)
+                        return Operation.Error(ordersResult.Error);
+
+                    queriableOrder = ordersResult.Result.AsQueryable();
                 }
 
-                if (!ordersResult.Ok)
-                    return Operation.Error(ordersResult.Error);
+                var cutoffDate = DateTime.Now.AddDays(-request.Days);
 
-                var orders = ordersResult.Result;
-
-                if (orders.Any())
+                if (queriableOrder.Any())
                 {
                     if (request.Customers is not null && request.Customers.Any())
                     {
                         var usersSet = new HashSet<string>(request.Customers, StringComparer.OrdinalIgnoreCase);
-                        orders = [.. orders.Where(x => usersSet.Contains(x.User))];
+                        queriableOrder = queriableOrder.Where(x => usersSet.Contains(x.User));
                     }
 
                     if (request.Statuses is not null && request.Statuses.Any())
@@ -66,22 +76,21 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
 
                         var statusesSet = new HashSet<string>(orderStatuses, StringComparer.OrdinalIgnoreCase);
 
-                        orders = [.. orders.Where(x => statusesSet.Contains(x.Status))];
+                        queriableOrder = queriableOrder.Where(x => statusesSet.Contains(x.Status));
                     }
 
-                    orders = orders
+                    queriableOrder = queriableOrder
                         .Where(x =>
-                            x.CreatedAt > DateTime.Now.AddDays(-1 * request.Days)
+                            x.CreatedAt > cutoffDate
                             && (!request.IncompleteOnly || !x.IsCompleted)
-                            && (!request.CustomOnly || x.IsCustom)).ToList();
+                            && (!request.CustomOnly || x.IsCustom));
 
-                    orders = request.Ascending ? [.. orders.OrderBy(x => x.CreatedAt)]
-                        : [.. orders.OrderByDescending(x => x.CreatedAt)];
+                    queriableOrder = request.Ascending ? queriableOrder.OrderBy(x => x.CreatedAt)
+                        : queriableOrder.OrderByDescending(x => x.CreatedAt);
                 }
 
                 var pagedResult = PagedList
-                    .Create(orders
-                        .Where(x => string.IsNullOrWhiteSpace(request.TitlePattern) || x.Title.Contains(request.TitlePattern))
+                    .Create(queriableOrder
                         .Select(x => new CommonOrderDto()
                         {
                             Code = x.Code,

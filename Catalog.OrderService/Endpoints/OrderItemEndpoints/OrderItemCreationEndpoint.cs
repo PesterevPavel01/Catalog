@@ -2,6 +2,7 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Events.OrderEvents;
+using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Messages.OrderItemMessages;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,8 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 
             var group = routes.MapGroup("/api/v{version:apiVersion}/orders/")
                 .WithApiVersionSet(versionSet)
-                .HasApiVersion(new ApiVersion(3, 0));
+                .HasApiVersion(new ApiVersion(3, 0))
+                .WithTags($"{nameof(OrderItem)} commands");
 
             group.MapPost("order-item/create",
                 async (
