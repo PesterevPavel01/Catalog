@@ -20,14 +20,14 @@ namespace Catalog.Contracts.Entities.Approval
         public ApprovalWorkflow ApprovalWorkflow { get; private set; }
         public Guid ApprovalWorkflowId { get; private set; }
 
-        public ApplicationUser User { get; private set; }
-        public Guid UserId { get; private set; }
+        public ApplicationUser Initiator { get; private set; }
+        public Guid InitiatorId { get; private set; }
 
         public static Operation<ApprovalWorkflowItem, string> Create(ApplicationUser user, ApprovalStage stage, short number) 
         {
             var approvalWorkflowItem = new ApprovalWorkflowItem(Guid.NewGuid());
 
-            approvalWorkflowItem.User = user;
+            approvalWorkflowItem.Initiator = user;
 
             approvalWorkflowItem.ApprovalStage = stage;
 
@@ -41,7 +41,7 @@ namespace Catalog.Contracts.Entities.Approval
             {
                 ApprovalStage = this.ApprovalStage.ConvertToDto(),
                 Number = this.Number,
-                InitiatorName = User.UserName
+                InitiatorName = Initiator.UserName
             };
 
         public static Func<IQueryable<ApprovalWorkflowItem>, IIncludableQueryable<ApprovalWorkflowItem, object>> IncludeRequiredField()

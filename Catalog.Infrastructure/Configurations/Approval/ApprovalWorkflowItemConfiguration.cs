@@ -17,9 +17,9 @@ namespace Catalog.Infrastructure.Configurations.Approval
                 .ValueGeneratedOnAdd();
 
             builder
-                .HasOne(x => x.User)
+                .HasOne(x => x.Initiator)
                 .WithMany(x => x.ApprovalWorkflowItems)
-                .HasForeignKey(x => x.UserId)
+                .HasForeignKey(x => x.InitiatorId)
                 .HasPrincipalKey(x => x.Id)
                 .OnDelete(DeleteBehavior.Cascade);
 

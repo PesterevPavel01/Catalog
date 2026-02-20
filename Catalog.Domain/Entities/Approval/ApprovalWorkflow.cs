@@ -115,7 +115,7 @@ namespace Catalog.Contracts.Entities.Approval
                 .Include(x => x.ApprovalWorkflowItems)
                     .ThenInclude(ai => ai.ApprovalStage)
                 .Include(x => x.ApprovalWorkflowItems)
-                    .ThenInclude(ai => ai.User);
+                    .ThenInclude(ai => ai.Initiator);
 
         public Operation<ApprovalWorkflowItem, string> Complete(ApplicationUser user, ApprovalStage completedStage)
         {

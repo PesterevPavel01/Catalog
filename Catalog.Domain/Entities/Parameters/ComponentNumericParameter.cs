@@ -19,7 +19,6 @@ namespace Catalog.Contracts.Entities.Parameters
             return componentNumericParameter;
         }
 
-
         public Guid ComponentId { get; private set; }
     }
 }

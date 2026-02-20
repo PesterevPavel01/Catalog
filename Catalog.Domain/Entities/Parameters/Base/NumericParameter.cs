@@ -2,7 +2,6 @@
 using Catalog.Contracts.Dto;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.Enum;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Catalog.Contracts.Entities.Parameters.Base
 {
