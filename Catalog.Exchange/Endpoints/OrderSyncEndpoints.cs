@@ -3,7 +3,8 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Dto.Exchange;
 using Catalog.Domain.Entities;
-using Catalog.ExchangeService.Application.Handlers.Orders;
+using Catalog.ExchangeService.Application.Messaging.OrderSyncMessages;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
 
@@ -33,10 +34,10 @@ namespace Catalog.ExchangeService.Endpoints
             group
                 .MapGet("", 
                     async(
-                        GetLatestChangesOrdersCommandHandler handler,
-                        CancellationToken cancellationToken) =>
+                        IMediator mediator,
+                        HttpContext context) =>
                     {
-                        var orders = await handler.HandleAsync("Обмен заказами с 1с", cancellationToken);
+                        var orders = await mediator.Send( new GetLastModifiedOrders.Request("Обмен заказами с 1с"), context.RequestAborted);
 
                         if (!orders.Ok)
                             Results.BadRequest(orders.Error);
@@ -56,10 +57,10 @@ namespace Catalog.ExchangeService.Endpoints
                 .MapPost("confirm",
                     async (
                         [FromBody] SyncConfirmationDto syncResult,
-                        ConfirmOrderSyncCommandHandler handler, 
-                        CancellationToken cancellationToken) =>
+                        IMediator mediator,
+                        HttpContext context) =>
                     {
-                        var result = await handler.HandleAsync(syncResult, cancellationToken);
+                        var result = await mediator.Send(new ConfirmOrderSync.Request(syncResult), context.RequestAborted);
 
                         if (!result.Ok)
                             return Results.BadRequest(result.Error);

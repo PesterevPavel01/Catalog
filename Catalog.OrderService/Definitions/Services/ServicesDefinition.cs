@@ -18,7 +18,7 @@ namespace Catalog.Web.Definitions.Services
             
             builder.Services.AddScoped<CachedOrdersQueryHandler>();
 
-            builder.Services.AddScoped<LatestChangesOrdersQueryHandler>();
+            builder.Services.AddScoped<LastModifiedOrdersQueryHandler>();
         }
     }
 }

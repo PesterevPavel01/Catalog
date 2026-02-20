@@ -4,7 +4,6 @@ using Catalog.ExchangeService.Definitions.Configurations;
 using Catalog.Infrastructure;
 using Catalog.Logging.Middleware;
 using Catalog.Redis.Extension;
-using Rebus.Config;
 using Serilog;
 using TelegramService.DependencyInjection;
 

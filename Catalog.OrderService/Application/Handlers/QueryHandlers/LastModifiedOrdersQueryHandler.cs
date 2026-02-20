@@ -6,11 +6,11 @@ using Catalog.Domain.Entities;
 
 namespace Catalog.OrderService.Application.Handlers.QueryHandlers
 {
-    public sealed class LatestChangesOrdersQueryHandler
+    public sealed class LastModifiedOrdersQueryHandler
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        public LatestChangesOrdersQueryHandler(IUnitOfWork unitOfWork)
+        public LastModifiedOrdersQueryHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

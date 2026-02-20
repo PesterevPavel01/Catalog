@@ -2,9 +2,9 @@
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Components;
 using Catalog.Domain.Entities;
-using Catalog.ExchangeService.Application.Handlers.Orders;
 using Catalog.ExchangeService.Application.Messaging.ComponentMessages.Queries;
 using Catalog.ExchangeService.Application.Messaging.ComponentSyncMessages.Queries;
+using Catalog.ExchangeService.Application.Messaging.OrderSyncMessages;
 using Catalog.ExchangeService.Application.Processors;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +31,7 @@ namespace Catalog.ExchangeService.Endpoints
                 .HasApiVersion(new ApiVersion(3, 0))
                 .WithTags(nameof(Component));
 
-            group.MapPost("", async ([FromBody] IEnumerable<ComponentDto> models, IMediator mediator, UserSetRoleProcessor processor,HttpContext context)
+            group.MapPost("", async ([FromBody] IEnumerable<ComponentDto> models, IMediator mediator,HttpContext context)
                      => 
                     {
                         var result = await mediator.Send(new PostComponentSyncSession.Request(models), context.RequestAborted);
@@ -50,7 +50,7 @@ namespace Catalog.ExchangeService.Endpoints
                     Summary = "Добавить или обновить компонент."
                 });
 
-            group.MapGet("session/{code}", async ( IMediator mediator, string code, ConfirmOrderSyncCommandHandler handler, HttpContext context) 
+            group.MapGet("session/{code}", async ( IMediator mediator, string code, HttpContext context) 
                     =>
                     {
                         var result = await mediator.Send(new GetComponentSyncSessionByCode.Request(code), context.RequestAborted);

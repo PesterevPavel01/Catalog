@@ -11,11 +11,11 @@ namespace Catalog.OrderService.Application.QueueHandlers
 {
     public sealed class LatestChangesOrdersRequestHandler : IHandleMessages<LatestChangesOrdersRequest>
     {
-        private readonly LatestChangesOrdersQueryHandler _queryHandler;
+        private readonly LastModifiedOrdersQueryHandler _queryHandler;
         private readonly IBus _bus;
         private readonly ITelegramService _telegramService;
 
-        public LatestChangesOrdersRequestHandler(LatestChangesOrdersQueryHandler queryHandler, IBus bus, ITelegramService telegramService,
+        public LatestChangesOrdersRequestHandler(LastModifiedOrdersQueryHandler queryHandler, IBus bus, ITelegramService telegramService,
             IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _bus = bus;
