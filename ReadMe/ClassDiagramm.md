@@ -2,13 +2,11 @@
 classDiagram
 
 class Order {
-
     # Guid Id
-    # TitleValue required Title
-    # String required Code
+    # TitleValue Title
+    # string Code
     + DateTime CreatedAt
     + DateTime UpdatedAt
-
     - List~OrderItem~ _orderItems
     - List~OrderEvent~ _orderHistory
     + static short CacheDays$
@@ -17,7 +15,6 @@ class Order {
     + IReadOnlyCollection~OrderItem~ OrderItems
     + ApplicationUser ApplicationUser
     + Guid ApplicationUserId
-
     + Create(string title, string code, ApplicationUser user) Operation~Order, string~
     + AddOrderEvent(OrderEvent orderEvent) Order
     + AddOrderItem(OrderItem orderItem, IOrderValidator validator) Operation~bool, string~
@@ -26,12 +23,12 @@ class Order {
     + IsCompleted() bool
     + IsApprovalCompleted() bool
     + IsCustom() bool
-    + IncludeRequiredField()$ Func~IQueryable~Order~, IIncludableQueryable~Order, object~~
+    + IncludeRequiredField()$ Func
     + ConvertToDto() OrderDto
     + Validate(IOrderValidator validator) Operation~bool, string~
-    + GenerateUserCommonCacheKey(Func~ (string Key, object Value)[], string~ generateCacheKey, string userName)$ string
-    + GenerateConstructorCommonCacheKey(Func~ (string Key, object Value)[], string~ generateCacheKey)$ string
-    + GenerateOrderCacheKey(Func~ (string Key, object Value)[], string~ generateCacheKey, string orderCode)$ string
+    + GenerateUserCommonCacheKey(Func generateCacheKey, string userName)$ string
+    + GenerateConstructorCommonCacheKey(Func generateCacheKey)$ string
+    + GenerateOrderCacheKey(Func generateCacheKey, string orderCode)$ string
     - CheckCustomization() bool
     - DetermineStatusFromEvent(OrderEventType eventType) OrderStatus?
     - SetStatus(OrderStatus status) Order
@@ -39,13 +36,11 @@ class Order {
 }
 
 class OrderItem {
-
     # Guid Id
-    # TitleValue required Title
-    # String required Code
+    # TitleValue Title
+    # string Code
     + DateTime CreatedAt
     + DateTime UpdatedAt
-
     - List~Message~ _messages
     + short Quantity
     + IReadOnlyCollection~Message~ Messages
@@ -57,19 +52,17 @@ class OrderItem {
     + Create(short quantity, Module module)$ Operation~OrderItem, string~
     + SetQuantity(short quantity) void
     + AddMessage(Message message) void
-    + IncludeRequiredField()$ Func~IQueryable~OrderItem~, IIncludableQueryable~OrderItem, object~~
+    + IncludeRequiredField()$ Func
     + ConvertToDto() OrderItemDto
     - SetModule(Module module) OrderItem
 }
 
 class Module {
-
     # Guid Id
-    # TitleValue required Title
-    # String required Code
+    # TitleValue Title
+    # string Code
     + DateTime CreatedAt
     + DateTime UpdatedAt
-
     - List~Component~ _components
     - List~OrderItem~ _orderItems
     - List~ModuleTextParameter~ _moduleTextParameters
@@ -81,10 +74,8 @@ class Module {
     + IReadOnlyCollection~ModuleNumericParameter~ ModuleNumericParameters
     + Guid ModuleTypeId
     + ModuleType ModuleType
-    + Create(string title, string code, ModuleType moduleType, IModuleParametersValidator validator, 
-                List~ModuleTextParameter~ textParams, List~ModuleNumericParameter~ numParams)$ Operation~Module, string~
-    + Update(IModuleParametersValidator validator, List~ModuleTextParameter~ textParams, 
-                List~ModuleNumericParameter~ numParams, List~Component~ components) Operation~Module, string~
+    + Create(string title, string code, ModuleType moduleType, IModuleParametersValidator validator, List~ModuleTextParameter~ textParams, List~ModuleNumericParameter~ numParams)$ Operation~Module, string~
+    + Update(IModuleParametersValidator validator, List~ModuleTextParameter~ textParams, List~ModuleNumericParameter~ numParams, List~Component~ components) Operation~Module, string~
     + AddComponent(Component component, IModuleParametersValidator validator) Operation~ModuleDto, string~
     + RemoveComponent(Component component) Operation~ModuleDto, string~
     + AddTextParameter(ModuleTextParameter textParam) Operation~Module, string~
@@ -92,27 +83,23 @@ class Module {
     + RemoveTextParameter(ModuleTextParameter textParam) Operation~Module, string~
     + RemoveNumericParameter(ModuleNumericParameter numParam) Operation~Module, string~
     + ConvertToDto() ModuleDto
-    + IncludeRequiredField()$ Func~IQueryable~Module~, IIncludableQueryable~Module, object~~
+    + IncludeRequiredField()$ Func
     - SetModuleType(ModuleType moduleType) Operation~Module, string~
     - CheckCustomization() bool
 }
 
 class ModuleType {
-
     # Guid Id
-    # TitleValue required Title
-    # String required Code
+    # TitleValue Title
+    # string Code
     + DateTime CreatedAt
     + DateTime UpdatedAt
-
     - List~Module~ _modules
     + IReadOnlyCollection~Module~ Modules
     + Create(string title, string code, Guid id)$ Operation~ModuleType, string~
-
 }
 
 class ApplicationUser {
-
     - List~Message~ _messages
     - List~Order~ _orders
     - List~Role~ _roles
@@ -130,9 +117,8 @@ class ApplicationUser {
     + AddRole(Role role) Operation~ApplicationUser, string~
     + CheckPassword(string password) bool
     + SetExternalId(string externalId) Operation~ApplicationUser, string~
-    + GenerateCommonCacheKey(Func~ (string Key, object Value)[], string~ generateCacheKey)$ string
+    + GenerateCommonCacheKey(Func generateCacheKey)$ string
     - HashPassword(string password)$ string
-
 }
 
 class Message {
@@ -143,65 +129,60 @@ class Message {
     + Guid OrderItemId
     + string Text
     + Create(string text, OrderItem orderItem, ApplicationUser applicationUser)$ Operation~Message, string~
-    + IncludeRequiredField()$ Func~IQueryable~Message~, IIncludableQueryable~Message, object~~
+    + IncludeRequiredField()$ Func
     + ConvertToDto() MessageDto
 }
 
-class OrderEvent{
-
+class OrderEvent {
     # Guid Id
-    # TitleValue required Title
-    # String required Code
+    # TitleValue Title
+    # string Code
     + DateTime CreatedAt
     + DateTime UpdatedAt
-
     + static short CacheEntriesCount$ = 20
     + Order Order
     + Guid OrderId
     + int Type
     + Create(string title, OrderEventType type, string code)$ Operation~OrderEvent, string~
     + ConvertToDto() OrderEventDto
-    + IncludeRequiredField()$ Func~IQueryable~OrderEvent~, IIncludableQueryable~OrderEvent, object~~
-    + GenerateUserCommonCacheKey(Func~ (string Key, object Value)[], string~ generateCacheKey, string userName)$ string
-    + GenerateConstructorCommonCacheKey(Func~ (string Key, object Value)[], string~ generateCacheKey)$ string
+    + IncludeRequiredField()$ Func
+    + GenerateUserCommonCacheKey(Func generateCacheKey, string userName)$ string
+    + GenerateConstructorCommonCacheKey(Func generateCacheKey)$ string
 }
 
 class OrderEventType {
     <<enumeration>>
-
-    ApprovalCompleted = 0,
-    Cancelled = 1,
-    Changed = 2,
-    CreateApprovalWorkflow = 3,
-    Created = 4,
-    CustomModuleModified = 5,
-    Disabled = 6,
-    Deleted = 7,
-    MessageAdded = 8,
-    Reject = 9,
-    Exported = 10,
-    ExternallyRejected = 11,
-    Produced = 12,
-    Completed = 13,
+    ApprovalCompleted
+    Cancelled
+    Changed
+    CreateApprovalWorkflow
+    Created
+    CustomModuleModified
+    Disabled
+    Deleted
+    MessageAdded
+    Reject
+    Exported
+    ExternallyRejected
+    Produced
+    Completed
 }
 
 class OrderStatus {
     <<enumeration>>
-
-    Draft = 1,
-    PendingApproval = 2,
-    ApprovalCompleted = 3,
-    InProduction = 4,
-    RejectedFromProduction = 5,
-    Produced = 6,
-    Shipped = 7,
-    Delivered = 8,
-    Completed = 9,
-    Cancelled = 10
+    Draft
+    PendingApproval
+    ApprovalCompleted
+    InProduction
+    RejectedFromProduction
+    Produced
+    Shipped
+    Delivered
+    Completed
+    Cancelled
 }
 
 class ApprovalWorkflow {
-
     - List~ApprovalWorkflowItem~ _approvalWorkflowItems
     + static string CompletedStageCode$
     + bool IsCompleted
@@ -213,12 +194,11 @@ class ApprovalWorkflow {
     + Approve(ApplicationUser user, ApprovalStage stage, short number) Operation~ApprovalWorkflowItem, string~
     + Complete(ApplicationUser user, ApprovalStage completedStage) Operation~ApprovalWorkflowItem, string~
     + ConvertToDto() ApprovalWorkflowDto
-    + IncludeRequiredField()$ Func~IQueryable~ApprovalWorkflow~, IIncludableQueryable~ApprovalWorkflow, object~~
+    + IncludeRequiredField()$ Func
     - CheckIsCompleted() bool
 }
 
 class ApprovalStage {
-
     - List~ApprovalWorkflowItem~ _approvalWorkflowItems
     + IReadOnlyCollection~ApprovalWorkflowItem~ ApprovalWorkflowItems
     + Create(string title, string code)$ Operation~ApprovalStage, string~
@@ -226,7 +206,6 @@ class ApprovalStage {
 }
 
 class ApprovalWorkflowItem {
-
     + short Number
     + ApprovalStage ApprovalStage
     + Guid ApprovalStageId
@@ -236,7 +215,7 @@ class ApprovalWorkflowItem {
     + Guid InitiatorId
     + Create(ApplicationUser user, ApprovalStage stage, short number)$ Operation~ApprovalWorkflowItem, string~
     + ConvertToDto() ApprovalWorkflowItemDto
-    + IncludeRequiredField()$ Func~IQueryable~ApprovalWorkflowItem~, IIncludableQueryable~ApprovalWorkflowItem, object~~
+    + IncludeRequiredField()$ Func
 }
 
 class Component {
@@ -252,29 +231,29 @@ class ComponentType {
     + string Code
 }
 
-class ComponentNumericParameter{
+class ComponentNumericParameter {
     + double Value
     + ParameterType ParameterType
 }
 
-class ComponentTextParameter{
+class ComponentTextParameter {
     + string Value
     + ParameterType ParameterType
 }
 
-class ModuleNumericParameter{
+class ModuleNumericParameter {
     + double Value
     + ParameterType ParameterType
 }
 
-class ModuleTextParameter{
+class ModuleTextParameter {
     + string Value
     + ParameterValueType ParameterType
 }
 
 class ParameterValueType {
     <<enumeration>>
-    Numeric,
+    Numeric
     Text
 }
 
@@ -289,21 +268,13 @@ Component "1" *-- "many" ComponentTextParameter
 Module "1" *-- "many" ModuleNumericParameter
 Module "1" *-- "many" ModuleTextParameter
 ModuleType "1" *-- "many" Module
-
 OrderItem "1" *-- "many" Message
-
-
-
 OrderEventType --> OrderEvent
-
 OrderStatus --> Order
 Message "many" --> "1" ApplicationUser
-
 ApprovalWorkflowItem "many" --> "1" ApprovalWorkflow
 ApprovalWorkflow "1" --> "1" OrderItem
-
 ApprovalStage "1" *-- "many" ApprovalWorkflowItem
-
 ApprovalWorkflowItem "many" --> "1" ApplicationUser
 
 ```
