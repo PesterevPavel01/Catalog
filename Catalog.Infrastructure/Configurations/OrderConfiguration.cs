@@ -11,8 +11,7 @@ namespace Catalog.Infrastructure.Configurations
         {
             builder
                 .Property(x => x.Status)
-                .IsRequired()
-                .HasMaxLength(50);
+                .IsRequired();
 
             builder
                 .HasIndex(x => x.Status);

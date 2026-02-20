@@ -24,7 +24,7 @@ namespace Catalog.Contracts.Entities
 
         public static Operation<OrderEvent, string> Create(
             //Order order, 
-            string title, OrderEventTypes type, string? code)
+            string title, OrderEventType type, string? code)
         {
             var titleValue = TitleValue.Create(title);
 

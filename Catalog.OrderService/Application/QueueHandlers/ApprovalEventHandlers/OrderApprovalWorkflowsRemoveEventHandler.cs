@@ -18,7 +18,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
 
         public async Task Handle(OrderApprovalWorkflowsRemoveEvent message)
         {
-            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.Cancelled, OrderEventTypeTitles.Cancelled));
+            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventType.Cancelled, OrderEventTypeTitles.Cancelled));
 
             return;
         }

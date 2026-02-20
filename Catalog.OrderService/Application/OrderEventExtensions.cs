@@ -4,23 +4,23 @@ namespace Catalog.OrderService.Application
 {
     public static class OrderEventTypesExtensions
     {
-        public static bool IsCaching(this OrderEventTypes eventTypes)
+        public static bool IsCaching(this OrderEventType eventTypes)
         {
             return eventTypes switch
             {
-                OrderEventTypes.Created => true,
-                OrderEventTypes.Changed => true,
-                OrderEventTypes.Deleted => true,
-                OrderEventTypes.Cancelled => true,
-                OrderEventTypes.Completed => true,
-                OrderEventTypes.CreateApprovalWorkflow => true,
-                OrderEventTypes.ApprovalCompleted => true,
-                OrderEventTypes.Exported => true,
-                OrderEventTypes.Disabled => true,
-                OrderEventTypes.ExternallyRejected => true,
-                OrderEventTypes.Reject =>  true,
-                OrderEventTypes.Produced => true,
-                OrderEventTypes.MessageAdded => true,
+                OrderEventType.Created => true,
+                OrderEventType.Changed => true,
+                OrderEventType.Deleted => true,
+                OrderEventType.Cancelled => true,
+                OrderEventType.Completed => true,
+                OrderEventType.CreateApprovalWorkflow => true,
+                OrderEventType.ApprovalCompleted => true,
+                OrderEventType.Exported => true,
+                OrderEventType.Disabled => true,
+                OrderEventType.ExternallyRejected => true,
+                OrderEventType.Reject =>  true,
+                OrderEventType.Produced => true,
+                OrderEventType.MessageAdded => true,
                 _ => false
             };
         }

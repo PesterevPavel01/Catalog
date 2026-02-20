@@ -64,7 +64,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                         IBus bus) =>
                     {
                         foreach(var code in codes)
-                            await bus.Publish(new CreateOrderEventCommand(code, OrderEventTypes.Produced, OrderEventTypeTitles.Produced));
+                            await bus.Publish(new CreateOrderEventCommand(code, OrderEventType.Produced, OrderEventTypeTitles.Produced));
 
                         return Results.Ok();
                     })

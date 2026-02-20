@@ -64,7 +64,7 @@ namespace Catalog.Domain.Entities
         {
             _orderHistory.Add(orderEvent);
 
-            var newStatus = DetermineStatusFromEvent((OrderEventTypes)orderEvent.Type);
+            var newStatus = DetermineStatusFromEvent((OrderEventType)orderEvent.Type);
 
             if (newStatus is not null)
                 SetStatus((OrderStatus)newStatus);
@@ -162,25 +162,25 @@ namespace Catalog.Domain.Entities
         private bool CheckCustomization()
         => OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null;
 
-        private OrderStatus? DetermineStatusFromEvent(OrderEventTypes eventType)
+        private OrderStatus? DetermineStatusFromEvent(OrderEventType eventType)
         {
             return eventType switch
             {
-                OrderEventTypes.Created => OrderStatus.Draft,
+                OrderEventType.Created => OrderStatus.Draft,
 
-                OrderEventTypes.CreateApprovalWorkflow => OrderStatus.PendingApproval,
+                OrderEventType.CreateApprovalWorkflow => OrderStatus.PendingApproval,
 
-                OrderEventTypes.Cancelled => OrderStatus.Draft,
+                OrderEventType.Cancelled => OrderStatus.Draft,
 
-                OrderEventTypes.ApprovalCompleted => OrderStatus.ApprovalCompleted,
+                OrderEventType.ApprovalCompleted => OrderStatus.ApprovalCompleted,
 
-                OrderEventTypes.Exported => OrderStatus.InProduction,
+                OrderEventType.Exported => OrderStatus.InProduction,
 
-                OrderEventTypes.ExternallyRejected => OrderStatus.RejectedFromProduction,
+                OrderEventType.ExternallyRejected => OrderStatus.RejectedFromProduction,
 
-                OrderEventTypes.Produced => OrderStatus.Produced,
+                OrderEventType.Produced => OrderStatus.Produced,
 
-                OrderEventTypes.Completed => OrderStatus.Completed,
+                OrderEventType.Completed => OrderStatus.Completed,
 
                 _ => null
             };

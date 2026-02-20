@@ -23,7 +23,7 @@ namespace Catalog.OrderService.Application.Handlers.QueryHandlers
                     predicate: x =>
                         x.Enabled 
                         && x.OrderHistory.Where(x => x.CreatedAt > dateStart && x.CreatedAt <= dateEnd).Any()
-                        && x.OrderHistory.Where(x => x.CreatedAt > dateStart && x.CreatedAt <= dateEnd).OrderByDescending(x => x.CreatedAt).FirstOrDefault().Type == (Int32)OrderEventTypes.ApprovalCompleted,
+                        && x.OrderHistory.Where(x => x.CreatedAt > dateStart && x.CreatedAt <= dateEnd).OrderByDescending(x => x.CreatedAt).FirstOrDefault().Type == (Int32)OrderEventType.ApprovalCompleted,
                     include: Order.IncludeRequiredField(),
                     trackingType: TrackingType.NoTracking);
 

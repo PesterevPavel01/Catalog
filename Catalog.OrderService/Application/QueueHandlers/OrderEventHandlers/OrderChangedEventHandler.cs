@@ -28,7 +28,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             if (String.IsNullOrWhiteSpace(message.OrderCode))
                 await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order code not found!");
 
-            await _bus.Publish(new CreateOrderEventCommand(message.OrderCode, OrderEventTypes.Changed, OrderEventTypeTitles.Changed));
+            await _bus.Publish(new CreateOrderEventCommand(message.OrderCode, OrderEventType.Changed, OrderEventTypeTitles.Changed));
         }
     }
 }

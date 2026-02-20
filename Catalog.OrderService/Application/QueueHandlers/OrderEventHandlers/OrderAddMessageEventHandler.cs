@@ -21,7 +21,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
             if (message.Order is null)
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found!");
 
-            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.MessageAdded, OrderEventTypeTitles.MessageAdded));
+            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventType.MessageAdded, OrderEventTypeTitles.MessageAdded));
         }
     }
 }

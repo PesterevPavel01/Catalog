@@ -30,7 +30,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.ModuleEventHandlers
 
             foreach (var order in orders) {
 
-                await _bus.Publish(new CreateOrderEventCommand(order.Code, OrderEventTypes.Changed, OrderEventTypeTitles.Changed));
+                await _bus.Publish(new CreateOrderEventCommand(order.Code, OrderEventType.Changed, OrderEventTypeTitles.Changed));
 
             }
 

@@ -23,7 +23,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.ExportEventHandlers
                 return;
 
             foreach (var code in message.Entities.Codes)
-                await _bus.Publish(new CreateOrderEventCommand(code, OrderEventTypes.ExternallyRejected, OrderEventTypeTitles.Produced));
+                await _bus.Publish(new CreateOrderEventCommand(code, OrderEventType.ExternallyRejected, OrderEventTypeTitles.Produced));
         }
     }
 }

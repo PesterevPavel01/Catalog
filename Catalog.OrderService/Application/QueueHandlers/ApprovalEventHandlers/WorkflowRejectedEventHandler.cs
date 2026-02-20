@@ -36,7 +36,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             //only for IsCustom orders
             if (message.Order.Modules.FirstOrDefault(x => x.Module.IsCustom) is not null)
             {
-                await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.Reject, OrderEventTypeTitles.Reject));
+                await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventType.Reject, OrderEventTypeTitles.Reject));
             }
             return;
         }

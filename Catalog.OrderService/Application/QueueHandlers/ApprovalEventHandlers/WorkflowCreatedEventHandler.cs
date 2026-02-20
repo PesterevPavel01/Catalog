@@ -31,7 +31,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
                 return;
             }
 
-            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventTypes.CreateApprovalWorkflow, OrderEventTypeTitles.CreateApprovalWorkflow));
+            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventType.CreateApprovalWorkflow, OrderEventTypeTitles.CreateApprovalWorkflow));
 
             return;
         }

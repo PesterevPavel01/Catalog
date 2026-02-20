@@ -55,7 +55,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     continue;
                 }
 
-                await _bus.Publish(new CreateOrderEventCommand(code, OrderEventTypes.Produced, OrderEventTypeTitles.Produced));
+                await _bus.Publish(new CreateOrderEventCommand(code, OrderEventType.Produced, OrderEventTypeTitles.Produced));
                 await _bus.Publish(new MarkOrdersAsProducedEvent(order.ConvertToDto()));
             }
         }

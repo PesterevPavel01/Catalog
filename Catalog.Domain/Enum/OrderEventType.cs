@@ -1,6 +1,6 @@
 ﻿namespace Catalog.Contracts.Enum
 {
-    public enum OrderEventTypes
+    public enum OrderEventType
     {
         ApprovalCompleted = 0,
         Cancelled = 1,

@@ -45,7 +45,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.ApprovalEventHandlers
                 return;
             }
 
-            await _bus.Publish(new CreateOrderEventCommand(workflow.OrderItem.Order.Code, OrderEventTypes.CustomModuleModified, OrderEventTypeTitles.CustomModuleModified));
+            await _bus.Publish(new CreateOrderEventCommand(workflow.OrderItem.Order.Code, OrderEventType.CustomModuleModified, OrderEventTypeTitles.CustomModuleModified));
 
             return;
         }

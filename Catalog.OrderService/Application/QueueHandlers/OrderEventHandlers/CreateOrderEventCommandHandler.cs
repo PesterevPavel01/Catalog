@@ -119,7 +119,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             }
 
             /*ORDERS*/
-            var eventType = (OrderEventTypes)orderEvent.Result.Type;
+            var eventType = (OrderEventType)orderEvent.Result.Type;
 
             if (eventType.IsCaching())
             {
@@ -174,7 +174,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                     return;
                 }
 
-                if (message.Type != OrderEventTypes.Disabled && message.Type != OrderEventTypes.Deleted)
+                if (message.Type != OrderEventType.Disabled && message.Type != OrderEventType.Deleted)
                 {
                     var orderQueryResult = await _orderQueryHandler.HandleAsync(message.OrderCode);
 

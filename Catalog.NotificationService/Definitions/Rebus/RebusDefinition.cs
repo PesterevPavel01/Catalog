@@ -45,6 +45,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                     await bus.Subscribe<CustomWorkflowChangedEvent>();
                     await bus.Subscribe<OrderAddMessageEvent>();
                     await bus.Subscribe<OrderDisabledEvent>();
+                    await bus.Subscribe<OrderExportedEvent>();
                     await bus.Subscribe<SyncFailedEvent>();
                     
                 }
