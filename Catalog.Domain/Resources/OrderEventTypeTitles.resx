@@ -153,4 +153,7 @@
   <data name="Produced" xml:space="preserve">
     <value>Завершено производство.</value>
   </data>
+  <data name="Completed" xml:space="preserve">
+    <value>Завершен</value>
+  </data>
 </root>

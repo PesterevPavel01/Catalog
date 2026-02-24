@@ -8,6 +8,7 @@ using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
 
 namespace Catalog.Domain.Entities
 {
@@ -31,6 +32,27 @@ namespace Catalog.Domain.Entities
         public Guid ApplicationUserId { get; private set; }
 
         public bool IsCompleted() => Status == OrderStatus.Completed;
+
+        public Operation<DateTime, string> CompletedAt()
+        {
+            var orderCompletedEvent = OrderHistory
+                .LastOrDefault(x => x.Type == (int)OrderEventType.Completed);
+
+            return orderCompletedEvent is not null
+                ? orderCompletedEvent.CreatedAt
+                : Operation.Error("Order is not yet completed");
+        }
+
+        public static Expression<Func<Order, bool>> IsCompletedBefore(int archiveStorageDays) 
+            =>
+            order => order.OrderHistory
+                .Any(x => x.Type == (int)OrderEventType.Completed &&
+                          x.CreatedAt < DateTime.Now.AddDays(-archiveStorageDays));
+
+        public static Expression<Func<Order, bool>> IsInactiveBefore(int archiveStorageDays)
+            =>
+            order => order.OrderHistory
+                .Any(x =>x.CreatedAt < DateTime.Now.AddDays(-archiveStorageDays));
 
         public bool IsApprovalCompleted() => OrderItems.Any() && OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null;
 

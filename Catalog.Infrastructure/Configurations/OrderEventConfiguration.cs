@@ -9,6 +9,8 @@ namespace Catalog.Infrastructure.Configurations
     {
         protected override void AddBuilder(EntityTypeBuilder<OrderEvent> builder)
         {
+            builder.Property(x => x.Type).HasMaxLength(50);
+
             builder
                 .HasOne(x => x.Order)
                 .WithMany(x => x.OrderHistory)

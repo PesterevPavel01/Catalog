@@ -1,16 +1,18 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Configurations;
-using Catalog.Contracts.Entities.Approval;
 using Catalog.Domain.Entities;
 using MediatR;
-using Microsoft.Extensions.Options;
 
 namespace Catalog.OrderService.Application.Messages.OrderMessages
 {
     public sealed class CleanupOldOrder
     {
-        public record Request(int ArchiveStorageDays) : IRequest<Operation<bool, string>>;
+        /// <summary>
+        /// Handles a request
+        /// </summary>
+        /// <param name="ArchiveStorageDays"></param>
+        public record Request(OrderCleanupSettings ArchiveStorageDays) : IRequest<Operation<bool, string>>;
 
         public class Handler(IUnitOfWork unitOfWork)
             : IRequestHandler<Request, Operation<bool, string>>
@@ -18,39 +20,36 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
 
             public async Task<Operation<bool, string>> Handle(Request request, CancellationToken cancellationToken)
             {
-                var orders = (await unitOfWork.GetRepository<Order>()
-                    .GetAllAsync(
-                        predicate: x =>
-                        x.Enabled &&
-                        (x.OrderItems.Any()
-                            && !x.OrderItems.Any(item => item.ApprovalWorkflow == null)
-                            && !x.OrderItems.Any(item => !item.ApprovalWorkflow.ApprovalWorkflowItems.Any())
-                            && x.OrderItems.FirstOrDefault(item => item.ApprovalWorkflow.ApprovalWorkflowItems.OrderByDescending(oi => oi.Number).First().ApprovalStage.Code != ApprovalWorkflow.CompletedStageCode) == null
-                            && x.OrderItems.Select(item => item.ApprovalWorkflow)
-                                .Select(aw => aw.ApprovalWorkflowItems
-                                .OrderByDescending(aw => aw.Number).First())
-                                .OrderByDescending(oaw => oaw.CreatedAt).First().CreatedAt < DateTime.Now.AddDays(request.ArchiveStorageDays * -1)
-                            || (!x.OrderItems.Any()
-                                    || x.OrderItems.Any(item => item.ApprovalWorkflow == null)
-                                    || x.OrderItems.Any(item => !item.ApprovalWorkflow.ApprovalWorkflowItems.Any()))
-                                && x.CreatedAt < DateTime.Now.AddDays(request.ArchiveStorageDays * -1)),
-                        include: Order.IncludeRequiredField(),
-                        trackingType: TrackingType.Tracking
-                    )).ToList();
+                var orderRepository = unitOfWork.GetRepository<Order>();
 
-                var disabledOrders = await unitOfWork.GetRepository<Order>()
-                .GetAllAsync(
-                    predicate: x => !x.Enabled && x.CreatedAt < DateTime.Now.AddDays(request.ArchiveStorageDays * -1),
-                    include: Order.IncludeRequiredField(),
-                    trackingType: TrackingType.Tracking);
+                /*Completed orders*/
+                var completedOrders = await orderRepository
+                    .GetAllAsync(
+                        predicate: Order.IsCompletedBefore(request.ArchiveStorageDays.CompletedOrdersDays),
+                        trackingType: TrackingType.Tracking
+                    );
+
+                if(completedOrders.Any())
+                    orderRepository.Delete(completedOrders);
+
+                /*Inactive orders*/
+                var inactiveOrders = await orderRepository
+                    .GetAllAsync(
+                        predicate: Order.IsInactiveBefore(request.ArchiveStorageDays.InactiveOrdersDays),
+                        trackingType: TrackingType.Tracking
+                    );
+
+                if (inactiveOrders.Any())
+                    orderRepository.Delete(inactiveOrders);
+
+                /*Disabled orders*/
+                var disabledOrders = await orderRepository
+                    .GetAllAsync(
+                        predicate: x => !x.Enabled && x.UpdatedAt < DateTime.Now.AddDays(request.ArchiveStorageDays.DisabledOrdersDays * -1),
+                        trackingType: TrackingType.Tracking);
 
                 if (disabledOrders.Any())
-                    orders.AddRange(disabledOrders);
-
-                if (!orders.Any())
-                    return true;
-
-                unitOfWork.GetRepository<Order>().Delete(orders);
+                    unitOfWork.GetRepository<Order>().Delete(disabledOrders);
 
                 var result = await unitOfWork.SaveChangesAsync();
 

@@ -1,5 +1,6 @@
 ﻿using Calabonga.UnitOfWork;
 using Catalog.Contracts.Commands;
+using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Dto.Events;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
@@ -8,6 +9,7 @@ using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Commands;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
 using Catalog.OrderService.Application.Messages.OrderEventMessages;
+using Catalog.OrderService.Application.Messages.OrderMessages;
 using Catalog.Redis;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +31,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
         private readonly RedisService<OrderEventDto> _orderEventRedisService;
         private readonly RedisService<OrderDto> _orderRedisService;
         private readonly OrderQueryHandler _orderQueryHandler;
+        private readonly string? _completionTriggerEventType;
 
         public CreateOrderEventCommandHandler(
             OrderQueryHandler orderQueryHandler,
@@ -37,7 +40,8 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             RedisServiceFactory redisServiceFactory,
             ITelegramService telegramService,
             IUnitOfWork unitOfWork, IBus bus,
-            IOptions<TelegramBotConfiguration> exceptionNotificationBot)
+            IOptions<TelegramBotConfiguration> exceptionNotificationBot,
+            IOptions<OrderConfiguration> orderConfiguration)
         {
             _mediator = mediator;
             _orderQueryHandler = orderQueryHandler;
@@ -48,6 +52,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             _cachedOrdersQueryHandler = ordersQueryHandler;
             _telegramService = telegramService;
             _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
+            _completionTriggerEventType = orderConfiguration.Value.CompletionTriggerEventType;
         }
 
         public async Task Handle(CreateOrderEventCommand message)
@@ -183,6 +188,26 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                         await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderQueryResult.Error}");
 
                         return;
+                    }
+                }
+
+                /*Auto Complete Order Command*/
+
+                if (_completionTriggerEventType is not null)
+                {
+                    if (Enum.TryParse<OrderEventType>(_completionTriggerEventType, out var completionTriggerEventType))
+                    {
+                        if (orderEvent.Result.Type == (Int16)completionTriggerEventType)
+                        {
+                            var completeResult = await _mediator.Send(new CompleteOrder.Request([message.OrderCode]), default);
+                            
+                            if (!completeResult.Ok)
+                                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {completeResult.Error} OrderTitle: {order.Title.Value}");
+                        }
+                    }
+                    else
+                    {
+                        await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Неверное название типа события \"CompletionTriggerEventType\" в конфигурации! OrderTitle: {order.Title}");
                     }
                 }
             }

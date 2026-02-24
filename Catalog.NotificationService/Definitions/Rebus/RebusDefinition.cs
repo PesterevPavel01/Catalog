@@ -9,6 +9,7 @@ using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.NotificationService.Definitions;
+using Rebus.Bus;
 using Rebus.Config;
 using Rebus.Serialization.Json;
 using Serilog;
@@ -37,6 +38,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
             }, onCreated: async bus =>
                 {
                     await bus.Subscribe<MarkOrdersAsProducedEvent>();
+                    await bus.Subscribe<OrderCompletedEvent>();
                     await bus.Subscribe<CustomerCreatedEvent>();
                     await bus.Subscribe<WorkflowCreatedEvent>();
                     await bus.Subscribe<WorkflowsCancelledEvent>();

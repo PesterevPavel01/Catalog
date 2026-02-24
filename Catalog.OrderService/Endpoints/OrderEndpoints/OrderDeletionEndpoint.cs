@@ -64,14 +64,14 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     IBus bus,
                     IMediator mediator) =>
                 {
-                    var archiveStorageDays = options.Value.ArchiveStorageDays;
+                    var archiveStorageDays = options.Value.OrderCleanupSettings;
 
                     var result = await mediator.Send(new CleanupOldOrder.Request(archiveStorageDays), context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Publish(new CleanupOldOrderEvent(archiveStorageDays));
+                    await bus.Publish(new CleanupOldOrderEvent());
 
                     return Results.Ok(result.Result);
                 })

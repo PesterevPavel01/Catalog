@@ -6,6 +6,7 @@ using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using System.Linq.Expressions;
 
 namespace Catalog.Domain.Entities
 {
@@ -108,6 +109,10 @@ namespace Catalog.Domain.Entities
 
         public Guid ModuleTypeId { get; private set; }
         public ModuleType ModuleType { get; private set; } = null!;
+
+        public static Expression<Func<Module, bool>> IsInactive()
+            =>
+                module => (!module.OrderItems.Any() && module.CreatedAt < DateTime.Now.AddDays(-1));
 
         private Operation<Module, string> SetModuleType(ModuleType moduleType)
         {

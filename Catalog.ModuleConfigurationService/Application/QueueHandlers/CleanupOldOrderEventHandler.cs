@@ -25,9 +25,7 @@ namespace Catalog.ModuleConfigurationService.Application.QueueHandlers
         {
             var modules = await _unitOfWork.GetRepository<Module>()
                 .GetAllAsync(
-                    predicate: x =>
-                        (!x.OrderItems.Any() || !x.OrderItems.Any(item => item.ApprovalWorkflow != null))
-                        && x.CreatedAt < DateTime.Now.AddDays(message.ArchiveStorageDays * -1),
+                    predicate: Module.IsInactive(),
                     include: query => query.Include(x => x.Components),
                     trackingType: TrackingType.Tracking
                 );

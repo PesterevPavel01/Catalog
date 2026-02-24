@@ -59,7 +59,7 @@ namespace Catalog.Contracts.Resources {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Ищет локализованную строку, похожую на Завершен процесс согласования!.
         /// </summary>
@@ -84,6 +84,15 @@ namespace Catalog.Contracts.Resources {
         public static string Changed {
             get {
                 return ResourceManager.GetString("Changed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Завершен.
+        /// </summary>
+        public static string Completed {
+            get {
+                return ResourceManager.GetString("Completed", resourceCulture);
             }
         }
 

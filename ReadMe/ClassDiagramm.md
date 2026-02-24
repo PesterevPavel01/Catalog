@@ -21,6 +21,8 @@ class Order {
     + UpdateCode(string newCode) Order
     + RemoveOrderItem(OrderItem orderItem) void
     + IsCompleted() bool
+    + static IsCompletedBefore(int archiveStorageDays) Expression~Func~Order, bool~~
+    + static IsInactiveBefore(int archiveStorageDays) Expression~Func~Order, bool~~
     + IsApprovalCompleted() bool
     + IsCustom() bool
     + IncludeRequiredField()$ Func
@@ -68,6 +70,7 @@ class Module {
     - List~ModuleTextParameter~ _moduleTextParameters
     - List~ModuleNumericParameter~ _moduleNumericParameters
     + bool IsCustom
+    + static IsInactive() Expression~Func~Module, bool~~
     + IReadOnlyCollection~Component~ Components
     + IReadOnlyCollection~OrderItem~ OrderItems
     + IReadOnlyCollection~ModuleTextParameter~ ModuleTextParameters
