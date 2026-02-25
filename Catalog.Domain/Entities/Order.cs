@@ -6,6 +6,7 @@ using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
@@ -14,7 +15,7 @@ namespace Catalog.Domain.Entities
 {
     public class Order : SimpleEntity
     {
-        public static Int16 CacheDays = 60;
+        public const Int16 CacheDays = 60;
 
         private readonly List<OrderItem> _orderItems = [];
 
@@ -33,16 +34,6 @@ namespace Catalog.Domain.Entities
 
         public bool IsCompleted() => Status == OrderStatus.Completed;
 
-        public Operation<DateTime, string> CompletedAt()
-        {
-            var orderCompletedEvent = OrderHistory
-                .LastOrDefault(x => x.Type == (int)OrderEventType.Completed);
-
-            return orderCompletedEvent is not null
-                ? orderCompletedEvent.CreatedAt
-                : Operation.Error("Order is not yet completed");
-        }
-
         public static Expression<Func<Order, bool>> IsCompletedBefore(int archiveStorageDays) 
             =>
             order => order.OrderHistory
@@ -51,8 +42,33 @@ namespace Catalog.Domain.Entities
 
         public static Expression<Func<Order, bool>> IsInactiveBefore(int archiveStorageDays)
             =>
-            order => order.OrderHistory
-                .Any(x =>x.CreatedAt < DateTime.Now.AddDays(-archiveStorageDays));
+                order => !order.OrderHistory
+                    .Any(x =>x.CreatedAt >= DateTime.Now.AddDays(-archiveStorageDays));
+
+        public static Expression<Func<Order, bool>> IsDisableBefore(int archiveStorageDays)
+            =>
+               order => !order.Enabled && order.UpdatedAt < DateTime.Now.AddDays(-archiveStorageDays);
+
+        /// <summary>
+        /// Returns a combined predicate (OR) for all deletion categories
+        /// </summary>
+        /// <param name="completedDays"></param>
+        /// <param name="inactiveDays"></param>
+        /// <param name="disabledDays"></param>
+        /// <returns></returns>
+        public static Expression<Func<Order, bool>> GetCombinedCleanupPredicate(
+            int completedDays,
+            int inactiveDays,
+            int disabledDays)
+        {
+            var predicate = PredicateBuilder.New<Order>(false);
+
+            predicate = predicate.Or(IsCompletedBefore(completedDays));
+            predicate = predicate.Or(IsInactiveBefore(inactiveDays));
+            predicate = predicate.Or(IsDisableBefore(disabledDays));
+
+            return predicate;
+        }
 
         public bool IsApprovalCompleted() => OrderItems.Any() && OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null;
 

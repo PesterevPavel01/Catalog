@@ -9,7 +9,7 @@ class Order {
     + DateTime UpdatedAt
     - List~OrderItem~ _orderItems
     - List~OrderEvent~ _orderHistory
-    + static short CacheDays$
+    + short CacheDays$
     + OrderStatus Status
     + IReadOnlyCollection~OrderEvent~ OrderHistory
     + IReadOnlyCollection~OrderItem~ OrderItems
@@ -21,8 +21,10 @@ class Order {
     + UpdateCode(string newCode) Order
     + RemoveOrderItem(OrderItem orderItem) void
     + IsCompleted() bool
-    + static IsCompletedBefore(int archiveStorageDays) Expression~Func~Order, bool~~
-    + static IsInactiveBefore(int archiveStorageDays) Expression~Func~Order, bool~~
+    + IsCompletedBefore(int archiveStorageDays)$ Expression
+    + IsInactiveBefore(int archiveStorageDays)$ Expression
+    + IsDisableBefore(int archiveStorageDays)$ Expression
+    + GetCombinedCleanupPredicate(int completedDays, int inactiveDays, int disabledDays)$ Expression
     + IsApprovalCompleted() bool
     + IsCustom() bool
     + IncludeRequiredField()$ Func
@@ -70,7 +72,7 @@ class Module {
     - List~ModuleTextParameter~ _moduleTextParameters
     - List~ModuleNumericParameter~ _moduleNumericParameters
     + bool IsCustom
-    + static IsInactive() Expression~Func~Module, bool~~
+    + IsInactive()$ Expression
     + IReadOnlyCollection~Component~ Components
     + IReadOnlyCollection~OrderItem~ OrderItems
     + IReadOnlyCollection~ModuleTextParameter~ ModuleTextParameters
@@ -142,7 +144,7 @@ class OrderEvent {
     # string Code
     + DateTime CreatedAt
     + DateTime UpdatedAt
-    + static short CacheEntriesCount$ = 20
+    + short CacheEntriesCount$ = 20
     + Order Order
     + Guid OrderId
     + int Type
@@ -187,7 +189,7 @@ class OrderStatus {
 
 class ApprovalWorkflow {
     - List~ApprovalWorkflowItem~ _approvalWorkflowItems
-    + static string CompletedStageCode$
+    + string CompletedStageCode$
     + bool IsCompleted
     + IReadOnlyCollection~ApprovalWorkflowItem~ ApprovalWorkflowItems
     + ApprovalWorkflowItem ActiveStage

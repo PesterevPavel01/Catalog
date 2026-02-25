@@ -22,34 +22,14 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
             {
                 var orderRepository = unitOfWork.GetRepository<Order>();
 
-                /*Completed orders*/
-                var completedOrders = await orderRepository
+                var orders = await orderRepository
                     .GetAllAsync(
-                        predicate: Order.IsCompletedBefore(request.ArchiveStorageDays.CompletedOrdersDays),
+                        predicate: Order.GetCombinedCleanupPredicate(request.ArchiveStorageDays.CompletedOrdersDays, request.ArchiveStorageDays.InactiveOrdersDays, request.ArchiveStorageDays.DisabledOrdersDays),
                         trackingType: TrackingType.Tracking
                     );
 
-                if(completedOrders.Any())
-                    orderRepository.Delete(completedOrders);
-
-                /*Inactive orders*/
-                var inactiveOrders = await orderRepository
-                    .GetAllAsync(
-                        predicate: Order.IsInactiveBefore(request.ArchiveStorageDays.InactiveOrdersDays),
-                        trackingType: TrackingType.Tracking
-                    );
-
-                if (inactiveOrders.Any())
-                    orderRepository.Delete(inactiveOrders);
-
-                /*Disabled orders*/
-                var disabledOrders = await orderRepository
-                    .GetAllAsync(
-                        predicate: x => !x.Enabled && x.UpdatedAt < DateTime.Now.AddDays(request.ArchiveStorageDays.DisabledOrdersDays * -1),
-                        trackingType: TrackingType.Tracking);
-
-                if (disabledOrders.Any())
-                    unitOfWork.GetRepository<Order>().Delete(disabledOrders);
+                if (orders.Any())
+                    orderRepository.Delete(orders);
 
                 var result = await unitOfWork.SaveChangesAsync();
 

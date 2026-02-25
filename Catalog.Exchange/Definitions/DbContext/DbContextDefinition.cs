@@ -9,8 +9,6 @@ namespace Catalog.ExchangeService.Definitions.DbContext
         public override void ConfigureServices(WebApplicationBuilder builder)
         {
             var connectionString = builder.Configuration.GetConnectionString("AppDbConnectionString");
-            
-            //builder.Services.AddSingleton<DateInterceptors>();
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
