@@ -1,11 +1,4 @@
-﻿using System.Text.Json;
-using Calabonga.OperationResults;
-using Catalog.Contracts.Dto.Components;
-using Catalog.Contracts.Entities.Configurations;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
-
-namespace Catalog.ComponentService.Application.Processors
+﻿namespace Catalog.ComponentService.Application.Processors
 {
     public class CachedComponentLoaderProcessor
     {/*

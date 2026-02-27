@@ -31,7 +31,7 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
                 if (orders.Any())
                     orderRepository.Delete(orders);
 
-                var result = await unitOfWork.SaveChangesAsync();
+                await unitOfWork.SaveChangesAsync();
 
                 if (unitOfWork.Result.Exception is not null)
                 {

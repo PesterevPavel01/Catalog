@@ -1,4 +1,4 @@
-﻿namespace Catalog.Contracts.Entities.Rabbit
+﻿namespace Catalog.Contracts.Configurations.Rabbit
 {
     public sealed class RabbitSettings
     {

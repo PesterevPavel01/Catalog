@@ -1,6 +1,9 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Entities;
+using Catalog.Contracts.Enum;
+using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Authorization;
 using Catalog.FacadeOrderTitleValidator;
@@ -40,10 +43,17 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
                     return Operation.Error(titleResult.Error);
                 }
 
+                var orderEvent = OrderEvent.Create(OrderEventTypeTitles.Created, OrderEventType.Created, null);
+
+                if (!orderEvent.Ok)
+                    return Operation.Error(orderEvent.Error);
+
                 var orderResult = Order
                     .Create(
                         title: titleResult.Result,
-                        code: request.Model.OrderCode, user);
+                        code: request.Model.OrderCode,
+                        user,
+                        orderEvent.Result);
 
                 if (!orderResult.Ok)
                 {
@@ -51,6 +61,7 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
                     return Operation.Error(orderResult.Error);
                 }
 
+                /*await unitOfWork.GetRepository<OrderEvent>().InsertAsync(orderEvent.Result, cancellationToken); */
                 await unitOfWork.GetRepository<Order>().InsertAsync(orderResult.Result, cancellationToken);
 
                 var result = await unitOfWork.SaveChangesAsync();

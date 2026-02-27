@@ -1,6 +1,8 @@
 ﻿using Calabonga.OperationResults;
+using Catalog.Contracts.DomainEvents;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
+using Catalog.Contracts.Entities.Base;
 using Catalog.Contracts.Enum;
 using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities.Authorization;
@@ -13,7 +15,7 @@ using System.Linq.Expressions;
 
 namespace Catalog.Domain.Entities
 {
-    public class Order : SimpleEntity
+    public class Order : AggregateRoot
     {
         public const Int16 CacheDays = 60;
 
@@ -74,14 +76,18 @@ namespace Catalog.Domain.Entities
 
         public bool IsCustom => CheckCustomization();
 
-        public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user)
+        public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user, OrderEvent orderEvent)
         {
             var titleValue = TitleValue.Create(title ?? Guid.NewGuid().ToString());
 
             if (!titleValue.Ok)
                 return Operation.Error(titleValue.Error);
 
-            var order = new Order(titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty).SetUser(user);
+            var order = new Order(titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty)
+                .SetUser(user)
+                .AddOrderEvent(orderEvent);
+
+            order.RaiseDomainEvent(new OrderCreatedDomainEvent(order.Code));
 
             return order; 
         }

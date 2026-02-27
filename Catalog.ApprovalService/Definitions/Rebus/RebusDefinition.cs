@@ -1,5 +1,5 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Entities.Rabbit;
+using Catalog.Contracts.Configurations.Rabbit;
 using Catalog.Contracts.Events;
 using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Contracts.Interfaces;

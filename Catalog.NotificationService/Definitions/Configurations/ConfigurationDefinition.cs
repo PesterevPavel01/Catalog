@@ -1,5 +1,5 @@
-﻿using Catalog.Contracts.Entities.Configurations;
-using Catalog.Contracts.Entities.Rabbit;
+﻿using Catalog.Contracts.Configurations.Rabbit;
+using Catalog.Contracts.Entities.Configurations;
 using Catalog.NotificationService.Application.Configurations;
 using TelegramService.Configurations;
 

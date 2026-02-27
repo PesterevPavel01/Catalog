@@ -43,8 +43,6 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Send(new OrderCreatedEvent(result.Result.Code));
-
                     if (model.OrderItems.Any())
                     {
                         var operationResult = await mediator.Send(new CreateOrderItems.Request(model.OrderItems), context.RequestAborted);

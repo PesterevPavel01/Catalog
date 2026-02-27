@@ -8,10 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Catalog.Contracts.Resources {
+namespace Catalog.Contracts.Resources
+{
     using System;
-    
-    
+
+
     /// <summary>
     ///   Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
     /// </summary>
@@ -22,40 +23,48 @@ namespace Catalog.Contracts.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class OrderEventTypeTitles {
-        
+    public class OrderEventTypeTitles
+    {
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal OrderEventTypeTitles() {
+        internal OrderEventTypeTitles()
+        {
         }
-        
+
         /// <summary>
         ///   Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
-            get {
-                if (object.ReferenceEquals(resourceMan, null)) {
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if (object.ReferenceEquals(resourceMan, null))
+                {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Catalog.Contracts.Resources.OrderEventTypeTitles", typeof(OrderEventTypeTitles).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Перезаписывает свойство CurrentUICulture текущего потока для всех
         ///   обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
-            get {
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
                 return resourceCulture;
             }
-            set {
+            set
+            {
                 resourceCulture = value;
             }
         }
@@ -63,8 +72,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Завершен процесс согласования!.
         /// </summary>
-        public static string ApprovalCompleted {
-            get {
+        public static string ApprovalCompleted
+        {
+            get
+            {
                 return ResourceManager.GetString("ApprovalCompleted", resourceCulture);
             }
         }
@@ -72,8 +83,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Заказ отменен!.
         /// </summary>
-        public static string Cancelled {
-            get {
+        public static string Cancelled
+        {
+            get
+            {
                 return ResourceManager.GetString("Cancelled", resourceCulture);
             }
         }
@@ -81,8 +94,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Заказ изменен!.
         /// </summary>
-        public static string Changed {
-            get {
+        public static string Changed
+        {
+            get
+            {
                 return ResourceManager.GetString("Changed", resourceCulture);
             }
         }
@@ -90,8 +105,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Завершен.
         /// </summary>
-        public static string Completed {
-            get {
+        public static string Completed
+        {
+            get
+            {
                 return ResourceManager.GetString("Completed", resourceCulture);
             }
         }
@@ -99,8 +116,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Запущен процесс согласования!.
         /// </summary>
-        public static string CreateApprovalWorkflow {
-            get {
+        public static string CreateApprovalWorkflow
+        {
+            get
+            {
                 return ResourceManager.GetString("CreateApprovalWorkflow", resourceCulture);
             }
         }
@@ -108,8 +127,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Заказ создан!.
         /// </summary>
-        public static string Created {
-            get {
+        public static string Created
+        {
+            get
+            {
                 return ResourceManager.GetString("Created", resourceCulture);
             }
         }
@@ -117,8 +138,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Изменен нестандартный модуль!.
         /// </summary>
-        public static string CustomModuleModified {
-            get {
+        public static string CustomModuleModified
+        {
+            get
+            {
                 return ResourceManager.GetString("CustomModuleModified", resourceCulture);
             }
         }
@@ -126,8 +149,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Заказ удален!.
         /// </summary>
-        public static string Disabled {
-            get {
+        public static string Disabled
+        {
+            get
+            {
                 return ResourceManager.GetString("Disabled", resourceCulture);
             }
         }
@@ -135,8 +160,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Заказ передан в производство!.
         /// </summary>
-        public static string Exported {
-            get {
+        public static string Exported
+        {
+            get
+            {
                 return ResourceManager.GetString("Exported", resourceCulture);
             }
         }
@@ -144,8 +171,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Заказ не принят в производство!.
         /// </summary>
-        public static string ExternallyReject {
-            get {
+        public static string ExternallyReject
+        {
+            get
+            {
                 return ResourceManager.GetString("ExternallyReject", resourceCulture);
             }
         }
@@ -153,8 +182,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Добавлен комментарий!.
         /// </summary>
-        public static string MessageAdded {
-            get {
+        public static string MessageAdded
+        {
+            get
+            {
                 return ResourceManager.GetString("MessageAdded", resourceCulture);
             }
         }
@@ -162,8 +193,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Завершено производство..
         /// </summary>
-        public static string Produced {
-            get {
+        public static string Produced
+        {
+            get
+            {
                 return ResourceManager.GetString("Produced", resourceCulture);
             }
         }
@@ -171,8 +204,10 @@ namespace Catalog.Contracts.Resources {
         /// <summary>
         ///   Ищет локализованную строку, похожую на Не пройден процесс согласования!.
         /// </summary>
-        public static string Reject {
-            get {
+        public static string Reject
+        {
+            get
+            {
                 return ResourceManager.GetString("Reject", resourceCulture);
             }
         }

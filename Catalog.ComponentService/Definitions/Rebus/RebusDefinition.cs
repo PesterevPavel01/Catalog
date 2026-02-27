@@ -1,7 +1,7 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ComponentService.Application.Commands;
 using Catalog.Contracts.Commands.Exchange;
-using Catalog.Contracts.Entities.Rabbit;
+using Catalog.Contracts.Configurations.Rabbit;
 using Catalog.Contracts.Interfaces;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;

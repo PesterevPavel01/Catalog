@@ -1,6 +1,6 @@
 ﻿using Catalog.Contracts.Configurations;
+using Catalog.Contracts.Configurations.Rabbit;
 using Catalog.Contracts.Entities.Configurations;
-using Catalog.Contracts.Entities.Rabbit;
 using Catalog.Redis.Configuration;
 using TelegramService.Configurations;
 

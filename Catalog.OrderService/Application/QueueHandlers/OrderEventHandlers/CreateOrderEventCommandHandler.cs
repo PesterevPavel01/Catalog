@@ -73,26 +73,30 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 return;
             }
 
-            var orderEvent = OrderEvent.Create(message.Note, message.Type, null);
-
-            if (!orderEvent.Ok)
+            if (message.Type != OrderEventType.Created)
             {
-                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderEvent.Error} OrderTitle: {order.Title}");
+                var orderEvent = OrderEvent.Create(message.Note, message.Type, null);
 
-                return;
-            }
+                if (!orderEvent.Ok)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {orderEvent.Error} OrderTitle: {order.Title}");
 
-            order.AddOrderEvent(orderEvent.Result);
+                    return;
+                }
 
-            await _unitOfWork.GetRepository<OrderEvent>().InsertAsync(orderEvent.Result);
+                order.AddOrderEvent(orderEvent.Result);
 
-            var result = await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.GetRepository<OrderEvent>().InsertAsync(orderEvent.Result);
 
-            if (_unitOfWork.Result.Exception is not null)
-            {
-                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
+                var result = await _unitOfWork.SaveChangesAsync();
 
-                return;
+                if (_unitOfWork.Result.Exception is not null)
+                {
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception.Message} OrderTitle: {order.Title}");
+
+                    return;
+                }
+
             }
 
             /*CACHING*/
@@ -124,9 +128,8 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
             }
 
             /*ORDERS*/
-            var eventType = (OrderEventType)orderEvent.Result.Type;
 
-            if (eventType.IsCaching())
+            if (message.Type.IsCaching())
             {
                 var customerOrdersCacheKey = Order.GenerateUserCommonCacheKey(_orderRedisService.GenerateCacheKey, order.ApplicationUser.UserName);
 
@@ -197,7 +200,7 @@ namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
                 {
                     if (Enum.TryParse<OrderEventType>(_completionTriggerEventType, out var completionTriggerEventType))
                     {
-                        if (orderEvent.Result.Type == (Int16)completionTriggerEventType)
+                        if (message.Type == completionTriggerEventType)
                         {
                             var completeResult = await _mediator.Send(new CompleteOrder.Request([message.OrderCode]), default);
                             

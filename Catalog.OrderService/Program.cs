@@ -6,8 +6,9 @@ using Catalog.Infrastructure;
 using Catalog.Logging.Middleware;
 using Catalog.ModuleCompositionValidator.Extension;
 using Catalog.OrderService.Definitions.Configurations;
-using Serilog;
 using Catalog.Redis.Extension;
+using Serilog;
+using Serilog.Events;
 using TelegramService.DependencyInjection;
 
 try
