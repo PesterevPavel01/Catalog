@@ -60,7 +60,7 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             .WithName("OrderCreateEndpoint")
             .WithOpenApi(operation => new(operation)
             {
-                Summary = "Создание нового заказа.",
+                Summary = "Создать новый заказ.",
             });
         }
     }
