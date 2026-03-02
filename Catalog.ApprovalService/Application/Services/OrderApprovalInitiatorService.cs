@@ -3,7 +3,6 @@ using Calabonga.UnitOfWork;
 using Catalog.ApprovalService.Application.Processors.OrderItems;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.ApprovalService.Application.Services
 {

@@ -32,7 +32,6 @@ namespace Catalog.OrderService.Definitions.Rebus
                 .Routing(r => r.TypeBased()
                     .Map<CacheOrderEventsCommand>(nameof(IOrderQueueEvent))
                     .Map<OrderCreatedEvent>(nameof(IOrderQueueEvent))
-                    .Map<OrderChangedEvent>(nameof(IOrderQueueEvent))
                     .Map<CacheOrdersCommand>(nameof(IOrderQueueEvent))
                     .Map<ModuleChangePermissionResponse>(nameof(IModuleQueueEvent))
                     .Map<LatestChangesOrdersResponse>(nameof(IExchangeQueueEvent)))
@@ -49,7 +48,7 @@ namespace Catalog.OrderService.Definitions.Rebus
             =>
             {
 
-                await bus.Subscribe<CreateOrderEventCommand>();
+                await bus.Subscribe<UpdateOrderCacheCommand>();
                 await bus.Subscribe<UpdateOrderCodeCommand>();
                 await bus.Subscribe<MarkOrdersAsProducedCommand>();
 
@@ -59,7 +58,6 @@ namespace Catalog.OrderService.Definitions.Rebus
                 await bus.Subscribe<OrderApprovalWorkflowsRemoveEvent>();
                 await bus.Subscribe<OrderAddMessageEvent>();
                 await bus.Subscribe<OrderDisabledEvent>();
-                await bus.Subscribe<CustomWorkflowChangedEvent>();
                 await bus.Subscribe<EntitiesExportedEvent>();
                 await bus.Subscribe<RejectedEntitiesEvent>();
                 await bus.Subscribe<ModuleChangedEvent>();                

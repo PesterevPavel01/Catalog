@@ -8,7 +8,7 @@ using Catalog.ModuleCompositionValidator.Extension;
 using Catalog.OrderService.Definitions.Configurations;
 using Catalog.Redis.Extension;
 using Serilog;
-using Serilog.Events;
+using Catalog.OrderExtendabilityValidator.Extensions;
 using TelegramService.DependencyInjection;
 
 try
@@ -26,6 +26,8 @@ try
     builder.Services.AddModuleCompositionValidator();
 
     builder.Services.AddFacadesOrderCompositionValidator();
+
+    builder.Services.AddOrderExtendabilityValidator();
 
     builder.Host.UseSerilog((context, configuration) =>
         configuration.ReadFrom.Configuration(context.Configuration));

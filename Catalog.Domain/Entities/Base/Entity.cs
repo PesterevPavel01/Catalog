@@ -11,7 +11,7 @@
 
         public bool Enabled { get; protected set; } = true;
 
-        public void Disable() 
+        public virtual void Disable() 
         {
             Enabled = false;
         }

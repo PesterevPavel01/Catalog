@@ -1,12 +1,10 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
-using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Messages.OrderItemMessages;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Rebus.Bus;
 
 namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 {
@@ -37,7 +35,7 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
                     HttpContext context,
                     CancellationToken cancellationToken) =>
                 {
-                    var result = await mediator.Send(new CreateOrderItems.Request(models), context.RequestAborted);
+                    var result = await mediator.Send(new CreateOrderItem.Request(models), context.RequestAborted);
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);

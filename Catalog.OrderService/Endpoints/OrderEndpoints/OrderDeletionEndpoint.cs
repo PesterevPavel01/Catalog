@@ -44,8 +44,6 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
 
-                    await bus.Publish(new OrderDisabledEvent(result.Result));
-
                     return Results.Ok(result.Result);
                 })
             //.RequireAuthorization("Constructor")

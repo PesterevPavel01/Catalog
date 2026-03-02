@@ -4,7 +4,6 @@
     {
         OrderSync = 0,
         ImportComponent=1,
-
     }
     public static class ExchangeEventTypeExtensions
     {

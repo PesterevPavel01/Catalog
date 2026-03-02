@@ -40,11 +40,12 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                     await bus.Subscribe<MarkOrdersAsProducedEvent>();
                     await bus.Subscribe<OrderCompletedEvent>();
                     await bus.Subscribe<CustomerCreatedEvent>();
-                    await bus.Subscribe<WorkflowCreatedEvent>();
+                    await bus.Subscribe<OrderWorkflowCreatedEvent>();
                     await bus.Subscribe<WorkflowsCancelledEvent>();
-                    await bus.Subscribe<WorkflowRejectedEvent>();
-                    await bus.Subscribe<OrderApprovalWorkflowsRemoveEvent>();
-                    await bus.Subscribe<CustomWorkflowChangedEvent>();
+                    await bus.Subscribe<OrderRejectedEvent>();
+                    await bus.Subscribe<OrderRejectedFromProductionEvent>();
+                    await bus.Subscribe<OrderCancelledEvent>();
+                    await bus.Subscribe<CustomModuleChangedEvent>();
                     await bus.Subscribe<OrderAddMessageEvent>();
                     await bus.Subscribe<OrderDisabledEvent>();
                     await bus.Subscribe<OrderExportedEvent>();

@@ -23,7 +23,6 @@ namespace Catalog.Contracts.Entities
         public Int32 Type { get; private set; }
 
         public static Operation<OrderEvent, string> Create(
-            //Order order, 
             string title, OrderEventType type, string? code)
         {
             var titleValue = TitleValue.Create(title);
@@ -35,11 +34,13 @@ namespace Catalog.Contracts.Entities
                 return Operation.Error("Order is null");*/
 
             var orderEvent = new OrderEvent((Int32)type, titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty);
-            /*{
-                Order = order
-            };*/
-
+            
             return orderEvent;
+        }
+
+        public void SetOrder(Order order)
+        { 
+            Order = order;
         }
 
         public OrderEventDto ConvertToDto()

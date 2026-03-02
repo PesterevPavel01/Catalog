@@ -22,8 +22,10 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
             /// <returns>Response from the request</returns>
             public async Task<Operation<OrderDto, string>> Handle(Request request, CancellationToken cancellationToken)
             {
-                var order = await unitOfWork
-                    .GetRepository<Order>()
+                var orderRepository = unitOfWork
+                    .GetRepository<Order>();
+
+                var order = await orderRepository
                     .GetFirstOrDefaultAsync(
                         predicate: x => x.Code == request.Model.OrderCode,
                         include: Order.IncludeRequiredField(),
@@ -51,10 +53,12 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
                 if (!message.Ok)
                     return Operation.Error(message.Error);
 
-                await unitOfWork
-                    .GetRepository<Message>().InsertAsync(message.Result, cancellationToken);
+                var addResult = order.AddMessageToOrderItem(orderItem, message.Result);
 
-                orderItem.AddMessage(message.Result);
+                if (!addResult.Ok)
+                    return Operation.Error(addResult.Error);
+
+                orderRepository.Update(order);
 
                 var result = await unitOfWork.SaveChangesAsync();
 

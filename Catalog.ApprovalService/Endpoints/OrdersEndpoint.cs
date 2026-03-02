@@ -104,7 +104,6 @@ namespace Catalog.ApprovalService.Endpoints
 
             group.MapPost("remove", async (
                 [FromBody] OrderDto model,
-                IBus bus,
                 IOptions<ApplicationConfiguration> applicationConfiguration,
                 RemoveOrderWorkflowsProcessor processor,
                 CancellationToken cancellationToken) =>
@@ -113,8 +112,6 @@ namespace Catalog.ApprovalService.Endpoints
 
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
-
-                await bus.Publish(new OrderApprovalWorkflowsRemoveEvent(result.Result));
 
                 return Results.Ok(result.Result);
             })

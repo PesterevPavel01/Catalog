@@ -12,6 +12,7 @@ namespace Catalog.OrderService.Definitions.HostedService
         public override void ConfigureServices(WebApplicationBuilder builder)
         {
             builder.Services.AddHostedService<OutboxProcessorExecutorHostedService>();
+            builder.Services.AddHostedService<OutboxCleanerProcessorExecutorHostedService>();
         }
     }
 }

@@ -40,9 +40,10 @@ namespace Catalog.Domain.Entities
             return new OrderItem(Guid.Empty, quantity).SetModule(module);
         }
 
-        public void SetQuantity(Int16 quantity) 
+        private OrderItem SetModule(Module module)
         {
-            Quantity = quantity;
+            Module = module;
+            return this;
         }
 
         public void AddMessage(Message message)
@@ -54,10 +55,9 @@ namespace Catalog.Domain.Entities
             _messages.Add(message);
         }
 
-        private OrderItem SetModule(Module module)
+        public void ChangeQuantity(Int16 quantity)
         {
-            Module = module;
-            return this;
+            Quantity = quantity;
         }
 
         public static Func<IQueryable<OrderItem>, IIncludableQueryable<OrderItem, object>> IncludeRequiredField()

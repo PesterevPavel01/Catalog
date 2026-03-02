@@ -3,20 +3,24 @@ using Calabonga.UnitOfWork;
 using Catalog.ApprovalService.Application.Configurations;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities.Approval;
+using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Rebus.Bus;
 
 namespace Catalog.ApprovalService.Application.Processors
 {
     public sealed class RemoveOrderWorkflowsProcessor
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IBus _bus;
         private readonly IOptions<ApplicationConfiguration> _applicationConfiguration;
 
-        public RemoveOrderWorkflowsProcessor(IOptions<ApplicationConfiguration> applicationConfiguration, IUnitOfWork unitOfWork)
+        public RemoveOrderWorkflowsProcessor(IOptions<ApplicationConfiguration> applicationConfiguration, IUnitOfWork unitOfWork, IBus bus)
         {
+            _bus = bus;
             _unitOfWork = unitOfWork;
             _applicationConfiguration = applicationConfiguration;
         }
@@ -67,6 +71,8 @@ namespace Catalog.ApprovalService.Application.Processors
             {
                 return Operation.Error(_unitOfWork.Result.Exception.Message);
             }
+
+            await _bus.Publish(new OrderApprovalWorkflowsRemoveEvent(order.Id));
 
             return order.ConvertToDto();
         }

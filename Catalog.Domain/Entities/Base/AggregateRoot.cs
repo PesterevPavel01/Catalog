@@ -2,27 +2,26 @@
 using Catalog.Domain.Entities.Base;
 using Catalog.Domain.ValueObjects;
 
-namespace Catalog.Contracts.Entities.Base
+namespace Catalog.Contracts.Entities.Base;
+
+public abstract class AggregateRoot : SimpleEntity
 {
-    public abstract class AggregateRoot : SimpleEntity
+    private readonly List<IDomainEvent> _domainEvents = [];
+
+    protected AggregateRoot(TitleValue title, string code, Guid id) : base(title, code, id){}
+
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents()
     {
-        private readonly List<IDomainEvent> _domainEvents = [];
+        return [.. _domainEvents];
+    }
 
-        protected AggregateRoot(TitleValue title, string code, Guid id) : base(title, code, id){}
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
+    }
 
-        public IReadOnlyCollection<IDomainEvent> GetDomainEvents()
-        {
-            return [.. _domainEvents];
-        }
-
-        public void ClearDomainEvents()
-        {
-            _domainEvents.Clear();
-        }
-
-        protected void RaiseDomainEvent(IDomainEvent domainEvent)
-        {
-            _domainEvents.Add(domainEvent);
-        }
+    protected void RaiseDomainEvent(IDomainEvent domainEvent)
+    {
+        _domainEvents.Add(domainEvent);
     }
 }

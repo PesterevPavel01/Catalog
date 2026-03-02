@@ -3,29 +3,28 @@ using Catalog.Contracts.Dto;
 using Catalog.Contracts.Entities.Parameters.Base;
 using Catalog.Domain.ValueObjects;
 
-namespace Catalog.Contracts.Entities.Parameters
+namespace Catalog.Contracts.Entities.Parameters;
+
+public sealed class ModuleTextParameter : TextParameter
 {
-    public sealed class ModuleTextParameter : TextParameter
+    public ModuleTextParameter(TextParameterValue value, Guid id) : base(value, id){}
+
+    public static Operation<ModuleTextParameter, string> Create(string value, ParameterType parameterType)
     {
-        public ModuleTextParameter(TextParameterValue value, Guid id) : base(value, id){}
+        var textParameterValue = TextParameterValue.Create(value);
 
-        public static Operation<ModuleTextParameter, string> Create(string value, ParameterType parameterType)
-        {
-            var textParameterValue = TextParameterValue.Create(value);
+        if (!textParameterValue.Ok)
+            throw new Exception(textParameterValue.Error);
 
-            if (!textParameterValue.Ok)
-                throw new Exception(textParameterValue.Error);
+        var moduleTextParameter = new ModuleTextParameter(textParameterValue.Result, Guid.Empty);
 
-            var moduleTextParameter = new ModuleTextParameter(textParameterValue.Result, Guid.Empty);
+        var setTypeResult = moduleTextParameter.SetType(parameterType);
 
-            var setTypeResult = moduleTextParameter.SetType(parameterType);
+        if (!setTypeResult.Ok)
+            return Operation.Error(setTypeResult.Error);
 
-            if (!setTypeResult.Ok)
-                return Operation.Error(setTypeResult.Error);
-
-            return moduleTextParameter;
-        }
-
-        public Guid ModuleId { get; private set; }
+        return moduleTextParameter;
     }
+
+    public Guid ModuleId { get; private set; }
 }

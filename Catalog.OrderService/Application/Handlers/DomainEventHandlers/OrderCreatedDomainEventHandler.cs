@@ -1,22 +1,32 @@
-﻿using Catalog.Contracts.DomainEvents;
+﻿using Calabonga.UnitOfWork;
+using Catalog.Contracts.DomainEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using MediatR;
+using Microsoft.Extensions.Options;
 using Rebus.Bus;
+using TelegramService.Configurations;
+using TelegramService.Interfaces;
 
-namespace Catalog.OrderService.Application.Handlers.DomainEventHandlers
+namespace Catalog.OrderService.Application.Handlers.DomainEventHandlers;
+
+public class OrderCreatedDomainEventHandler : INotificationHandler<OrderCreatedDomainEvent>
 {
-    public class OrderCreatedDomainEventHandler : INotificationHandler<OrderCreatedDomainEvent>
+    private readonly IBus _bus;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ITelegramService _telegramService;
+
+    public OrderCreatedDomainEventHandler(IBus bus, IUnitOfWork unitOfWork,
+        ITelegramService telegramService,
+        IOptions<TelegramBotConfiguration> exceptionNotificationBot)
     {
-        private readonly IBus _bus;
+        _unitOfWork = unitOfWork;
+        _bus = bus;
+        _telegramService = telegramService;
+        _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
+    }
 
-        public OrderCreatedDomainEventHandler(IBus bus)
-        {
-            _bus = bus;
-        }
-
-        public async Task Handle(OrderCreatedDomainEvent orderCreatedDomainEvent, CancellationToken cancellationToken)
-        {
-            await _bus.Send(new OrderCreatedEvent(orderCreatedDomainEvent.Code));
-        }
+    public async Task Handle(OrderCreatedDomainEvent orderCreatedDomainEvent, CancellationToken cancellationToken)
+    {
+        await _bus.Send(new OrderCreatedEvent(orderCreatedDomainEvent.Code));
     }
 }

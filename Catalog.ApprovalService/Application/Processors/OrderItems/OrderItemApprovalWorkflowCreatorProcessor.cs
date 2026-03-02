@@ -74,7 +74,7 @@ namespace Catalog.ApprovalService.Application.Processors.OrderItems
                     trackingType: TrackingType.Tracking
                 );
 
-            if (user == null)
+            if (user is null)
                 return Operation.Error("TECHNICAL_USER not found!");
 
             var orderItemModels = order.OrderItems.Where(x => x.Enabled && model.Modules.Select(m => m.Module.ModuleCode).Contains(x.Module.Code));

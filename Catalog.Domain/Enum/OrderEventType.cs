@@ -12,9 +12,11 @@
         Deleted = 7,
         MessageAdded = 8,
         Reject = 9,
-        Exported = 10,
+        InProduction = 10,
         ExternallyRejected = 11,
         Produced = 12,
         Completed = 13,
+        OrderItemQuantityChanged = 14,
+        OrderItemRemoved = 14,
     }
 }

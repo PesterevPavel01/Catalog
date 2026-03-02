@@ -1,14 +1,39 @@
 ﻿using Catalog.Contracts.Entities;
-using Catalog.Infrastructure.Configurations.Base;
+using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Catalog.Infrastructure.Configurations
 {
-    public class OrderEventConfiguration : SimpleEntityConfiguration<OrderEvent>
+    public class OrderEventConfiguration : IEntityTypeConfiguration<OrderEvent>
     {
-        protected override void AddBuilder(EntityTypeBuilder<OrderEvent> builder)
+        public void Configure(EntityTypeBuilder<OrderEvent> builder)
         {
+            builder.ToTable("order_events");
+
+            builder.HasKey(x => x.Id);
+
+            builder
+                .Property(x => x.Id)
+                .ValueGeneratedOnAdd();
+
+            builder
+               .Property(x => x.Title)
+               .IsRequired()
+               .HasMaxLength(TitleValue.MaxTitleLength)
+               .HasConversion(x => x.Value, x => TitleValue.Create(x).Result);
+
+            builder
+                .Property(x => x.Code)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            builder.HasIndex(x => x.Title);
+
+            builder
+                .HasIndex(x => x.Code)
+                .IsUnique();
+
             builder.Property(x => x.Type).HasMaxLength(50);
 
             builder
@@ -17,8 +42,5 @@ namespace Catalog.Infrastructure.Configurations
                 .HasForeignKey(x => x.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
-
-        protected override string TableName()
-            => "order_events";
     }
 }

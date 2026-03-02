@@ -20,7 +20,8 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
             /// <returns>Response from the request</returns>
             public async Task<Operation<OrderDto, string>> Handle(Request request, CancellationToken cancellationToken)
             {
-                var order = await unitOfWork.GetRepository<Order>()
+                var orderRepository = unitOfWork.GetRepository<Order>();
+                var order = await orderRepository
                     .GetFirstOrDefaultAsync(
                         predicate: x => x.Code == request.orderCode,
                         include: query => query.Include(x => x.ApplicationUser),
@@ -30,7 +31,12 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
                 if (order is null)
                     return Operation.Error("Order not found!");
 
-                order.Disable();
+                var disableResult = order.Disable();
+
+                if(!disableResult.Ok)
+                    return Operation.Error(disableResult.Error);
+
+                orderRepository.Update(order);
 
                 var result = await unitOfWork.SaveChangesAsync();
 

@@ -2,7 +2,6 @@
 using Catalog.Application.Processors.AuthorizationProcessor;
 using Catalog.Contracts;
 using Catalog.Infrastructure;
-using Catalog.Infrastructure.Interceptors;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
 
 namespace Catalog.Web.Definitions.Services
@@ -22,6 +21,8 @@ namespace Catalog.Web.Definitions.Services
             builder.Services.AddScoped<LastModifiedOrdersQueryHandler>();
 
             builder.Services.AddScoped<IOutboxProcessor, OutboxProcessor>();
+
+            builder.Services.AddScoped<IOutboxCleanerProcessor, OutboxCleanerProcessor>();
         }
     }
 }

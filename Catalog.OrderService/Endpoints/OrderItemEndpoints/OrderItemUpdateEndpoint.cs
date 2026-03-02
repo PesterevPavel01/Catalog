@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.Contracts.Dto.Order;
-using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Messages.OrderItemMessages;
 using MediatR;
@@ -41,8 +40,6 @@ namespace Catalog.OrderService.Endpoints.OrderItemEndpoints
 
                     if (!result.Ok)
                         return Results.BadRequest(result.Error);
-
-                    await bus.Send(new OrderChangedEvent(orderItem.OrderCode));
 
                     return Results.Ok(result.Result);
                 })

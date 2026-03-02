@@ -1,13 +1,12 @@
 ﻿using Calabonga.UnitOfWork;
-using Catalog.Contracts.Commands;
-using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.ExchangeEvents;
-using Catalog.Contracts.Events.OrderEvents;
-using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
+using Catalog.OrderService.Application.Messages.OrderMessages;
+using MediatR;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;
+using System;
 using TelegramService.Configurations;
 using TelegramService.Interfaces;
 
@@ -15,15 +14,13 @@ namespace Catalog.OrderService.Application.QueueHandlers.ExportEventHandlers
 {
     public class EntitiesExportedEventHandler : IHandleMessages<EntitiesExportedEvent>
     {
-        private readonly IBus _bus;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMediator _mediator;
         private readonly ITelegramService _telegramService;
 
-        public EntitiesExportedEventHandler(IBus bus, IUnitOfWork unitOfWork, ITelegramService telegramService,
-            IOptions<TelegramBotConfiguration> exceptionNotificationBot)
+        public EntitiesExportedEventHandler(ITelegramService telegramService,
+            IOptions<TelegramBotConfiguration> exceptionNotificationBot, IMediator mediator)
         {
-            _bus = bus;
-            _unitOfWork = unitOfWork;
+            _mediator = mediator;
             _telegramService = telegramService;
             _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
         }
@@ -48,31 +45,11 @@ namespace Catalog.OrderService.Application.QueueHandlers.ExportEventHandlers
                 return;
             }
 
-            var orders = await _unitOfWork
-                .GetRepository<Order>()
-                .GetAllAsync(
-                    predicate: x => message.Entities.Codes.Contains(x.Code),
-                    include: Order.IncludeRequiredField());
+            var result = await _mediator.Send(new SendToProduction.Request(message.Entities.Codes), default);
 
-            if (!orders.Any())
-            {
-                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: Order not found!");
-                return;
-            }
-
-            foreach (var code in message.Entities.Codes)
-            {
-                var order = orders.FirstOrDefault(x => x.Code == code);
-
-                if (order is null)
-                {
-                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: Order not found! Code: {code}");
-                    continue;
-                }
-
-                await _bus.Publish(new CreateOrderEventCommand(code, OrderEventType.Exported, OrderEventTypeTitles.Exported));
-                await _bus.Publish(new OrderExportedEvent(order.ConvertToDto()));
-            }
+            if(!result.Ok)
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()}.{typeof(EntitiesExportedEventHandler).Name}" +
+                    $" Errors:{result.Error.Select((error, index) => $"Error {index + 1}: {error}")}");
         }
     }
 }

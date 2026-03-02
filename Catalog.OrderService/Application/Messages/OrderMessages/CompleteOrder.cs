@@ -41,7 +41,8 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
                     if (order is null)
                         return Operation.Error("Order codes not found!");
 
-                    await bus.Publish(new CreateOrderEventCommand(code, OrderEventType.Completed, OrderEventTypeTitles.Completed));
+                    await bus.Publish(new UpdateOrderCacheCommand(code));
+
                     await bus.Publish(new OrderCompletedEvent(order.ConvertToDto()));
                 }
 

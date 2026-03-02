@@ -25,7 +25,6 @@ namespace Catalog.ApprovalService.Application.QueueHandlers
             if (message.Order is null)
             {
                 await _telegramService.SendMessageAsync($"{"ApprovalService".ToUpper()} Event {message.GetType().Name}. Order not found!");
-                throw new ArgumentException($"{"ApprovalService".ToUpper()} Event {message.GetType().Name}. Order not found!");
             }
 
             if (!message.Order.IsCustom)

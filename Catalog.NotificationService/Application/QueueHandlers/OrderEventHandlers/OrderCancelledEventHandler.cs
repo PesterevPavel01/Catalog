@@ -1,19 +1,19 @@
-﻿using Catalog.Contracts.Events.ApprovalEvents;
+﻿using Catalog.Contracts.Events.OrderEvents;
 using Catalog.NotificationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
 using TelegramService.Configurations;
 using TelegramService.Interfaces;
 
-namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHandlers
+namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandlers
 {
-    public class OrderApprovalWorkflowsRemoveEventHandler : IHandleMessages<OrderApprovalWorkflowsRemoveEvent>
+    public class OrderCancelledEventHandler : IHandleMessages<OrderCancelledEvent>
     {
         private readonly ITelegramService _telegramService;
         private readonly TelegramBotConfiguration _approvalNotificationBot;
         private readonly TelegramBotConfiguration _exceptionNotificationBot;
 
-        public OrderApprovalWorkflowsRemoveEventHandler(ILogger<OrderApprovalWorkflowsRemoveEventHandler> logger, ITelegramService telegramService,
+        public OrderCancelledEventHandler(ILogger<OrderCancelledEventHandler> logger, ITelegramService telegramService,
             IOptions<ApplicationConfiguration> applicationConfiguration, IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _approvalNotificationBot = applicationConfiguration.Value.ApprovalNotificationBot;
@@ -21,7 +21,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             _telegramService = telegramService;
         }
 
-        public async Task Handle(OrderApprovalWorkflowsRemoveEvent message)
+        public async Task Handle(OrderCancelledEvent message)
         {
             _telegramService.Initialize(token: _approvalNotificationBot.Token, chatId: _approvalNotificationBot.ChatId);
 

@@ -1,9 +1,10 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Application.Messages.OrderItemMessages
 {
@@ -11,26 +12,34 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
     {
         public record Request(CreateOrderItemDto model) : IRequest<Operation<bool, string>>;
 
-        public class Handler(IUnitOfWork unitOfWork)
+        public class Handler(IUnitOfWork unitOfWork, IBus bus)
             : IRequestHandler<Request, Operation<bool, string>>
         {
             public async Task<Operation<bool, string>> Handle(Request request, CancellationToken cancellationToken)
             {
-                var orderItem = await unitOfWork
-                    .GetRepository<OrderItem>()
+                var orderRepository = unitOfWork
+                    .GetRepository<Order>();
+
+                var order = await orderRepository
                     .GetFirstOrDefaultAsync(
-                        predicate: x => x.Order.Code == request.model.OrderCode && x.Module.Code == request.model.ModuleCode,
-                        include: query => query
-                            .Include(x => x.Order),
+                        predicate: x => x.Code == request.model.OrderCode,
+                        include: Order.IncludeRequiredField(),
                         trackingType: TrackingType.Tracking);
+
+                if (order is null)
+                    return Operation.Error("Order not found!");
+
+                var orderItem = order.OrderItems.FirstOrDefault(x => x.Module.Code == request.model.ModuleCode);
 
                 if (orderItem is null)
                     return Operation.Error("OrderItem not found!");
 
-                if (orderItem.Quantity == request.model.Quantity)
-                    return true;
+                var changeQuantityResult = order.ChangeItemQuantity(orderItem, request.model.Quantity);
 
-                orderItem.SetQuantity(request.model.Quantity);
+                if(!changeQuantityResult.Ok)
+                    return Operation.Error(changeQuantityResult.Error);
+
+                orderRepository.Update(order);
 
                 var result = await unitOfWork.SaveChangesAsync();
 
@@ -38,6 +47,9 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
                 {
                     return Operation.Error(unitOfWork.Result.Exception.Message);
                 }
+
+                //TODO Рефакторинг
+                await bus.Publish(new UpdateOrderCacheCommand(order.Code));
 
                 return true;
             }

@@ -56,13 +56,13 @@ namespace Catalog.Infrastructure
 
                 await _publisher.Publish(domainEvent, cancellationToken);
 
-                message.ProcessedAt = _timerProvider.GetUtcNow().DateTime;
+                message.ProcessedAt = _timerProvider.GetLocalNow().DateTime;
 
                 await _unitOfWork.SaveChangesAsync();
 
                 if (!_unitOfWork.Result.Ok)
                 {
-                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {_unitOfWork.Result.Exception}");
+                    await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()}.{typeof(OutboxProcessor).Name}. Event: {message.GetType().Name}. {_unitOfWork.Result.Exception}");
                     return;
                 }
             }

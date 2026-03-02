@@ -23,6 +23,12 @@ namespace Catalog.Infrastructure.Configurations
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder
+                .HasMany(x => x.OrderHistory)
+                .WithOne(x => x.Order)
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder
                 .HasOne(x => x.ApplicationUser)
                 .WithMany(x => x.Orders)
                 .HasForeignKey(x => x.ApplicationUserId)

@@ -1,7 +1,11 @@
-﻿namespace Catalog.Contracts
+﻿namespace Catalog.Contracts;
+
+public interface IOutboxProcessor
 {
-    public interface IOutboxProcessor
-    {
-        Task ProcessAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken);
-    }
+    Task ProcessAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken);
+}
+
+public interface IOutboxCleanerProcessor 
+{
+    Task ProcessAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken);
 }

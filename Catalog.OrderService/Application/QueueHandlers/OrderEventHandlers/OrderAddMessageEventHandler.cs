@@ -1,5 +1,4 @@
-﻿using Catalog.Contracts.Commands;
-using Catalog.Contracts.Enum;
+﻿using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Resources;
 using Rebus.Bus;
@@ -21,7 +20,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
             if (message.Order is null)
                 throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found!");
 
-            await _bus.Publish(new CreateOrderEventCommand(message.Order.Code, OrderEventType.MessageAdded, OrderEventTypeTitles.MessageAdded));
+            await _bus.Publish(new UpdateOrderCacheCommand(message.Order.Code));
         }
     }
 }

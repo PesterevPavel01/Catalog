@@ -7,13 +7,13 @@ using TelegramService.Interfaces;
 
 namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHandlers
 {
-    public class WorkflowCreatedEventHandler : IHandleMessages<WorkflowCreatedEvent>
+    public class OrderWorkflowCreatedEventHandler : IHandleMessages<OrderWorkflowCreatedEvent>
     {
         private readonly ITelegramService _telegramService;
         private readonly TelegramBotConfiguration _approvalNotificationBot;
         private readonly TelegramBotConfiguration _exceptionNotificationBot;
 
-        public WorkflowCreatedEventHandler(ITelegramService telegramService,
+        public OrderWorkflowCreatedEventHandler(ITelegramService telegramService,
             IOptions<ApplicationConfiguration> applicationConfiguration, IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _telegramService = telegramService;
@@ -21,7 +21,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             _exceptionNotificationBot = exceptionNotificationBot.Value;
         }
 
-        public async Task Handle(WorkflowCreatedEvent message)
+        public async Task Handle(OrderWorkflowCreatedEvent message)
         {
             if (message.Order is null)
             {

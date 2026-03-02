@@ -1,17 +1,20 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Domain.Entities;
 using MediatR;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Application.Messages.OrderItemMessages
 {
-    public class CreateOrderItems
+    public class CreateOrderItem
     {
         public record Request(IEnumerable<CreateOrderItemDto> models) : IRequest<Operation<OrderDto, string>>;
 
-        public class Handler(IUnitOfWork unitOfWork, IOrderValidator orderValidator)
+        public class Handler(IUnitOfWork unitOfWork, IBus bus,
+            IOrderValidator orderValidator, IOrderExtendabilityValidator extendabilityValidator)
             : IRequestHandler<Request, Operation<OrderDto, string>>
         {
 
@@ -24,7 +27,9 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
             {
                 var orderCode = request.models.First(x => x.OrderCode != null).OrderCode;
 
-                var order = await unitOfWork.GetRepository<Order>()
+                var orderRepository = unitOfWork.GetRepository<Order>();
+
+                var order = await orderRepository
                     .GetFirstOrDefaultAsync(
                         predicate: x => x.Code == orderCode,
                         trackingType: TrackingType.Tracking,
@@ -33,12 +38,6 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
 
                 if (order is null)
                     return Operation.Error("Order not found!");
-
-                if (order.IsApprovalCompleted())
-                    return Operation.Error("Order is completed!");
-
-                if (order.OrderItems.Where(x => x.ApprovalWorkflow is not null).Any())
-                    return Operation.Error("У заказа запущен процесс согласования!");
 
                 var orderItemsModels = request.models
                     .GroupBy(x => x.ModuleCode)
@@ -66,7 +65,7 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
                 {
                     foreach (var item in existingOrderItems)
                     {
-                        item.SetQuantity((short)(item.Quantity + orderItemsModels.First(x => x.ModuleCode == item.Module.Code).Quantity));
+                        order.ChangeItemQuantity(item, (short)(item.Quantity + orderItemsModels.First(x => x.ModuleCode == item.Module.Code).Quantity));
                     }
                 }
                 else
@@ -88,7 +87,7 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
 
                         foreach (var item in newOrderItems)
                         {
-                            var operationResult = order.AddOrderItem(item, orderValidator);
+                            var operationResult = order.AddOrderItem(item, orderValidator, extendabilityValidator);
 
                             if (!operationResult.Ok)
                                 return Operation.Error(operationResult.Error);
@@ -98,7 +97,7 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
 
                 using var transaction = await unitOfWork.BeginTransactionAsync();
 
-                await unitOfWork.GetRepository<OrderItem>().InsertAsync(newOrderItems, cancellationToken);
+                orderRepository.Update(order);
 
                 var result = await unitOfWork.SaveChangesAsync();
 
@@ -110,6 +109,9 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
                 }
 
                 await transaction.CommitAsync(cancellationToken);
+
+                //TODO Рефакторинг
+                await bus.Publish(new UpdateOrderCacheCommand(order.Code));
 
                 return order.ConvertToDto();
 

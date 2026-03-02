@@ -15,7 +15,7 @@ namespace Catalog.OrderService.Application
                 OrderEventType.Completed => true,
                 OrderEventType.CreateApprovalWorkflow => true,
                 OrderEventType.ApprovalCompleted => true,
-                OrderEventType.Exported => true,
+                OrderEventType.InProduction => true,
                 OrderEventType.Disabled => true,
                 OrderEventType.ExternallyRejected => true,
                 OrderEventType.Reject =>  true,

@@ -28,6 +28,8 @@ namespace Catalog.ApprovalService.Application.Processors
         /// <returns>module that triggered the update</returns>
         public async Task<Operation<Module, string>> ProcessAsync(Guid moduleId, CancellationToken cancellationToken)
         {
+            //TODO разобрать, что за перезапуск согласования
+
             var module = await _unitOfWork
                 .GetRepository<Module>()
                 .GetFirstOrDefaultAsync(
