@@ -1,4 +1,4 @@
-﻿using Catalog.Contracts.Events.ApprovalEvents;
+﻿using Catalog.Contracts.Events.OrderEvents;
 using Catalog.NotificationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;

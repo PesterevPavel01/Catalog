@@ -9,7 +9,6 @@ using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Commands;
 using Catalog.OrderService.Application.Handlers.QueryHandlers;
 using Catalog.OrderService.Application.Messages.OrderEventMessages;
-using Catalog.OrderService.Application.Messages.OrderMessages;
 using Catalog.Redis;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +20,7 @@ using TelegramService.Interfaces;
 
 // TODO: Должен стать только классом для обновления кэша! и вызываться не через Rebus, а через MediatR
 
-namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers;
+namespace Catalog.OrderService.Application.QueueHandlers;
 
 public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrderCacheCommand>
 {
@@ -63,9 +62,7 @@ public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrder
             .GetRepository<Order>()
             .GetFirstOrDefaultAsync(
                 trackingType: TrackingType.Tracking,
-                include: query => query
-                    .Include(x => x.ApplicationUser)
-                    .ThenInclude(x=> x.Roles),
+                include: Order.IncludeRequiredField(),
                 predicate: x => x.Code == message.OrderCode);
 
         if (order is null)
@@ -142,8 +139,6 @@ public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrder
 
             return;
         }
-
-        var orderCacheKey = _orderRedisService.GenerateCacheKey;
 
         var orderInvalidateResult = await _orderRedisService.InvalidateCacheAsync(Order.GenerateOrderCacheKey(_orderRedisService.GenerateCacheKey, message.OrderCode), default);
 

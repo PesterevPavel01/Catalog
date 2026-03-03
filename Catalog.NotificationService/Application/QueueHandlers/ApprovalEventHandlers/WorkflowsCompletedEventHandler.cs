@@ -1,4 +1,4 @@
-﻿using Catalog.Contracts.Events.Approval;
+﻿using Catalog.Contracts.Events.OrderEvents;
 using Catalog.NotificationService.Application.Configurations;
 using Microsoft.Extensions.Options;
 using Rebus.Handlers;
@@ -7,13 +7,13 @@ using TelegramService.Interfaces;
 
 namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHandlers
 {
-    public class WorkflowCancelledEventHandler : IHandleMessages<WorkflowsCancelledEvent>
+    public class OrderWorkflowsCompletedEventHandler : IHandleMessages<OrderWorkflowsCompletedEvent>
     {
         private readonly ITelegramService _telegramService;
         private readonly TelegramBotConfiguration _approvalNotificationBot;
         private readonly TelegramBotConfiguration _exceptionNotificationBot;
 
-        public WorkflowCancelledEventHandler(ITelegramService telegramService,
+        public OrderWorkflowsCompletedEventHandler(ITelegramService telegramService,
             IOptions<ApplicationConfiguration> applicationConfiguration, IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _telegramService = telegramService;
@@ -21,7 +21,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.ApprovalEventHan
             _exceptionNotificationBot = exceptionNotificationBot.Value;
         }
 
-        public async Task Handle(WorkflowsCancelledEvent message)
+        public async Task Handle(OrderWorkflowsCompletedEvent message)
         {
             if (message.Order is null) {
 

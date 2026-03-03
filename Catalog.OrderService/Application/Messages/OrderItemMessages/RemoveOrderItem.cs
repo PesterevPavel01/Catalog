@@ -32,9 +32,6 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
                 if (order is null)
                     return Operation.Error("Order not found!");
 
-                if (order.IsApprovalCompleted())
-                    return Operation.Error("Order is completed!");
-
                 var orderItem = await unitOfWork.GetRepository<OrderItem>()
                     .GetFirstOrDefaultAsync(
                         predicate: x => x.Order.Code == request.OrderCode && x.Module.Code == request.ModuleCode,

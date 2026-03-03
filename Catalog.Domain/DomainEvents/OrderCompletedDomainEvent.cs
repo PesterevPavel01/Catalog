@@ -2,4 +2,4 @@
 
 namespace Catalog.Contracts.DomainEvents;
 
-public sealed record ApprovalCompletedDomainEvent(Guid OrderId) : IDomainEvent;
+public sealed record OrderCompletedDomainEvent(Guid OrderId) : IDomainEvent;

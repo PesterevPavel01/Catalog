@@ -15,7 +15,7 @@ public sealed class OutboxProcessorExecutorHostedService : ScheduledHostedServic
         await outboxProcessor.ProcessAsync(serviceProvider, token);
     }
 
-    protected override string Schedule => "0/15 * * * * *"; // every 15 seconds
+    protected override string Schedule => "0/30 * * * * *"; // every 30 seconds
 
     protected override bool IncludingSeconds => true;
 

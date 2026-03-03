@@ -95,20 +95,14 @@ namespace Catalog.OrderService.Application.Messages.OrderItemMessages
                     }
                 }
 
-                using var transaction = await unitOfWork.BeginTransactionAsync();
-
                 orderRepository.Update(order);
 
                 var result = await unitOfWork.SaveChangesAsync();
 
                 if (unitOfWork.Result.Exception is not null)
                 {
-                    await transaction.RollbackAsync(cancellationToken);
-
                     return Operation.Error(unitOfWork.Result.Exception.Message);
                 }
-
-                await transaction.CommitAsync(cancellationToken);
 
                 //TODO Рефакторинг
                 await bus.Publish(new UpdateOrderCacheCommand(order.Code));

@@ -1,15 +1,9 @@
-﻿using Calabonga.OperationResults;
-using Calabonga.UnitOfWork;
-using Catalog.Contracts.Entities;
-using Catalog.Contracts.Enum;
-using Catalog.Contracts.Events.ApprovalEvents;
+﻿using Calabonga.UnitOfWork;
 using Catalog.Contracts.Events.OrderEvents;
-using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;
-using System.Threading;
 using TelegramService.Configurations;
 using TelegramService.Interfaces;
 

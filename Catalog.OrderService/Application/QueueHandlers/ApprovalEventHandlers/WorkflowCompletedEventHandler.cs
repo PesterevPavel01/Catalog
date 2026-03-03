@@ -1,9 +1,6 @@
 ﻿using Calabonga.UnitOfWork;
-using Catalog.Contracts.Entities;
-using Catalog.Contracts.Enum;
-using Catalog.Contracts.Events.Approval;
+using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Contracts.Events.OrderEvents;
-using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
@@ -13,13 +10,13 @@ using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.QueueHandlers.ApprovalEventHandlers;
 
-public class WorkflowsCancelledEventHandler : IHandleMessages<WorkflowsCancelledEvent>
+public class WorkflowCompletedEventHandler : IHandleMessages<WorkflowCompletedEvent>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBus _bus;
     private readonly ITelegramService _telegramService;
 
-    public WorkflowsCancelledEventHandler(IBus bus, IUnitOfWork unitOfWork, ITelegramService telegramService,
+    public WorkflowCompletedEventHandler(IBus bus, IUnitOfWork unitOfWork, ITelegramService telegramService,
         IOptions<TelegramBotConfiguration> exceptionNotificationBot)
     {
         _unitOfWork = unitOfWork;
@@ -28,9 +25,9 @@ public class WorkflowsCancelledEventHandler : IHandleMessages<WorkflowsCancelled
         _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
     }
 
-    public async Task Handle(WorkflowsCancelledEvent message)
+    public async Task Handle(WorkflowCompletedEvent message)
     {
-        if (message.Order is null) 
+        if (message.Order is null)
         {
             await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. order not found! Code: {message.Order.Code}");
             return;
@@ -52,11 +49,11 @@ public class WorkflowsCancelledEventHandler : IHandleMessages<WorkflowsCancelled
             return;
         }
 
-        var cancelResult = order.Cancel();
+        var approvalCompletedResult = order.ApprovalComplete();
 
-        if (!cancelResult.Ok)
+        if (!approvalCompletedResult.Ok)
         {
-            await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {cancelResult.Error}! Code: {message.Order.Code}");
+            await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. {approvalCompletedResult.Error}! Code: {message.Order.Code}");
             return;
         }
 

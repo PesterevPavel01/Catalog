@@ -3,6 +3,7 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Catalog.ApprovalService.Application.Configurations;
 using Catalog.ApprovalService.Application.Services;
 using Catalog.Contracts.Events.ApprovalEvents;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
@@ -44,19 +45,23 @@ namespace Catalog.ApprovalService.Endpoints
             });
 
             group.MapPost("create", async (
+                IMediator mediator,
                 IBus bus,
-                IOptions<ApplicationConfiguration> applicationConfiguration,
+                HttpContext context,
+                IOptions <ApplicationConfiguration> applicationConfiguration,
                 [FromBody] string orderCode,
-                OrderApprovalInitiatorService approvalInitiatorService,
-                CancellationToken cancellationToken) =>
+                OrderApprovalInitiatorService approvalInitiatorService) =>
             {
-                var result = await approvalInitiatorService.InitializeAsync(orderCode, new CancellationToken());
+                var result = await approvalInitiatorService.InitializeAsync(orderCode, context.RequestAborted);
 
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
                 if (result.Ok)
                     await bus.Publish(new WorkflowCreatedEvent(result.Result));
+
+                if (result.Result.IsApprovalCompleted)
+                    await mediator.Publish(new WorkflowCompleteCommand(result.Result), context.RequestAborted);
 
                 return Results.Ok(true);
             })

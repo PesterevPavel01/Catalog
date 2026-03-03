@@ -1,6 +1,6 @@
 ﻿using Calabonga.UnitOfWork;
 using Catalog.Contracts.DomainEvents;
-using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Options;
@@ -39,6 +39,7 @@ public class WorkflowCreatedDomainEventHandler : INotificationHandler<WorkflowCr
             await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {typeof(OrderCancelledDomainEventHandler).Name}. Order not found!");
             return;
         }
+
         await _bus.Publish(new OrderWorkflowCreatedEvent(order.ConvertToDto()));
     }
 }

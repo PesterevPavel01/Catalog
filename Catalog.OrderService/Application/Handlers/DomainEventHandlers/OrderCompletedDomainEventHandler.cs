@@ -10,13 +10,13 @@ using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.Handlers.DomainEventHandlers;
 
-public class ApprovalCompletedDomainEventHandler : INotificationHandler<ApprovalCompletedDomainEvent>
+public sealed class OrderCompletedDomainEventHandler : INotificationHandler<OrderCompletedDomainEvent>
 {
     private readonly IBus _bus;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITelegramService _telegramService;
 
-    public ApprovalCompletedDomainEventHandler(IBus bus, IUnitOfWork unitOfWork,
+    public OrderCompletedDomainEventHandler(IBus bus, IUnitOfWork unitOfWork,
         ITelegramService telegramService,
         IOptions<TelegramBotConfiguration> exceptionNotificationBot)
     {
@@ -26,11 +26,11 @@ public class ApprovalCompletedDomainEventHandler : INotificationHandler<Approval
         _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
     }
 
-    public async Task Handle(ApprovalCompletedDomainEvent approvalCompletedDomainEvent, CancellationToken cancellationToken)
+    public async Task Handle(OrderCompletedDomainEvent orderCreatedDomainEvent, CancellationToken cancellationToken)
     {
         var order = await _unitOfWork.GetRepository<Order>()
             .GetFirstOrDefaultAsync(
-                predicate: x => x.Id == approvalCompletedDomainEvent.OrderId,
+                predicate: x => x.Id == orderCreatedDomainEvent.OrderId,
                 include: Order.IncludeRequiredField()
             );
 
@@ -39,7 +39,7 @@ public class ApprovalCompletedDomainEventHandler : INotificationHandler<Approval
             await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {typeof(OrderCancelledDomainEventHandler).Name}. Order not found!");
             return;
         }
-        
-        await _bus.Publish(new OrderWorkflowsCompletedEvent(order.ConvertToDto()));
+
+        await _bus.Publish(new OrderCompletedEvent(order.ConvertToDto()));
     }
 }

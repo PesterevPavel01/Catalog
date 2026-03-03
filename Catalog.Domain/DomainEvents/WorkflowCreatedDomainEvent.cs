@@ -1,5 +1,4 @@
-﻿using Catalog.Contracts.Dto.Order;
-using Catalog.Contracts.Interfaces;
+﻿using Catalog.Contracts.Interfaces;
 
 namespace Catalog.Contracts.DomainEvents;
 

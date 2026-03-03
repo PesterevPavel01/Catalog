@@ -1,15 +1,10 @@
 ﻿using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Commands.Exchange;
 using Catalog.Contracts.Configurations.Rabbit;
-using Catalog.Contracts.Events;
-using Catalog.Contracts.Events.Approval;
-using Catalog.Contracts.Events.ApprovalEvents;
 using Catalog.Contracts.Events.CustomerEvents;
 using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.NotificationService.Definitions;
-using Rebus.Bus;
 using Rebus.Config;
 using Rebus.Serialization.Json;
 using Serilog;
@@ -41,7 +36,7 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                     await bus.Subscribe<OrderCompletedEvent>();
                     await bus.Subscribe<CustomerCreatedEvent>();
                     await bus.Subscribe<OrderWorkflowCreatedEvent>();
-                    await bus.Subscribe<WorkflowsCancelledEvent>();
+                    await bus.Subscribe<OrderWorkflowsCompletedEvent>();
                     await bus.Subscribe<OrderRejectedEvent>();
                     await bus.Subscribe<OrderRejectedFromProductionEvent>();
                     await bus.Subscribe<OrderCancelledEvent>();

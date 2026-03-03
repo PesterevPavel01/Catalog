@@ -32,7 +32,6 @@ namespace Catalog.ApprovalService.Definitions.Rebus
                 return config;
             }, onCreated: async bus =>
                 {
-                    await bus.Subscribe<WorkflowCreatedEvent>();
                     await bus.Subscribe<ModuleChangedEvent>();
                 }
             );

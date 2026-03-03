@@ -3,7 +3,7 @@ using Calabonga.UnitOfWork;
 using Catalog.ApprovalService.Application.Configurations;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities.Approval;
-using Catalog.Contracts.Events.ApprovalEvents;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Entities.Authorization;
 using Microsoft.EntityFrameworkCore;

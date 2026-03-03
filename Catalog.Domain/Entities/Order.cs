@@ -4,6 +4,7 @@ using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
 using Catalog.Contracts.Entities.Base;
 using Catalog.Contracts.Enum;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities.Authorization;
@@ -162,12 +163,12 @@ namespace Catalog.Domain.Entities
             if (newStatus is not null)
                 SetStatus((OrderStatus)newStatus);
 
-            //если произошло событие, которое должно автоматически завершить процесс согласования
+            //если произошло событие, которое должно автоматически завершить заказ
             if (System.Enum.TryParse<OrderEventType>(CompletionTriggerEventType, out var completionTriggerEventType))
             {
                 if ((OrderEventType)orderEvent.Type == completionTriggerEventType)
                 {
-                    var completeResult = CompleteApproval();
+                    var completeResult = Complete();
 
                     if (!completeResult.Ok)
                         return Operation.Error(completeResult.Error);
@@ -190,6 +191,9 @@ namespace Catalog.Domain.Entities
             if (exists is null)
                 return Operation.Error("Order item not found!");
 
+            if (IsApprovalCompleted())
+                return Operation.Error("Order is completed!");
+
             var removeOrderItemEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemRemoved, OrderEventType.OrderItemRemoved, null);
 
             if (!removeOrderItemEvent.Ok)
@@ -204,12 +208,26 @@ namespace Catalog.Domain.Entities
             //Если был удален единственный элемент с кастомным модулем 
             if (IsApprovalCompleted())
             {
-                var completeApprovalResult = CompleteApproval();
+                var completeApprovalResult = Complete();
 
                 if (!completeApprovalResult.Ok)
                     return Operation.Error(completeApprovalResult.Error);
             }    
                 
+            return true;
+        }
+
+        public Operation<bool, string> Complete()
+        {
+            var completedEvent = OrderEvent.Create(OrderEventTypeTitles.Completed, OrderEventType.Completed, null);
+
+            if (!completedEvent.Ok)
+                return Operation.Error(completedEvent.Error);
+
+            AddOrderEvent(completedEvent.Result);
+
+            RaiseDomainEvent(new OrderCompletedDomainEvent(Id));
+
             return true;
         }
 
@@ -219,6 +237,8 @@ namespace Catalog.Domain.Entities
 
             if (!cancelledEvent.Ok)
                 return Operation.Error(cancelledEvent.Error);
+
+            AddOrderEvent(cancelledEvent.Result);
 
             RaiseDomainEvent(new OrderCancelledDomainEvent(Id));
 
@@ -253,7 +273,7 @@ namespace Catalog.Domain.Entities
             return true;
         }
 
-        public Operation<bool, string> CompleteApproval()
+        public Operation<bool, string> ApprovalComplete()
         {
             //TODO Непонятный метод, проверить
             var approvalEvent = OrderEvent.Create(OrderEventTypeTitles.ApprovalCompleted, OrderEventType.ApprovalCompleted, null);
@@ -263,7 +283,7 @@ namespace Catalog.Domain.Entities
 
             AddOrderEvent(approvalEvent.Result);
 
-            RaiseDomainEvent(new ApprovalCompletedDomainEvent(Code));
+            RaiseDomainEvent(new ApprovalCompletedDomainEvent(Id));
 
             return true;
         }
@@ -428,7 +448,8 @@ namespace Catalog.Domain.Entities
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.Messages)
                 .Include(x => x.ApplicationUser)
-                    .ThenInclude(oi => oi.Roles);
+                    .ThenInclude(oi => oi.Roles)
+                .Include(x => x.OrderHistory);
 
         private static OrderStatus? DetermineStatusFromEvent(OrderEventType eventType)
         {

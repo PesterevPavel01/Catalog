@@ -65,7 +65,7 @@ namespace Catalog.ApprovalService.Endpoints
                     return Results.BadRequest(result.Error);
 
                 if(result.Result.IsApprovalCompleted)
-                    await bus.Publish(new WorkflowsCancelledEvent(result.Result));
+                    await bus.Publish(new WorkflowCompletedEvent(result.Result));
 
                 return Results.Ok(result.Result);
             })
