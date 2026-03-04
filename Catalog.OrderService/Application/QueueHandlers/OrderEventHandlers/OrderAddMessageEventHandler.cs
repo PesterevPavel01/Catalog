@@ -1,24 +1,29 @@
-﻿using Catalog.Contracts.Enum;
-using Catalog.Contracts.Events.OrderEvents;
-using Catalog.Contracts.Resources;
+﻿using Catalog.Contracts.Events.OrderEvents;
+using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;
+using TelegramService.Configurations;
+using TelegramService.Interfaces;
 
-namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandlers
+namespace Catalog.OrderService.Application.QueueHandlers.OrderEventHandlers
 {
     public class OrderAddMessageEventHandler : IHandleMessages<OrderAddMessageEvent>
     {
-        private readonly IBus _bus; 
+        private readonly IBus _bus;
+        private readonly ITelegramService _telegramService;
 
-        public OrderAddMessageEventHandler(IBus bus)
+        public OrderAddMessageEventHandler(IBus bus, ITelegramService telegramService,
+            IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _bus = bus;
+            _telegramService = telegramService;
+            _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
         }
 
         public async Task Handle(OrderAddMessageEvent message)
         {
             if (message.Order is null)
-                throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order not found!");
+                await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. Order code not found!");
 
             await _bus.Publish(new UpdateOrderCacheCommand(message.Order.Code));
         }

@@ -4,12 +4,11 @@ using Catalog.Contracts.Events.CustomerEvents;
 using Catalog.Contracts.Events.ExchangeEvents;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
-using Catalog.NotificationService.Definitions;
 using Rebus.Config;
 using Rebus.Serialization.Json;
 using Serilog;
 
-namespace Catalog.ApprovalService.Definitions.Rebus
+namespace Catalog.NotificationService.Definitions.Rebus
 {
     public class RebusDefinition : AppDefinition
     {

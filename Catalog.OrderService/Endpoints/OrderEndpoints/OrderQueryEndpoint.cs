@@ -165,9 +165,6 @@ namespace Catalog.OrderService.Endpoints.OrderEndpoints
             {
                 Summary = "Получить комментарии заказа."
             });
-
         }
     }
-
-
 }

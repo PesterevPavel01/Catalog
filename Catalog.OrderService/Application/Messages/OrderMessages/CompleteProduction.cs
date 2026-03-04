@@ -1,8 +1,6 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
-using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.OrderEvents;
-using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
 using MediatR;
 using Rebus.Bus;

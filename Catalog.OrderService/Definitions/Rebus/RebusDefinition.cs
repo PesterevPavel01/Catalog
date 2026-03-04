@@ -47,14 +47,15 @@ namespace Catalog.OrderService.Definitions.Rebus
             , onCreated: async bus 
             =>
             {
-
-                await bus.Subscribe<UpdateOrderCacheCommand>();
-                await bus.Subscribe<UpdateOrderCodeCommand>();
-                await bus.Subscribe<MarkOrdersAsProducedCommand>();
                 await bus.Subscribe<WorkflowCreatedEvent>();
                 await bus.Subscribe<WorkflowsCancelledEvent>();
                 await bus.Subscribe<WorkflowCompletedEvent>();
                 await bus.Subscribe<WorkflowRejectedEvent>();
+
+                await bus.Subscribe<UpdateOrderCacheCommand>();
+                await bus.Subscribe<UpdateOrderCodeCommand>();
+                await bus.Subscribe<MarkOrdersAsProducedCommand>();
+
                 await bus.Subscribe<OrderApprovalWorkflowsRemoveEvent>();
                 await bus.Subscribe<OrderAddMessageEvent>();
                 await bus.Subscribe<OrderDisabledEvent>();

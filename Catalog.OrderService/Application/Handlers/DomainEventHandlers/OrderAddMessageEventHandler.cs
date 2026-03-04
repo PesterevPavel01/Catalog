@@ -20,7 +20,10 @@ public class AddMessageDomainEventHandler : INotificationHandler<AddMessageDomai
         ITelegramService telegramService,
         IOptions<TelegramBotConfiguration> exceptionNotificationBot)
     {
+        _unitOfWork = unitOfWork;
         _bus = bus;
+        _telegramService = telegramService;
+        _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
     }
 
     public async Task Handle(AddMessageDomainEvent addMessageDomainEvent, CancellationToken cancellationToken)

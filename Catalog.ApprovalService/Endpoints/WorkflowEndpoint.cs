@@ -73,8 +73,6 @@ namespace Catalog.ApprovalService.Endpoints
             {
                 Summary = "Запустить процесс согласования нового проекта."
             });
-
-
         }
     }
 }

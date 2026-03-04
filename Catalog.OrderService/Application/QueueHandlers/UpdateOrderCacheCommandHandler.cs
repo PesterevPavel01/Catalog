@@ -1,9 +1,7 @@
 ﻿using Calabonga.UnitOfWork;
-using Catalog.Contracts.Configurations;
 using Catalog.Contracts.Dto.Events;
 using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
-using Catalog.Contracts.Enum;
 using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Commands;
@@ -11,7 +9,6 @@ using Catalog.OrderService.Application.Handlers.QueryHandlers;
 using Catalog.OrderService.Application.Messages.OrderEventMessages;
 using Catalog.Redis;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;
@@ -32,7 +29,6 @@ public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrder
     private readonly RedisService<OrderEventDto> _orderEventRedisService;
     private readonly RedisService<OrderDto> _orderRedisService;
     private readonly OrderQueryHandler _orderQueryHandler;
-    private readonly string? _completionTriggerEventType;
 
     public UpdateOrderCacheCommandHandler(
         OrderQueryHandler orderQueryHandler,
@@ -41,8 +37,7 @@ public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrder
         RedisServiceFactory redisServiceFactory,
         ITelegramService telegramService,
         IUnitOfWork unitOfWork, IBus bus,
-        IOptions<TelegramBotConfiguration> exceptionNotificationBot,
-        IOptions<OrderConfiguration> orderConfiguration)
+        IOptions<TelegramBotConfiguration> exceptionNotificationBot)
     {
         _mediator = mediator;
         _orderQueryHandler = orderQueryHandler;
@@ -53,7 +48,6 @@ public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrder
         _cachedOrdersQueryHandler = ordersQueryHandler;
         _telegramService = telegramService;
         _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
-        _completionTriggerEventType = orderConfiguration.Value.CompletionTriggerEventType;
     }
 
     public async Task Handle(UpdateOrderCacheCommand message)
@@ -149,9 +143,7 @@ public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrder
             return;
         }
 
-        if (order.OrderHistory.Last() is not null 
-            && order.OrderHistory.Last().Type == (int)OrderEventType.Disabled 
-            && order.OrderHistory.Last().Type != (int)OrderEventType.Deleted)
+        if (order.Enabled)
         {
             var orderQueryResult = await _orderQueryHandler.HandleAsync(message.OrderCode);
 
@@ -162,6 +154,5 @@ public sealed class UpdateOrderCacheCommandHandler : IHandleMessages<UpdateOrder
                 return;
             }
         }
-
     }
 }

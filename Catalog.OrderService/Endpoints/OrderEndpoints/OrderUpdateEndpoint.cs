@@ -1,15 +1,10 @@
 ﻿using Asp.Versioning;
 using Calabonga.AspNetCore.AppDefinitions;
-using Catalog.Contracts.Commands;
-using Catalog.Contracts.DomainEvents;
 using Catalog.Contracts.Dto.Message;
-using Catalog.Contracts.Enum;
-using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities;
 using Catalog.OrderService.Application.Messages.OrderMessages;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Rebus.Bus;
 
 namespace Catalog.OrderService.Endpoints.OrderEndpoints;
 

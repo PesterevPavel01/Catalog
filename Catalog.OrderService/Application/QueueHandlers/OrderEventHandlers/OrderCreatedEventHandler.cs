@@ -1,7 +1,4 @@
-﻿using Catalog.Contracts.Commands;
-using Catalog.Contracts.Enum;
-using Catalog.Contracts.Events.OrderEvents;
-using Catalog.Contracts.Resources;
+﻿using Catalog.Contracts.Events.OrderEvents;
 using Microsoft.Extensions.Options;
 using Rebus.Bus;
 using Rebus.Handlers;

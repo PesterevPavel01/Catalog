@@ -1,5 +1,4 @@
-﻿using Catalog.Contracts.Events.ExchangeEvents;
-using Catalog.Domain.Entities;
+﻿using Catalog.Contracts.Commands.Exchange;
 using Catalog.OrderService.Application.Messages.OrderMessages;
 using MediatR;
 using Microsoft.Extensions.Options;
@@ -9,12 +8,12 @@ using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.QueueHandlers.ExportEventHandlers;
 
-public class EntitiesExportedEventHandler : IHandleMessages<EntitiesExportedEvent>
+public class MarkOrdersAsProducedCommandHandler : IHandleMessages<MarkOrdersAsProducedCommand>
 {
     private readonly IMediator _mediator;
     private readonly ITelegramService _telegramService;
 
-    public EntitiesExportedEventHandler(ITelegramService telegramService,
+    public MarkOrdersAsProducedCommandHandler(ITelegramService telegramService,
         IOptions<TelegramBotConfiguration> exceptionNotificationBot, IMediator mediator)
     {
         _mediator = mediator;
@@ -22,29 +21,20 @@ public class EntitiesExportedEventHandler : IHandleMessages<EntitiesExportedEven
         _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
     }
 
-    public async Task Handle(EntitiesExportedEvent message)
+    public async Task Handle(MarkOrdersAsProducedCommand message)
     {
-        if (message.Entities.Type != typeof(Order).Name)
-        {
-            await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: Type not found!");
-            return;
-        }
+        if (message.Codes is null || !message.Codes.Any())
+            throw new ArgumentException($"{"OrderService".ToUpper()} Event {message.GetType().Name}. OrderCode not found!");
 
-        if (message.Entities is null) 
-        {
-            await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Error: Orders not found!");
-            return;
-        }
-
-        if (message.Entities.Codes is null || !message.Entities.Codes.Any())
+        if (message.Codes is null || !message.Codes.Any())
         {
             await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {message.GetType().Name}. OrderCodes not found!");
             return;
         }
 
-        var result = await _mediator.Send(new SendToProduction.Request(message.Entities.Codes), default);
+        var result = await _mediator.Send(new CompleteProduction.Request(message.Codes), default);
 
-        if(!result.Ok)
+        if (!result.Ok)
             await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()}.{typeof(EntitiesExportedEventHandler).Name}" +
                 $" Errors:{result.Error.Select((error, index) => $"Error {index + 1}: {error}")}");
     }

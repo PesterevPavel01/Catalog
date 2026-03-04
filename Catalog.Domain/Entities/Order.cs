@@ -4,7 +4,6 @@ using Catalog.Contracts.Dto.Order;
 using Catalog.Contracts.Entities;
 using Catalog.Contracts.Entities.Base;
 using Catalog.Contracts.Enum;
-using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Contracts.Interfaces;
 using Catalog.Contracts.Resources;
 using Catalog.Domain.Entities.Authorization;
@@ -97,7 +96,6 @@ namespace Catalog.Domain.Entities
 
             return orderResult; 
         }
-
 
         public Operation<bool, string> Disable()
         {
@@ -208,7 +206,7 @@ namespace Catalog.Domain.Entities
             //Если был удален единственный элемент с кастомным модулем 
             if (IsApprovalCompleted())
             {
-                var completeApprovalResult = Complete();
+                var completeApprovalResult = ApprovalComplete();
 
                 if (!completeApprovalResult.Ok)
                     return Operation.Error(completeApprovalResult.Error);
@@ -410,6 +408,7 @@ namespace Catalog.Domain.Entities
 
         public static Func<IQueryable<Order>, IIncludableQueryable<Order, object>> IncludeRequiredField()
             => query => query
+                .Include(x => x.OrderHistory)
                 .Include(x => x.OrderItems)
                     .ThenInclude(oi => oi.Module)
                         .ThenInclude(m => m.Components)

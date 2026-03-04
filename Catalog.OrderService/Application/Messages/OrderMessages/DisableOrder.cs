@@ -1,9 +1,11 @@
 ﻿using Calabonga.OperationResults;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Order;
+using Catalog.Contracts.Events.OrderEvents;
 using Catalog.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Rebus.Bus;
 
 namespace Catalog.OrderService.Application.Messages.OrderMessages
 {
@@ -11,7 +13,7 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
     {
         public record Request(string orderCode) : IRequest<Operation<OrderDto, string>>;
 
-        public class Handler(IUnitOfWork unitOfWork)
+        public class Handler(IUnitOfWork unitOfWork, IBus bus)
             : IRequestHandler<Request, Operation<OrderDto, string>>
         {
             /// <summary>Handles a request</summary>
@@ -44,6 +46,9 @@ namespace Catalog.OrderService.Application.Messages.OrderMessages
                 {
                     return Operation.Error(unitOfWork.Result.Exception.Message);
                 }
+
+                //TODO Рефакторинг
+                await bus.Publish(new UpdateOrderCacheCommand(order.Code));
 
                 return new OrderDto()
                 {
