@@ -2,4 +2,4 @@
 
 namespace Catalog.Contracts.Events;
 
-public sealed record ModuleChangedEvent(Guid ModuleId) : IModuleQueueEvent;
+public sealed record ModuleChangedEvent(String ModuleCode) : IModuleQueueEvent;

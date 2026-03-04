@@ -10,13 +10,13 @@ using TelegramService.Interfaces;
 
 namespace Catalog.OrderService.Application.Handlers.DomainEventHandlers;
 
-public sealed class CustomModuleChangedDomainEventHandler : INotificationHandler<CustomModuleChangedDomainEvent>
+public sealed class ModuleChangedDomainEventHandler : INotificationHandler<ModuleChangedDomainEvent>
 {
     private readonly IBus _bus;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITelegramService _telegramService;
 
-    public CustomModuleChangedDomainEventHandler(IBus bus, IUnitOfWork unitOfWork,
+    public ModuleChangedDomainEventHandler(IBus bus, IUnitOfWork unitOfWork,
         ITelegramService telegramService,
         IOptions<TelegramBotConfiguration> exceptionNotificationBot)
     {
@@ -26,7 +26,7 @@ public sealed class CustomModuleChangedDomainEventHandler : INotificationHandler
         _telegramService.Initialize(token: exceptionNotificationBot.Value.Token, chatId: exceptionNotificationBot.Value.ChatId);
     }
 
-    public async Task Handle(CustomModuleChangedDomainEvent customModuleChangedDomainEvent, CancellationToken cancellationToken)
+    public async Task Handle(ModuleChangedDomainEvent customModuleChangedDomainEvent, CancellationToken cancellationToken)
     {
         var order = await _unitOfWork.GetRepository<Order>()
             .GetFirstOrDefaultAsync(
@@ -39,6 +39,6 @@ public sealed class CustomModuleChangedDomainEventHandler : INotificationHandler
             await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {typeof(OrderCancelledDomainEventHandler).Name}. Order not found!");
             return;
         }
-        await _bus.Publish(new CustomModuleChangedEvent(order.ConvertToDto()));
+        await _bus.Publish(new OrderModuleChangedEvent(order.ConvertToDto()));
     }
 }

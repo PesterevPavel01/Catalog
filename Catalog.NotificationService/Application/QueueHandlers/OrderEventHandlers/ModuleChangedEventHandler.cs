@@ -8,23 +8,21 @@ using TelegramService.Interfaces;
 
 namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandlers
 {
-    public class CustomModuleChangedEventHandler : IHandleMessages<CustomModuleChangedEvent>
+    public class ModuleChangedEventHandler : IHandleMessages<OrderModuleChangedEvent>
     {
         private readonly ITelegramService _telegramService;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly TelegramBotConfiguration _approvalNotificationBot;
         private readonly TelegramBotConfiguration _exceptionNotificationBot;
 
-        public CustomModuleChangedEventHandler(ITelegramService telegramService, IUnitOfWork unitOfWork, 
+        public ModuleChangedEventHandler(ITelegramService telegramService, 
             IOptions<ApplicationConfiguration> applicationConfiguration, IOptions<TelegramBotConfiguration> exceptionNotificationBot)
         {
             _approvalNotificationBot = applicationConfiguration.Value.ApprovalNotificationBot;
             _exceptionNotificationBot = exceptionNotificationBot.Value;
             _telegramService = telegramService;
-            _unitOfWork = unitOfWork;
         }
 
-        public async Task Handle(CustomModuleChangedEvent message)
+        public async Task Handle(OrderModuleChangedEvent message)
         {
 
             if (message.Order is null)
@@ -38,7 +36,7 @@ namespace Catalog.NotificationService.Application.QueueHandlers.OrderEventHandle
 
             _telegramService.Initialize(token: _approvalNotificationBot.Token, chatId: _approvalNotificationBot.ChatId);
 
-            await _telegramService.SendMessageAsync($"СОГЛАСОВАНИЕ ЗАКАЗА: у заказа \"{message.Order.Code}\" пользователя: \"{message.Order.User}\" произошли изменения нестандартного модуля!");
+            await _telegramService.SendMessageAsync($"ИЗМЕНЕНИЕ ЗАКАЗА: у заказа \"{message.Order.Code}\" пользователя: \"{message.Order.User}\" произошли изменения модуля!");
 
             return;
         }

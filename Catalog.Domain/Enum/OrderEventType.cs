@@ -18,5 +18,6 @@
         Completed = 13,
         OrderItemQuantityChanged = 14,
         OrderItemRemoved = 14,
+        OrderItemAdded = 15,
     }
 }

@@ -316,6 +316,13 @@ namespace Catalog.Domain.Entities
             if (exists is not null)
                 return Operation.Error("The order already has an item containing this module!");
 
+            var addOrderItemEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemAdded, OrderEventType.OrderItemAdded, null);
+
+            if (!addOrderItemEvent.Ok)
+                return Operation.Error(addOrderItemEvent.Error);
+
+            AddOrderEvent(addOrderItemEvent.Result);
+
             RaiseDomainEvent(new AddOrderItemDomainEvent(Id));
 
             _orderItems.Add(orderItem);
@@ -361,16 +368,16 @@ namespace Catalog.Domain.Entities
             return this;
         }
 
-        public Operation<bool, string> CustomModuleChange()
+        public Operation<bool, string> ModuleChange()
         {
-            var workflowCreatedEvent = OrderEvent.Create(OrderEventTypeTitles.Changed, OrderEventType.Changed, null);
+            var moduleChangedEvent = OrderEvent.Create(OrderEventTypeTitles.Changed, OrderEventType.Changed, null);
 
-            if (!workflowCreatedEvent.Ok)
-                return Operation.Error(workflowCreatedEvent.Error);
+            if (!moduleChangedEvent.Ok)
+                return Operation.Error(moduleChangedEvent.Error);
 
-            AddOrderEvent(workflowCreatedEvent.Result);
+            AddOrderEvent(moduleChangedEvent.Result);
 
-            RaiseDomainEvent(new CustomModuleChangedDomainEvent(Id));
+            RaiseDomainEvent(new ModuleChangedDomainEvent(Id));
 
             return true;
         }

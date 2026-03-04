@@ -14,7 +14,7 @@ namespace Catalog.Contracts.Interfaces
     [JsonDerivedType(typeof(RemoveOrderItemDomainEvent), typeDiscriminator: "remove-order-item")]
     [JsonDerivedType(typeof(ApprovalCompletedDomainEvent), typeDiscriminator: "approval-completed")]
     [JsonDerivedType(typeof(WorkflowCreatedDomainEvent), typeDiscriminator: "workflow-created")]
-    [JsonDerivedType(typeof(CustomModuleChangedDomainEvent), typeDiscriminator: "custom-module-changed")]
+    [JsonDerivedType(typeof(ModuleChangedDomainEvent), typeDiscriminator: "custom-module-changed")]
     [JsonDerivedType(typeof(OrderCancelledDomainEvent), typeDiscriminator: "order-cancelled")]
     [JsonDerivedType(typeof(OrderRejectedDomainEvent), typeDiscriminator: "order-rejected")]
     [JsonDerivedType(typeof(OrderCompletedDomainEvent), typeDiscriminator: "order-completed")]

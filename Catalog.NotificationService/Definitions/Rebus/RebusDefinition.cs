@@ -39,9 +39,11 @@ namespace Catalog.NotificationService.Definitions.Rebus
                     await bus.Subscribe<OrderRejectedEvent>();
                     await bus.Subscribe<OrderRejectedFromProductionEvent>();
                     await bus.Subscribe<OrderCancelledEvent>();
-                    await bus.Subscribe<CustomModuleChangedEvent>();
+              
                     await bus.Subscribe<OrderAddMessageEvent>();
+                    await bus.Subscribe<OrderModuleChangedEvent>();
                     await bus.Subscribe<OrderDisabledEvent>();
+
                     await bus.Subscribe<OrderExportedEvent>();
                     await bus.Subscribe<SyncFailedEvent>();
                     

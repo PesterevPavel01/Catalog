@@ -26,14 +26,14 @@ namespace Catalog.ApprovalService.Application.Processors
         /// <param name="moduleId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns>module that triggered the update</returns>
-        public async Task<Operation<Module, string>> ProcessAsync(Guid moduleId, CancellationToken cancellationToken)
+        public async Task<Operation<Module, string>> ProcessAsync(String moduleCode, CancellationToken cancellationToken)
         {
             //TODO разобрать, что за перезапуск согласования
 
             var module = await _unitOfWork
                 .GetRepository<Module>()
                 .GetFirstOrDefaultAsync(
-                    predicate: x => x.Id == moduleId && x.Enabled,
+                    predicate: x => x.Code == moduleCode && x.Enabled,
                     trackingType: TrackingType.Tracking,
                     include: Module.IncludeRequiredField());
 

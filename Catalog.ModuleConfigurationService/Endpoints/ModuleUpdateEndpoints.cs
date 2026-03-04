@@ -33,7 +33,6 @@ namespace Catalog.ModuleConfigurationService.Endpoints
             group.MapPatch("update", async (
                 [FromBody] UpdateModuleDto model,
                 IBus bus,
-                IUnitOfWork unitOfWork,
                 ModuleUpdateManager updateManager,
                 CancellationToken cancellationToken) =>
             {
@@ -42,15 +41,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                 if (!operationResult.Ok)
                     return Results.BadRequest(operationResult.Error);
 
-
-                var module = await unitOfWork
-                    .GetRepository<Module>()
-                    .GetFirstOrDefaultAsync(
-                        predicate: x => x.Code == model.ModuleCode,
-                        include: Module.IncludeRequiredField()
-                    );
-
-                await bus.Publish(new ModuleChangedEvent(module.Id));
+                await bus.Publish(new ModuleChangedEvent(operationResult.Result.ModuleCode));
 
                 return Results.Ok(operationResult.Result);
             })

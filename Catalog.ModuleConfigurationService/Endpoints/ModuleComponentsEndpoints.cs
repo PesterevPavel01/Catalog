@@ -3,7 +3,6 @@ using Calabonga.AspNetCore.AppDefinitions;
 using Calabonga.UnitOfWork;
 using Catalog.Contracts.Dto.Module;
 using Catalog.Contracts.Events;
-using Catalog.Domain.Entities;
 using Catalog.ModuleConfigurationService.Application.Processors;
 using Microsoft.AspNetCore.Mvc;
 using Rebus.Bus;
@@ -41,12 +40,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
-                var module = await unitOfWork
-                    .GetRepository<Module>()
-                    .GetFirstOrDefaultAsync(
-                        predicate: x => x.Code == result.Result.ModuleCode);
-
-                await bus.Publish(new ModuleChangedEvent(module.Id));
+                await bus.Publish(new ModuleChangedEvent(result.Result.ModuleCode));
 
                 return Results.Ok(result.Result);
             })
@@ -71,12 +65,7 @@ namespace Catalog.ModuleConfigurationService.Endpoints
                 if (!result.Ok)
                     return Results.BadRequest(result.Error);
 
-                var module = await unitOfWork
-                    .GetRepository<Module>()
-                    .GetFirstOrDefaultAsync(
-                        predicate: x => x.Code == result.Result.ModuleCode);
-
-                await bus.Publish(new ModuleChangedEvent(module.Id));
+                await bus.Publish(new ModuleChangedEvent(result.Result.ModuleCode));
 
                 return Results.Ok(result.Result);
             })

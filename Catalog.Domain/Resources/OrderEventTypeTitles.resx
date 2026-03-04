@@ -157,9 +157,12 @@
     <value>Завершен!</value>
   </data>
   <data name="OrderItemQuantityChanged" xml:space="preserve">
-    <value>Изменено количество у элемента заказа (модуль)!</value>
+    <value>Изменено количество фасадов.</value>
   </data>
   <data name="OrderItemRemoved" xml:space="preserve">
     <value>Удален элемент заказа.</value>
+  </data>
+  <data name="OrderItemAdded" xml:space="preserve">
+    <value>Добавлены новые фасады.</value>
   </data>
 </root>

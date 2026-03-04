@@ -2,4 +2,4 @@
 
 namespace Catalog.Contracts.DomainEvents;
 
-public sealed record CustomModuleChangedDomainEvent(Guid OrderId) : IDomainEvent;
+public sealed record ModuleChangedDomainEvent(Guid OrderId) : IDomainEvent;

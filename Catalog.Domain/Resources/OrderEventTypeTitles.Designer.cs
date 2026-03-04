@@ -160,7 +160,16 @@ namespace Catalog.Contracts.Resources {
         }
 
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Изменено количество у элемента заказа (модуль)!.
+        ///   Ищет локализованную строку, похожую на Добавлены новые фасады..
+        /// </summary>
+        public static string OrderItemAdded {
+            get {
+                return ResourceManager.GetString("OrderItemAdded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Изменено количество фасадов..
         /// </summary>
         public static string OrderItemQuantityChanged {
             get {

@@ -22,7 +22,7 @@ namespace Catalog.ApprovalService.Application.QueueHandlers.ModuleQueueHandlers
 
         public async Task Handle(ModuleChangedEvent message)
         {
-            var result = await _processor.ProcessAsync(message.ModuleId, new CancellationToken());
+            var result = await _processor.ProcessAsync(message.ModuleCode, new CancellationToken());
 
             if (!result.Ok && result.Error != "Information: Active ApprovalWorkflows not found!")
             {
