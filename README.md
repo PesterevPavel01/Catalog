@@ -1,6 +1,15 @@
 ```mermaid
 classDiagram
 
+class AggregateRoot:::abstract {
+    <<abstract>>
+    - List~IDomainEvent~ _domainEvents
+    
+    + IReadOnlyCollection~IDomainEvent~ GetDomainEvents()
+    + void ClearDomainEvents()
+    # void RaiseDomainEvent(IDomainEvent domainEvent)
+}
+
 class Order {
     # Guid Id
     # TitleValue Title
@@ -276,6 +285,7 @@ class ParameterValueType {
     Text
 }
 
+AggregateRoot <|-- Order
 Order "many" --> "1" ApplicationUser
 Order "1" *-- "many" OrderItem
 OrderEvent "many" --> "1" Order
