@@ -9,34 +9,48 @@ class Order {
     + DateTime UpdatedAt
     - List~OrderItem~ _orderItems
     - List~OrderEvent~ _orderHistory
-    + short CacheDays$
+    + short CacheDays
     + OrderStatus Status
     + IReadOnlyCollection~OrderEvent~ OrderHistory
     + IReadOnlyCollection~OrderItem~ OrderItems
     + ApplicationUser ApplicationUser
     + Guid ApplicationUserId
-    + Create(string title, string code, ApplicationUser user) Operation~Order, string~
-    + AddOrderEvent(OrderEvent orderEvent) Order
-    + AddOrderItem(OrderItem orderItem, IOrderValidator validator) Operation~bool, string~
-    + UpdateCode(string newCode) Order
-    + RemoveOrderItem(OrderItem orderItem) void
-    + IsCompleted() bool
-    + IsCompletedBefore(int archiveStorageDays)$ Expression
-    + IsInactiveBefore(int archiveStorageDays)$ Expression
-    + IsDisableBefore(int archiveStorageDays)$ Expression
-    + GetCombinedCleanupPredicate(int completedDays, int inactiveDays, int disabledDays)$ Expression
-    + IsApprovalCompleted() bool
-    + IsCustom() bool
-    + IncludeRequiredField()$ Func
-    + ConvertToDto() OrderDto
-    + Validate(IOrderValidator validator) Operation~bool, string~
-    + GenerateUserCommonCacheKey(Func generateCacheKey, string userName)$ string
-    + GenerateConstructorCommonCacheKey(Func generateCacheKey)$ string
-    + GenerateOrderCacheKey(Func generateCacheKey, string orderCode)$ string
-    - CheckCustomization() bool
-    - DetermineStatusFromEvent(OrderEventType eventType) OrderStatus?
-    - SetStatus(OrderStatus status) Order
-    - SetUser(ApplicationUser user) Order
+
+    + static Operation~Order, string~ Create(string title, string code, ApplicationUser user, OrderEvent orderEvent)
+    + static Expression~Func~Order, bool~~ IsCompletedBefore(int archiveStorageDays)
+    + static Expression~Func~Order, bool~~ IsInactiveBefore(int archiveStorageDays)
+    + static Expression~Func~Order, bool~~ IsDisableBefore(int archiveStorageDays)
+    + static Expression~Func~Order, bool~~ GetCombinedCleanupPredicate(int completedDays, int inactiveDays, int disabledDays)
+    + static Func~IQueryable~Order~, IIncludableQueryable~Order, object~~ IncludeRequiredField()
+    + static string GenerateUserCommonCacheKey(Func~(string Key, object Value)[]~, string~ generateCacheKey, string userName)
+    + static string GenerateConstructorCommonCacheKey(Func~(string Key, object Value)[]~, string~ generateCacheKey)
+    + static string GenerateOrderCacheKey(Func~(string Key, object Value)[]~, string~ generateCacheKey, string orderCode)
+    
+    + Operation~Order, string~ AddOrderEvent(OrderEvent orderEvent)
+    + Operation~bool, string~ AddOrderItem(OrderItem orderItem, IOrderValidator validator, IOrderExtendabilityValidator extendabilityValidator)
+    + Operation~Order, string~ AddMessageToOrderItem(OrderItem item, Message message)
+    + Operation~Order, string~ ChangeItemQuantity(OrderItem item, short quantity)
+    + Operation~bool, string~ ModuleChange()
+    + Operation~bool, string~ CreateWorkflow()
+    + Operation~bool, string~ RemoveOrderItem(OrderItem orderItem)
+    + Order UpdateCode(string newCode)
+    + Operation~bool, string~ Disable()
+    + Operation~Order, string~ SendToProduction()
+    + Operation~Order, string~ CompleteProduction()
+    + Operation~bool, string~ Complete()
+    + Operation~bool, string~ Cancel()
+    + Operation~bool, string~ Reject()
+    + Operation~bool, string~ RejectFromProduction()
+    + Operation~bool, string~ ApprovalComplete()
+    + bool IsCompleted()
+    + bool IsApprovalCompleted()
+    + bool IsCustom
+    + OrderDto ConvertToDto()
+    
+    - bool CheckCustomization()
+    - OrderStatus? DetermineStatusFromEvent(OrderEventType eventType)
+    - Order SetStatus(OrderStatus status)
+    - Order SetUser(ApplicationUser user)
 }
 
 class OrderItem {
