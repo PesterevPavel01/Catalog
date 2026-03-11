@@ -1,6 +1,15 @@
 ```mermaid
 classDiagram
 
+class AggregateRoot:::abstract {
+    <<abstract>>
+    - List~IDomainEvent~ _domainEvents
+    
+    + IReadOnlyCollection~IDomainEvent~ GetDomainEvents()
+    + void ClearDomainEvents()
+    # void RaiseDomainEvent(IDomainEvent domainEvent)
+}
+
 class Order {
     # Guid Id
     # TitleValue Title
@@ -15,7 +24,7 @@ class Order {
     + IReadOnlyCollection~OrderItem~ OrderItems
     + ApplicationUser ApplicationUser
     + Guid ApplicationUserId
-
+    
     + static Operation~Order, string~ Create(string title, string code, ApplicationUser user, OrderEvent orderEvent)
     + static Expression~Func~Order, bool~~ IsCompletedBefore(int archiveStorageDays)
     + static Expression~Func~Order, bool~~ IsInactiveBefore(int archiveStorageDays)
@@ -250,25 +259,13 @@ class ComponentType {
     + string Code
 }
 
-class ComponentNumericParameter {
-    + double Value
-    + ParameterType ParameterType
-}
+class ComponentNumericParameter {}
 
-class ComponentTextParameter {
-    + string Value
-    + ParameterType ParameterType
-}
+class ComponentTextParameter {}
 
-class ModuleNumericParameter {
-    + double Value
-    + ParameterType ParameterType
-}
+class ModuleNumericParameter {}
 
-class ModuleTextParameter {
-    + string Value
-    + ParameterValueType ParameterType
-}
+class ModuleTextParameter {}
 
 class ParameterValueType {
     <<enumeration>>
@@ -276,6 +273,37 @@ class ParameterValueType {
     Text
 }
 
+class ParameterType {
+    + ParameterValueType Type
+    + IReadOnlyCollection~ComponentTextParameter~ ComponentTextParameters
+    + IReadOnlyCollection~ModuleTextParameter~ ModuleTextParameters
+    + IReadOnlyCollection~ComponentNumericParameter~ ComponentNumericParameters
+    + IReadOnlyCollection~ModuleNumericParameter~ ModuleNumericParameters
+    
+    + Operation~ParameterType, string~ Create(string title, string code, ParameterValueType type, Guid? id = null)
+}
+
+class TextParameter {
+    # TextParameterValue Value
+    + ParameterType ParameterType
+    
+    + Operation~bool, string~ SetType(ParameterType parameterType)
+    + TextParameterDto ConvertToDto()
+}
+
+class NumericParameter {
+    # double Value
+    + ParameterType ParameterType
+    
+    + Operation~bool, string~ SetType(ParameterType parameterType)
+    + NumericParameterDto ConvertToDto()
+}
+
+class TextParameterValue {
+    + string Value
+}
+
+AggregateRoot <|-- Order
 Order "many" --> "1" ApplicationUser
 Order "1" *-- "many" OrderItem
 OrderEvent "many" --> "1" Order
@@ -296,4 +324,13 @@ ApprovalWorkflow "1" --> "1" OrderItem
 ApprovalStage "1" *-- "many" ApprovalWorkflowItem
 ApprovalWorkflowItem "many" --> "1" ApplicationUser
 
+ComponentTextParameter --|> TextParameter
+ModuleTextParameter --|> TextParameter
+ComponentNumericParameter --|> NumericParameter
+ModuleNumericParameter --|> NumericParameter
+
+TextParameterValue --* TextParameter  
+TextParameter --o ParameterType
+NumericParameter --o ParameterType
+ParameterType --> ParameterValueType
 ```
