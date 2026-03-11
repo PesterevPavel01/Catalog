@@ -259,30 +259,48 @@ class ComponentType {
     + string Code
 }
 
-class ComponentNumericParameter {
-    + double Value
-    + ParameterType ParameterType
-}
+class ComponentNumericParameter {}
 
-class ComponentTextParameter {
-    + string Value
-    + ParameterType ParameterType
-}
+class ComponentTextParameter {}
 
-class ModuleNumericParameter {
-    + double Value
-    + ParameterType ParameterType
-}
+class ModuleNumericParameter {}
 
-class ModuleTextParameter {
-    + string Value
-    + ParameterValueType ParameterType
-}
+class ModuleTextParameter {}
 
 class ParameterValueType {
     <<enumeration>>
     Numeric
     Text
+}
+
+class ParameterType {
+    + ParameterValueType Type
+    + IReadOnlyCollection~ComponentTextParameter~ ComponentTextParameters
+    + IReadOnlyCollection~ModuleTextParameter~ ModuleTextParameters
+    + IReadOnlyCollection~ComponentNumericParameter~ ComponentNumericParameters
+    + IReadOnlyCollection~ModuleNumericParameter~ ModuleNumericParameters
+    
+    + Operation~ParameterType, string~ Create(string title, string code, ParameterValueType type, Guid? id = null)
+}
+
+class TextParameter {
+    # TextParameterValue Value
+    + ParameterType ParameterType
+    
+    + Operation~bool, string~ SetType(ParameterType parameterType)
+    + TextParameterDto ConvertToDto()
+}
+
+class NumericParameter {
+    # double Value
+    + ParameterType ParameterType
+    
+    + Operation~bool, string~ SetType(ParameterType parameterType)
+    + NumericParameterDto ConvertToDto()
+}
+
+class TextParameterValue {
+    + string Value
 }
 
 AggregateRoot <|-- Order
@@ -306,4 +324,13 @@ ApprovalWorkflow "1" --> "1" OrderItem
 ApprovalStage "1" *-- "many" ApprovalWorkflowItem
 ApprovalWorkflowItem "many" --> "1" ApplicationUser
 
+ComponentTextParameter --|> TextParameter
+ModuleTextParameter --|> TextParameter
+ComponentNumericParameter --|> NumericParameter
+ModuleNumericParameter --|> NumericParameter
+
+TextParameterValue --* TextParameter  
+TextParameter --o ParameterType
+NumericParameter --o ParameterType
+ParameterType --> ParameterValueType
 ```
