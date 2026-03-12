@@ -53,21 +53,21 @@ namespace Catalog.ExchangeService.Definitions.Swagger
                 options.SwaggerDoc("v1", new OpenApiInfo()
                 {
                     Version = "v1",
-                    Title = "Сервис Catalog.ExchangeServise",
+                    Title = "Сервис Catalog.ExchangeServiсe",
                     Description = "Версия 1.0",
                 });
 
                 options.SwaggerDoc("v2", new OpenApiInfo()
                 {
                     Version = "v2",
-                    Title = "Сервис Catalog.ExchangeServise",
+                    Title = "Сервис Catalog.ExchangeServiсe",
                     Description = "Версия 2.0",
                 });
 
                 options.SwaggerDoc("v3", new OpenApiInfo()
                 {
                     Version = "v3",
-                    Title = "Сервис Catalog.ExchangeServise",
+                    Title = "Сервис Catalog.ExchangeServiсe",
                     Description = "Версия 3.0",
                 });
 

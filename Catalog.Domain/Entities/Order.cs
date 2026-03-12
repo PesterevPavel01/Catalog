@@ -36,22 +36,215 @@ namespace Catalog.Domain.Entities
         public ApplicationUser ApplicationUser { get; private set; }
         public Guid ApplicationUserId { get; private set; }
 
-        public bool IsCompleted() => Status == OrderStatus.Completed;
+        public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user, OrderEvent orderEvent)
+        {
+            var titleValue = TitleValue.Create(title ?? Guid.NewGuid().ToString());
 
-        public static Expression<Func<Order, bool>> IsCompletedBefore(int archiveStorageDays) 
-            =>
-            order => order.OrderHistory
-                .Any(x => x.Type == (int)OrderEventType.Completed &&
-                          x.CreatedAt < DateTime.Now.AddDays(-archiveStorageDays));
+            if (!titleValue.Ok)
+                return Operation.Error(titleValue.Error);
 
-        public static Expression<Func<Order, bool>> IsInactiveBefore(int archiveStorageDays)
-            =>
-                order => !order.OrderHistory
-                    .Any(x =>x.CreatedAt >= DateTime.Now.AddDays(-archiveStorageDays));
+            var orderResult = new Order(titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty)
+                .SetUser(user)
+                .AddOrderEvent(orderEvent);
 
-        public static Expression<Func<Order, bool>> IsDisableBefore(int archiveStorageDays)
-            =>
-               order => !order.Enabled && order.UpdatedAt < DateTime.Now.AddDays(-archiveStorageDays);
+            if (!orderResult.Ok)
+                return Operation.Error(orderResult.Error);
+
+            orderResult.Result.RaiseDomainEvent(new OrderCreatedDomainEvent(orderResult.Result.Code));
+
+            return orderResult;
+        }
+
+        public Operation<bool, string> Disable()
+        {
+            base.Disable();
+
+            var orderEvent = OrderEvent.Create(OrderEventTypeTitles.Disabled, OrderEventType.Disabled, null);
+
+            if (!orderEvent.Ok)
+                return Operation.Error(orderEvent.Error);
+
+            AddOrderEvent(orderEvent.Result);
+
+            RaiseDomainEvent(new OrderDisabledDomainEvent(Id));
+
+            return true;
+        }
+
+        private Order SetStatus(OrderStatus status)
+        {
+            Status = status;
+            return this;
+        }
+
+        private Order SetUser(ApplicationUser user)
+        {
+            ApplicationUser = user;
+            return this;
+        }
+
+        private Operation<Order, string> AddOrderEvent(OrderEvent orderEvent)
+        {
+            _orderHistory.Add(orderEvent);
+
+            var newStatus = DetermineStatusFromEvent((OrderEventType)orderEvent.Type);
+
+            if (newStatus is not null)
+                SetStatus((OrderStatus)newStatus);
+
+            //если произошло событие, которое должно автоматически завершить заказ
+            if (System.Enum.TryParse<OrderEventType>(CompletionTriggerEventType, out var completionTriggerEventType))
+            {
+                if ((OrderEventType)orderEvent.Type == completionTriggerEventType)
+                {
+                    var completeResult = Complete();
+
+                    if (!completeResult.Ok)
+                        return Operation.Error(completeResult.Error);
+                }
+            }
+
+            return this;
+        }
+
+
+        public Order UpdateCode(string newCode)
+        {
+            Code = newCode;
+            return this;
+        }
+
+        #region OrderItem
+
+        public Operation<bool, string> AddOrderItem(OrderItem orderItem, IOrderValidator validator, IOrderExtendabilityValidator extendabilityValidator)
+        {
+            var validationResult = extendabilityValidator.Validate(this);
+
+            if (!validationResult.Ok)
+                return Operation.Error(validationResult.Error);
+
+            var exists = _orderItems.Find(x => x.Id == orderItem.Id || x.Module.Code == orderItem.Module.Code);
+
+            //если у заказа есть уже OrderItem с этим модулем, то нужно не добавлять новый, а увеличивать Quantity у существующего!
+            if (exists is not null)
+                return Operation.Error("The order already has an item containing this module!");
+
+            var addOrderItemEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemAdded, OrderEventType.OrderItemAdded, null);
+
+            if (!addOrderItemEvent.Ok)
+                return Operation.Error(addOrderItemEvent.Error);
+
+            AddOrderEvent(addOrderItemEvent.Result);
+
+            RaiseDomainEvent(new AddOrderItemDomainEvent(Id));
+
+            _orderItems.Add(orderItem);
+
+            return validator.Validate(this);
+        }
+
+        public Operation<bool, string> RemoveOrderItem(OrderItem orderItem)
+        {
+            var exists = _orderItems.Find(x => x.Id == orderItem.Id);
+
+            if (exists is null)
+                return Operation.Error("Order item not found!");
+
+            if (IsApprovalCompleted())
+                return Operation.Error("Order is completed!");
+
+            var removeOrderItemEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemRemoved, OrderEventType.OrderItemRemoved, null);
+
+            if (!removeOrderItemEvent.Ok)
+                return Operation.Error(removeOrderItemEvent.Error);
+
+            AddOrderEvent(removeOrderItemEvent.Result);
+
+            _orderItems.Remove(orderItem);
+
+            RaiseDomainEvent(new RemoveOrderItemDomainEvent(Id));
+
+            //Если был удален единственный элемент с кастомным модулем 
+            if (IsApprovalCompleted())
+            {
+                var completeApprovalResult = ApprovalComplete();
+
+                if (!completeApprovalResult.Ok)
+                    return Operation.Error(completeApprovalResult.Error);
+            }
+
+            return true;
+        }
+
+        public Operation<Order, string> AddMessageToOrderItem(OrderItem item, Message message)
+        {
+            if (!OrderItems.Contains(item))
+                return Operation.Error($"OrderItem with id {item.Id} not found!");
+
+            item.AddMessage(message);
+
+            var addMessageEvent = OrderEvent.Create(OrderEventTypeTitles.MessageAdded, OrderEventType.MessageAdded, null);
+
+            if (!addMessageEvent.Ok)
+                return Operation.Error(addMessageEvent.Error);
+
+            AddOrderEvent(addMessageEvent.Result);
+
+            RaiseDomainEvent(new AddMessageDomainEvent(Code));
+
+            return this;
+        }
+
+        public Operation<Order, string> ChangeItemQuantity(OrderItem item, short quantity)
+        {
+            if (item.Quantity == quantity)
+                return this;
+
+            item.ChangeQuantity(quantity);
+
+            var changeItemQuantityEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemQuantityChanged, OrderEventType.OrderItemQuantityChanged, null);
+
+            if (!changeItemQuantityEvent.Ok)
+                return Operation.Error(changeItemQuantityEvent.Error);
+
+            AddOrderEvent(changeItemQuantityEvent.Result);
+
+            RaiseDomainEvent(new OrderItemQuantityChangedDomainEvent(Code));
+
+            return this;
+        }
+
+        public Operation<bool, string> ModuleChange()
+        {
+            var moduleChangedEvent = OrderEvent.Create(OrderEventTypeTitles.Changed, OrderEventType.Changed, null);
+
+            if (!moduleChangedEvent.Ok)
+                return Operation.Error(moduleChangedEvent.Error);
+
+            AddOrderEvent(moduleChangedEvent.Result);
+
+            RaiseDomainEvent(new ModuleChangedDomainEvent(Id));
+
+            return true;
+        }
+
+        public Operation<bool, string> CreateWorkflow()
+        {
+            var workflowCreatedEvent = OrderEvent.Create(OrderEventTypeTitles.CreateApprovalWorkflow, OrderEventType.CreateApprovalWorkflow, null);
+
+            if (!workflowCreatedEvent.Ok)
+                return Operation.Error(workflowCreatedEvent.Error);
+
+            AddOrderEvent(workflowCreatedEvent.Result);
+
+            RaiseDomainEvent(new WorkflowCreatedDomainEvent(Id));
+
+            return true;
+        }
+
+        #endregion
+
+        #region RemoveRule
 
         /// <summary>
         /// Returns a combined predicate (OR) for all deletion categories
@@ -74,44 +267,29 @@ namespace Catalog.Domain.Entities
             return predicate;
         }
 
+        public static Expression<Func<Order, bool>> IsCompletedBefore(int archiveStorageDays) 
+            =>
+            order => order.OrderHistory
+                .Any(x => x.Type == (int)OrderEventType.Completed &&
+                          x.CreatedAt < DateTime.Now.AddDays(-archiveStorageDays));
+
+        public static Expression<Func<Order, bool>> IsInactiveBefore(int archiveStorageDays)
+            =>
+                order => !order.OrderHistory
+                    .Any(x =>x.CreatedAt >= DateTime.Now.AddDays(-archiveStorageDays));
+
+        public static Expression<Func<Order, bool>> IsDisableBefore(int archiveStorageDays)
+            =>
+               order => !order.Enabled && order.UpdatedAt < DateTime.Now.AddDays(-archiveStorageDays);
+
+        #endregion
+
+        public bool IsCompleted() => Status == OrderStatus.Completed;
+
         public bool IsApprovalCompleted() => OrderItems.Any() && OrderItems.FirstOrDefault(item => item.ApprovalWorkflow is null || item.ApprovalWorkflow.IsCompleted == false) is null;
 
         public bool IsCustom => CheckCustomization();
 
-        public static Operation<Order, string> Create(string? title, string? code, ApplicationUser user, OrderEvent orderEvent)
-        {
-            var titleValue = TitleValue.Create(title ?? Guid.NewGuid().ToString());
-
-            if (!titleValue.Ok)
-                return Operation.Error(titleValue.Error);
-
-            var orderResult = new Order(titleValue.Result, code ?? Guid.NewGuid().ToString(), Guid.Empty)
-                .SetUser(user)
-                .AddOrderEvent(orderEvent);
-
-            if (!orderResult.Ok) 
-                return Operation.Error(orderResult.Error);
-
-            orderResult.Result.RaiseDomainEvent(new OrderCreatedDomainEvent(orderResult.Result.Code));
-
-            return orderResult; 
-        }
-
-        public Operation<bool, string> Disable()
-        {
-            base.Disable();
-
-            var orderEvent = OrderEvent.Create(OrderEventTypeTitles.Disabled, OrderEventType.Disabled, null);
-
-            if (!orderEvent.Ok)
-                return Operation.Error(orderEvent.Error);
-
-            AddOrderEvent(orderEvent.Result);
-
-            RaiseDomainEvent(new OrderDisabledDomainEvent(Id));
-
-            return true;
-        }
         public Operation<Order, string> SendToProduction()
         {
             var orderEvent = OrderEvent.Create(OrderEventTypeTitles.InProduction, OrderEventType.InProduction, null);
@@ -138,81 +316,6 @@ namespace Catalog.Domain.Entities
             RaiseDomainEvent(new CompleteProductionDomainEvent(Code));
 
             return this;
-        }
-
-        private Order SetStatus(OrderStatus status)
-        {
-            Status = status;
-            return this;
-        }
-
-        private Order SetUser(ApplicationUser user) 
-        {
-            ApplicationUser = user;
-            return this;
-        }
-
-        public Operation<Order, string> AddOrderEvent(OrderEvent orderEvent) 
-        {
-            _orderHistory.Add(orderEvent);
-
-            var newStatus = DetermineStatusFromEvent((OrderEventType)orderEvent.Type);
-
-            if (newStatus is not null)
-                SetStatus((OrderStatus)newStatus);
-
-            //если произошло событие, которое должно автоматически завершить заказ
-            if (System.Enum.TryParse<OrderEventType>(CompletionTriggerEventType, out var completionTriggerEventType))
-            {
-                if ((OrderEventType)orderEvent.Type == completionTriggerEventType)
-                {
-                    var completeResult = Complete();
-
-                    if (!completeResult.Ok)
-                        return Operation.Error(completeResult.Error);
-                }
-            }
-
-            return this;
-        }
-
-        public Order UpdateCode(string newCode) 
-        {
-            Code = newCode;
-            return this;
-        }
-
-        public Operation<bool, string> RemoveOrderItem(OrderItem orderItem)
-        {
-            var exists = _orderItems.Find(x => x.Id == orderItem.Id);
-            
-            if (exists is null)
-                return Operation.Error("Order item not found!");
-
-            if (IsApprovalCompleted())
-                return Operation.Error("Order is completed!");
-
-            var removeOrderItemEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemRemoved, OrderEventType.OrderItemRemoved, null);
-
-            if (!removeOrderItemEvent.Ok)
-                return Operation.Error(removeOrderItemEvent.Error);
-
-            AddOrderEvent(removeOrderItemEvent.Result);
-
-            _orderItems.Remove(orderItem);
-
-            RaiseDomainEvent(new RemoveOrderItemDomainEvent(Id));
-
-            //Если был удален единственный элемент с кастомным модулем 
-            if (IsApprovalCompleted())
-            {
-                var completeApprovalResult = ApprovalComplete();
-
-                if (!completeApprovalResult.Ok)
-                    return Operation.Error(completeApprovalResult.Error);
-            }    
-                
-            return true;
         }
 
         public Operation<bool, string> Complete()
@@ -286,9 +389,6 @@ namespace Catalog.Domain.Entities
             return true;
         }
 
-        public Operation<bool, string> Validate(IOrderValidator validator) 
-            => validator.Validate(this);
-
         private bool CheckCustomization()
         => OrderItems.FirstOrDefault(x => x.Module.IsCustom) is not null;
 
@@ -300,103 +400,6 @@ namespace Catalog.Domain.Entities
 
         public static string GenerateOrderCacheKey(Func<(string Key, object Value)[], string> generateCacheKey, string orderCode)
             => generateCacheKey([("type", "order"), ("code", orderCode)]);
-
-        #region OrderItem
-
-        public Operation<bool, string> AddOrderItem(OrderItem orderItem, IOrderValidator validator, IOrderExtendabilityValidator extendabilityValidator)
-        {
-            var validationResult = extendabilityValidator.Validate(this);
-
-            if (!validationResult.Ok)
-                return Operation.Error(validationResult.Error);
-
-            var exists = _orderItems.Find(x => x.Id == orderItem.Id || x.Module.Code == orderItem.Module.Code);
-
-            //если у заказа есть уже OrderItem с этим модулем, то нужно не добавлять новый, а увеличивать Quantity у существующего!
-            if (exists is not null)
-                return Operation.Error("The order already has an item containing this module!");
-
-            var addOrderItemEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemAdded, OrderEventType.OrderItemAdded, null);
-
-            if (!addOrderItemEvent.Ok)
-                return Operation.Error(addOrderItemEvent.Error);
-
-            AddOrderEvent(addOrderItemEvent.Result);
-
-            RaiseDomainEvent(new AddOrderItemDomainEvent(Id));
-
-            _orderItems.Add(orderItem);
-
-            return validator.Validate(this);
-        }
-
-        public Operation<Order, string> AddMessageToOrderItem(OrderItem item, Message message)
-        {
-            if(!OrderItems.Contains(item))
-                return Operation.Error($"OrderItem with id {item.Id} not found!");
-
-            item.AddMessage(message);
-
-            var addMessageEvent = OrderEvent.Create(OrderEventTypeTitles.MessageAdded, OrderEventType.MessageAdded, null);
-
-            if (!addMessageEvent.Ok)
-                return Operation.Error(addMessageEvent.Error);
-
-            AddOrderEvent(addMessageEvent.Result);
-
-            RaiseDomainEvent(new AddMessageDomainEvent(Code));
-
-            return this;
-        }
-
-        public Operation<Order, string> ChangeItemQuantity(OrderItem item, short quantity)
-        {
-            if(item.Quantity == quantity)
-                return this;
-
-            item.ChangeQuantity(quantity);
-
-            var changeItemQuantityEvent = OrderEvent.Create(OrderEventTypeTitles.OrderItemQuantityChanged, OrderEventType.OrderItemQuantityChanged, null);
-
-            if (!changeItemQuantityEvent.Ok)
-                return Operation.Error(changeItemQuantityEvent.Error);
-
-            AddOrderEvent(changeItemQuantityEvent.Result);
-
-            RaiseDomainEvent(new OrderItemQuantityChangedDomainEvent(Code));
-
-            return this;
-        }
-
-        public Operation<bool, string> ModuleChange()
-        {
-            var moduleChangedEvent = OrderEvent.Create(OrderEventTypeTitles.Changed, OrderEventType.Changed, null);
-
-            if (!moduleChangedEvent.Ok)
-                return Operation.Error(moduleChangedEvent.Error);
-
-            AddOrderEvent(moduleChangedEvent.Result);
-
-            RaiseDomainEvent(new ModuleChangedDomainEvent(Id));
-
-            return true;
-        }
-
-        public Operation<bool, string> CreateWorkflow()
-        {
-            var workflowCreatedEvent = OrderEvent.Create(OrderEventTypeTitles.CreateApprovalWorkflow, OrderEventType.CreateApprovalWorkflow, null);
-
-            if (!workflowCreatedEvent.Ok)
-                return Operation.Error(workflowCreatedEvent.Error);
-
-            AddOrderEvent(workflowCreatedEvent.Result);
-
-            RaiseDomainEvent(new WorkflowCreatedDomainEvent(Id));
-
-            return true;
-        }
-
-        #endregion
 
         public OrderDto ConvertToDto()
             => new()

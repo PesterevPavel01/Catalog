@@ -1,5 +1,15 @@
 ```mermaid
+
 classDiagram
+
+class AggregateRoot:::abstract {
+    <<abstract>>
+    - List~IDomainEvent~ _domainEvents
+    
+    + IReadOnlyCollection~IDomainEvent~ GetDomainEvents()
+    + void ClearDomainEvents()
+    # void RaiseDomainEvent(IDomainEvent domainEvent)
+}
 
 class Order {
     # Guid Id
@@ -9,34 +19,48 @@ class Order {
     + DateTime UpdatedAt
     - List~OrderItem~ _orderItems
     - List~OrderEvent~ _orderHistory
-    + short CacheDays$
+    + short CacheDays
     + OrderStatus Status
     + IReadOnlyCollection~OrderEvent~ OrderHistory
     + IReadOnlyCollection~OrderItem~ OrderItems
     + ApplicationUser ApplicationUser
     + Guid ApplicationUserId
-    + Create(string title, string code, ApplicationUser user) Operation~Order, string~
-    + AddOrderEvent(OrderEvent orderEvent) Order
-    + AddOrderItem(OrderItem orderItem, IOrderValidator validator) Operation~bool, string~
-    + UpdateCode(string newCode) Order
-    + RemoveOrderItem(OrderItem orderItem) void
-    + IsCompleted() bool
-    + IsCompletedBefore(int archiveStorageDays)$ Expression
-    + IsInactiveBefore(int archiveStorageDays)$ Expression
-    + IsDisableBefore(int archiveStorageDays)$ Expression
-    + GetCombinedCleanupPredicate(int completedDays, int inactiveDays, int disabledDays)$ Expression
-    + IsApprovalCompleted() bool
-    + IsCustom() bool
-    + IncludeRequiredField()$ Func
-    + ConvertToDto() OrderDto
-    + Validate(IOrderValidator validator) Operation~bool, string~
-    + GenerateUserCommonCacheKey(Func generateCacheKey, string userName)$ string
-    + GenerateConstructorCommonCacheKey(Func generateCacheKey)$ string
-    + GenerateOrderCacheKey(Func generateCacheKey, string orderCode)$ string
-    - CheckCustomization() bool
-    - DetermineStatusFromEvent(OrderEventType eventType) OrderStatus?
-    - SetStatus(OrderStatus status) Order
-    - SetUser(ApplicationUser user) Order
+    
+    + static Operation~Order, string~ Create(string title, string code, ApplicationUser user, OrderEvent orderEvent)
+    + static Expression~Func~Order, bool~~ IsCompletedBefore(int archiveStorageDays)
+    + static Expression~Func~Order, bool~~ IsInactiveBefore(int archiveStorageDays)
+    + static Expression~Func~Order, bool~~ IsDisableBefore(int archiveStorageDays)
+    + static Expression~Func~Order, bool~~ GetCombinedCleanupPredicate(int completedDays, int inactiveDays, int disabledDays)
+    + static Func~IQueryable~Order~, IIncludableQueryable~Order, object~~ IncludeRequiredField()
+    + static string GenerateUserCommonCacheKey(Func~(string Key, object Value)[]~, string~ generateCacheKey, string userName)
+    + static string GenerateConstructorCommonCacheKey(Func~(string Key, object Value)[]~, string~ generateCacheKey)
+    + static string GenerateOrderCacheKey(Func~(string Key, object Value)[]~, string~ generateCacheKey, string orderCode)
+    
+    + Operation~Order, string~ AddOrderEvent(OrderEvent orderEvent)
+    + Operation~bool, string~ AddOrderItem(OrderItem orderItem, IOrderValidator validator, IOrderExtendabilityValidator extendabilityValidator)
+    + Operation~Order, string~ AddMessageToOrderItem(OrderItem item, Message message)
+    + Operation~Order, string~ ChangeItemQuantity(OrderItem item, short quantity)
+    + Operation~bool, string~ ModuleChange()
+    + Operation~bool, string~ CreateWorkflow()
+    + Operation~bool, string~ RemoveOrderItem(OrderItem orderItem)
+    + Order UpdateCode(string newCode)
+    + Operation~bool, string~ Disable()
+    + Operation~Order, string~ SendToProduction()
+    + Operation~Order, string~ CompleteProduction()
+    + Operation~bool, string~ Complete()
+    + Operation~bool, string~ Cancel()
+    + Operation~bool, string~ Reject()
+    + Operation~bool, string~ RejectFromProduction()
+    + Operation~bool, string~ ApprovalComplete()
+    + bool IsCompleted()
+    + bool IsApprovalCompleted()
+    + bool IsCustom
+    + OrderDto ConvertToDto()
+    
+    - bool CheckCustomization()
+    - OrderStatus? DetermineStatusFromEvent(OrderEventType eventType)
+    - Order SetStatus(OrderStatus status)
+    - Order SetUser(ApplicationUser user)
 }
 
 class OrderItem {
@@ -236,25 +260,13 @@ class ComponentType {
     + string Code
 }
 
-class ComponentNumericParameter {
-    + double Value
-    + ParameterType ParameterType
-}
+class ComponentNumericParameter {}
 
-class ComponentTextParameter {
-    + string Value
-    + ParameterType ParameterType
-}
+class ComponentTextParameter {}
 
-class ModuleNumericParameter {
-    + double Value
-    + ParameterType ParameterType
-}
+class ModuleNumericParameter {}
 
-class ModuleTextParameter {
-    + string Value
-    + ParameterValueType ParameterType
-}
+class ModuleTextParameter {}
 
 class ParameterValueType {
     <<enumeration>>
@@ -262,6 +274,37 @@ class ParameterValueType {
     Text
 }
 
+class ParameterType {
+    + ParameterValueType Type
+    + IReadOnlyCollection~ComponentTextParameter~ ComponentTextParameters
+    + IReadOnlyCollection~ModuleTextParameter~ ModuleTextParameters
+    + IReadOnlyCollection~ComponentNumericParameter~ ComponentNumericParameters
+    + IReadOnlyCollection~ModuleNumericParameter~ ModuleNumericParameters
+    
+    + Operation~ParameterType, string~ Create(string title, string code, ParameterValueType type, Guid? id = null)
+}
+
+class TextParameter {
+    # TextParameterValue Value
+    + ParameterType ParameterType
+    
+    + Operation~bool, string~ SetType(ParameterType parameterType)
+    + TextParameterDto ConvertToDto()
+}
+
+class NumericParameter {
+    # double Value
+    + ParameterType ParameterType
+    
+    + Operation~bool, string~ SetType(ParameterType parameterType)
+    + NumericParameterDto ConvertToDto()
+}
+
+class TextParameterValue {
+    + string Value
+}
+
+AggregateRoot <|-- Order
 Order "many" --> "1" ApplicationUser
 Order "1" *-- "many" OrderItem
 OrderEvent "many" --> "1" Order
@@ -281,5 +324,15 @@ ApprovalWorkflowItem "many" --> "1" ApprovalWorkflow
 ApprovalWorkflow "1" --> "1" OrderItem
 ApprovalStage "1" *-- "many" ApprovalWorkflowItem
 ApprovalWorkflowItem "many" --> "1" ApplicationUser
+
+ComponentTextParameter --|> TextParameter
+ModuleTextParameter --|> TextParameter
+ComponentNumericParameter --|> NumericParameter
+ModuleNumericParameter --|> NumericParameter
+
+TextParameterValue --* TextParameter  
+TextParameter --o ParameterType
+NumericParameter --o ParameterType
+ParameterType --> ParameterValueType
 
 ```

@@ -1,5 +1,4 @@
-﻿using Catalog.Contracts.Interfaces;
-using Catalog.Domain.Entities.Base;
+﻿using Catalog.Domain.Entities.Base;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
