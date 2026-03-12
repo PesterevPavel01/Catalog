@@ -334,5 +334,15 @@ TextParameterValue --* TextParameter
 TextParameter --o ParameterType
 NumericParameter --o ParameterType
 ParameterType --> ParameterValueType
+```
+ComponentTextParameter --|> TextParameter
+ModuleTextParameter --|> TextParameter
+ComponentNumericParameter --|> NumericParameter
+ModuleNumericParameter --|> NumericParameter
+
+TextParameterValue --* TextParameter  
+TextParameter --o ParameterType
+NumericParameter --o ParameterType
+ParameterType --> ParameterValueType
 
 ```
