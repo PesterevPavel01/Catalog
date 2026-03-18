@@ -51,6 +51,8 @@ internal static class OrderCreationEndpointDefinitionExtensions
                         return Results.BadRequest(operationResult.Error);
                 }
 
+                await bus.Publish(new OrderCreatedEvent(result.Result.Code));
+
                 return Results.Ok(result.Result);
             })
         .Produces(200)

@@ -6,4 +6,5 @@
     public interface IApprovalQueueEvent { }
     public interface INotificationQueueEvent { }
     public interface IExchangeQueueEvent { }
+    public interface IEventMonitorQueueEvent { }
 }
