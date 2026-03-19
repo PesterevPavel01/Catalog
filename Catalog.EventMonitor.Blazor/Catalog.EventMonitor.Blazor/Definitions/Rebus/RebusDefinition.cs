@@ -30,23 +30,17 @@ public class RebusDefinition : AppDefinition
         }, onCreated: async bus =>
         {
 
-            await bus.Subscribe<OrderCreatedEvent>();
-            /*await bus.Subscribe<MarkOrdersAsProducedEvent>();
+            await bus.Subscribe<MarkOrdersAsProducedEvent>();
+            await bus.Subscribe<OrderAddMessageEvent>();
+            await bus.Subscribe<OrderCancelledEvent>();
             await bus.Subscribe<OrderCompletedEvent>();
-            await bus.Subscribe<CustomerCreatedEvent>();
-            await bus.Subscribe<OrderWorkflowCreatedEvent>();
-            await bus.Subscribe<OrderWorkflowsCompletedEvent>();
+            await bus.Subscribe<OrderDisabledEvent>();
+            await bus.Subscribe<OrderExportedEvent>();
+            await bus.Subscribe<OrderModuleChangedEvent>();
             await bus.Subscribe<OrderRejectedEvent>();
             await bus.Subscribe<OrderRejectedFromProductionEvent>();
-            await bus.Subscribe<OrderCancelledEvent>();
-
-            await bus.Subscribe<OrderAddMessageEvent>();
-            await bus.Subscribe<OrderModuleChangedEvent>();
-            await bus.Subscribe<OrderDisabledEvent>();
-
-            await bus.Subscribe<OrderExportedEvent>();
-            await bus.Subscribe<SyncFailedEvent>();*/
-
+            await bus.Subscribe<OrderWorkflowCreatedEvent>();
+            await bus.Subscribe<OrderWorkflowsCompletedEvent>();
         }
         );
         builder.Services.AutoRegisterHandlersFromAssemblyOf<EventMonitorAssemblyReference>();

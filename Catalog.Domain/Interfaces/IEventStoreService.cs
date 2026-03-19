@@ -4,7 +4,7 @@ namespace Catalog.Contracts.Interfaces;
 
 public interface IEventStoreService
 {
-    IReadOnlyList<OrderEventModel> GetRecentEvents(int count = 50);
+    IReadOnlyList<OrderEventModel> GetRecentEvents();
     void AddEvent(OrderEventModel eventModel);
     IDisposable Subscribe(Func<OrderEventModel, Task> callback);
 }

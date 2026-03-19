@@ -32,6 +32,8 @@ public class RebusDefinition : AppDefinition
         }, onCreated: async bus =>
             {
                 await bus.Subscribe<MarkOrdersAsProducedEvent>();
+                await bus.Subscribe<OrderModuleChangedEvent>();
+
                 await bus.Subscribe<OrderCompletedEvent>();
                 await bus.Subscribe<CustomerCreatedEvent>();
                 await bus.Subscribe<OrderWorkflowCreatedEvent>();
@@ -41,7 +43,6 @@ public class RebusDefinition : AppDefinition
                 await bus.Subscribe<OrderCancelledEvent>();
           
                 await bus.Subscribe<OrderAddMessageEvent>();
-                await bus.Subscribe<OrderModuleChangedEvent>();
                 await bus.Subscribe<OrderDisabledEvent>();
 
                 await bus.Subscribe<OrderExportedEvent>();

@@ -6,27 +6,36 @@ namespace Catalog.ModuleOrderEvents.Services;
 
 public class EventStoreService : IEventStoreService
 {
-    private readonly ConcurrentQueue<OrderEventModel> _events = new();
-    private event Func<OrderEventModel, Task>? _subscribers;
+    private readonly ConcurrentQueue<OrderEventModel> _events = [];
 
-    public IReadOnlyList<OrderEventModel> GetRecentEvents(int count = 50)
-        => [.. _events.Reverse().Take(count)];
+    private readonly ConcurrentDictionary<Guid, Func<OrderEventModel, Task>> _subscribers = [];
+
+    public IReadOnlyList<OrderEventModel> GetRecentEvents()
+        => [.. _events.Reverse()];
 
     public void AddEvent(OrderEventModel eventModel)
     {
         _events.Enqueue(eventModel);
 
-        while (_events.Count > 100)
+        while (_events.Count > 50)
             _events.TryDequeue(out _);
 
-        // Вызываем подписчиков (их будет 1 - ViewModel)
-        _subscribers?.Invoke(eventModel);
+        foreach (var subscriber in _subscribers.Values.ToList())
+        {
+            subscriber.Invoke(eventModel);
+        }
     }
 
     public IDisposable Subscribe(Func<OrderEventModel, Task> callback)
     {
-        _subscribers += callback;
-        return new Subscription(() => _subscribers -= callback);
+        var id = Guid.NewGuid();
+
+        _subscribers.TryAdd(id, callback);
+
+        return new Subscription(() =>
+        {
+            _subscribers.TryRemove(id, out _);
+        });
     }
 
     private class Subscription : IDisposable

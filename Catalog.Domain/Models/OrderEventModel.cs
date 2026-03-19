@@ -3,8 +3,9 @@
 public class OrderEventModel
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    public string OrderCode { get; set; } = string.Empty;
     public string EventType { get; set; } = string.Empty;
+    public string OrderCode { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
     public DateTime OccurredAt { get; set; } = DateTime.UtcNow;
     public string Details { get; set; } = string.Empty;
 }

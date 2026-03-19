@@ -39,7 +39,7 @@ public class ApprovalCompletedDomainEventHandler : INotificationHandler<Approval
             await _telegramService.SendMessageAsync($"{"OrderService".ToUpper()} Event {typeof(OrderCancelledDomainEventHandler).Name}. Order not found!");
             return;
         }
-        
+
         await _bus.Publish(new OrderWorkflowsCompletedEvent(order.ConvertToDto()));
     }
 }

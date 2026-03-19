@@ -1,8 +1,6 @@
 ﻿using Calabonga.Blazor.AppDefinitions;
 using Catalog.Contracts.Interfaces;
-using Catalog.ModuleOrderEvents.Interfaces;
 using Catalog.ModuleOrderEvents.Services;
-using Catalog.ModuleOrderEvents.ViewModels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +14,6 @@ public class ModuleOrderEventsDefinition:AppDefinition
     {
         builder.Services.AddScoped<IBlazorModule, OrderEventsBlazorModule>();
         builder.Services.AddSingleton<IEventStoreService, EventStoreService>();
-        builder.Services.AddScoped<IEventsViewModel, EventsViewModel>();
     }
 }
 

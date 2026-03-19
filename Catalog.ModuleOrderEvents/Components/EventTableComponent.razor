@@ -1,0 +1,19 @@
+@inherits EventTableComponentModel
+
+@foreach(var error in Errors!)
+{
+    <div class="alert alert-warning alert-dismissible fade show m-0 w-100" role="alert">
+        <strong>@error</strong>
+    </div>
+} 
+<seection class="m-0 p-0 h-100 d-flex flex-column align-item-start gray-background gap-1">
+        
+    @foreach (var orderEvent in Events)
+    {
+        <div class="event-item white-background d-flex flex-column p-3 w-100 align-items-start shadow-lg gap-1">
+            <strong class="order-title black d-none d-lg-flex justify-content-start align-items-center m-0 normal-font">Заказ @orderEvent.Title</strong>
+            <span class="order-status black d-none d-lg-flex m-0 p-0 w-100 text-start mini-font">@orderEvent.Details</span>
+        </div>
+    }
+
+</seection>
